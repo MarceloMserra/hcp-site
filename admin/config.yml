@@ -1,0 +1,162 @@
+backend:
+  # Se vai hospedar no Netlify, use Git Gateway (recomendado)
+  name: git-gateway
+  branch: main
+
+media_folder: "img/uploads"      # onde os arquivos vão ser salvos no repositório
+public_folder: "/img/uploads"    # como o site acessa esses arquivos
+
+locale: "pt_BR"
+publish_mode: editorial_workflow  # (opcional) permite rascunho/revisão
+
+collections:
+  # =======================
+  # Configurações do site
+  # =======================
+  - name: "site"
+    label: "Configurações do Site"
+    files:
+      - name: "dados"
+        label: "Conteúdo Geral"
+        file: "data/site.json"
+        format: "json"
+        fields:
+          - { label: "Slogan", name: "slogan", widget: "string" }
+          - { label: "Lema", name: "lema", widget: "string" }
+          - { label: "Imagem do Herói (capa)", name: "hero", widget: "image", allow_multiple: false }
+          - label: "Redes Sociais"
+            name: "redes"
+            widget: "list"
+            fields:
+              - { label: "Nome", name: "nome", widget: "string" }
+              - { label: "URL", name: "url", widget: "string" }
+              - { label: "Ícone (Font Awesome)", name: "icon", widget: "string", hint: "Ex.: fab fa-instagram" }
+          - label: "Linha do Tempo"
+            name: "timeline"
+            widget: "list"
+            fields:
+              - { label: "Título", name: "titulo", widget: "string" }
+              - { label: "Ano", name: "ano", widget: "string" }
+              - { label: "Texto", name: "texto", widget: "text" }
+              - label: "Fotos"
+                name: "fotos"
+                widget: "list"
+                required: false
+                fields:
+                  - { label: "Arquivo", name: "src", widget: "image" }
+                  - { label: "Alt", name: "alt", widget: "string", required: false }
+
+          - label: "Doações"
+            name: "doacoes"
+            widget: "object"
+            fields:
+              - { label: "Meta Total (R$)", name: "meta_total", widget: "number" }
+              - { label: "Arrecadado (R$)", name: "arrecadado", widget: "number" }
+              - label: "PIX"
+                name: "pix"
+                widget: "object"
+                fields:
+                  - { label: "Chave", name: "chave", widget: "string" }
+                  - { label: "QR Code (imagem)", name: "qr", widget: "image", required: false }
+              - label: "Outras Formas (links)"
+                name: "links"
+                widget: "list"
+                fields:
+                  - { label: "Nome", name: "nome", widget: "string" }
+                  - { label: "URL", name: "url", widget: "string" }
+                  - { label: "Ícone", name: "icon", widget: "string", hint: "Ex.: fab fa-paypal" }
+              - label: "Relatórios (PDF)"
+                name: "relatorios"
+                widget: "list"
+                fields:
+                  - { label: "Título", name: "titulo", widget: "string" }
+                  - { label: "Arquivo PDF", name: "url", widget: "file", media_library: { allow_multiple: false } }
+
+          - label: "Objetivos"
+            name: "objetivos"
+            widget: "list"
+            fields:
+              - { label: "Título", name: "titulo", widget: "string" }
+              - { label: "Descrição", name: "descricao", widget: "text" }
+              - { label: "Ícone (Font Awesome)", name: "icon", widget: "string" }
+
+          - label: "Metas"
+            name: "metas"
+            widget: "list"
+            fields:
+              - { label: "Título", name: "titulo", widget: "string" }
+              - { label: "Descrição", name: "descricao", widget: "text" }
+              - { label: "Valor Atual", name: "atual", widget: "number" }
+              - { label: "Valor Total", name: "total", widget: "number" }
+              - { label: "Rótulo do Progresso", name: "atual_label", widget: "string", required: false }
+
+          - label: "Contato"
+            name: "contato"
+            widget: "object"
+            fields:
+              - { label: "E-mail", name: "email", widget: "string" }
+              - { label: "Telefone", name: "telefone", widget: "string" }
+              - { label: "Endereço", name: "endereco", widget: "string", required: false }
+
+  # =======================
+  # Membros (JSON de lista)
+  # =======================
+  - name: "membros"
+    label: "Membros"
+    files:
+      - name: "lista"
+        label: "Integrantes"
+        file: "data/membros.json"
+        format: "json"
+        fields:
+          - label: "Membros"
+            name: ""
+            widget: "list"
+            summary: "{{fields.nome}} ({{fields.naipes}})"
+            fields:
+              - { label: "Nome", name: "nome", widget: "string" }
+              - { label: "Foto (quadrada ~800x800)", name: "foto", widget: "image" }
+              - label: "Naipes"
+                name: "naipes"
+                widget: "list"
+                default: ["1º Tenor","2º Tenor","Barítono","Baixo"]
+              - { label: "Bio Curta", name: "bio", widget: "text", required: false }
+
+  # =======================
+  # Galeria (JSON de lista)
+  # =======================
+  - name: "galeria"
+    label: "Galeria"
+    files:
+      - name: "fotos"
+        label: "Fotos"
+        file: "data/galeria.json"
+        format: "json"
+        fields:
+          - label: "Fotos"
+            name: ""
+            widget: "list"
+            fields:
+              - { label: "Álbum", name: "album", widget: "string" }
+              - { label: "Título", name: "titulo", widget: "string", required: false }
+              - { label: "Imagem", name: "src", widget: "image" }
+              - { label: "Alt", name: "alt", widget: "string", required: false }
+
+  # =======================
+  # Agenda (JSON simples)
+  # =======================
+  - name: "agenda"
+    label: "Agenda"
+    files:
+      - name: "eventos"
+        label: "Próximos Eventos"
+        file: "data/agenda.json"
+        format: "json"
+        fields:
+          - label: "Eventos"
+            name: ""
+            widget: "list"
+            fields:
+              - { label: "Data", name: "data", widget: "string", hint: "Ex.: 15/10" }
+              - { label: "Título", name: "titulo", widget: "string" }
+              - { label: "Local", name: "local", widget: "string" }
