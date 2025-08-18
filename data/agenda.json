@@ -1,12 +1,18 @@
-[
-  {
-    "data": "15/10",
-    "titulo": "Culto Especial",
-    "local": "Igreja Batista Central"
-  },
-  {
-    "data": "22/10",
-    "titulo": "Concerto",
-    "local": "Teatro Municipal"
-  }
-]
+{
+  "eventos": [
+    {
+      "data": "2025-08-25",
+      "tipo": "Ensaio",
+      "titulo": "Ensaio Geral",
+      "local": "Igreja Batista do Planalto - Salão 2",
+      "descricao": "Revisão do repertório 'Hinos Clássicos'."
+    },
+    {
+      "data": "2025-09-01",
+      "tipo": "Apresentação",
+      "titulo": "Culto na Igreja Batista Central",
+      "local": "Goiânia - GO",
+      "descricao": "Ministração no culto da noite."
+    }
+  ]
+}

@@ -1,18 +1,15 @@
+local_backend: true
 backend:
-  # Se vai hospedar no Netlify, use Git Gateway (recomendado)
   name: git-gateway
   branch: main
 
-media_folder: "img/uploads"      # onde os arquivos vão ser salvos no repositório
-public_folder: "/img/uploads"    # como o site acessa esses arquivos
+media_folder: "img/uploads"
+public_folder: "/img/uploads"
 
 locale: "pt_BR"
-publish_mode: editorial_workflow  # (opcional) permite rascunho/revisão
+publish_mode: editorial_workflow
 
 collections:
-  # =======================
-  # Configurações do site
-  # =======================
   - name: "site"
     label: "Configurações do Site"
     files:
@@ -23,14 +20,30 @@ collections:
         fields:
           - { label: "Slogan", name: "slogan", widget: "string" }
           - { label: "Lema", name: "lema", widget: "string" }
-          - { label: "Imagem do Herói (capa)", name: "hero", widget: "image", allow_multiple: false }
+          - { label: "Imagem do Herói (capa)", name: "hero", widget: "image" }
+
+          - label: "Tema (cores e opções)"
+            name: "tema"
+            widget: "object"
+            collapsed: true
+            fields:
+              - { label: "Cor Primária", name: "primaria", widget: "string", default: "#1F497D" }
+              - { label: "Cor CTA", name: "cta", widget: "string", default: "#0EA5E9" }
+              - { label: "Overlay do herói (0–0.7)", name: "hero_overlay", widget: "number", value_type: "float", min: 0, max: 0.7, default: 0.45 }
+              - { label: "Mostrar Coordenação", name: "show_coordenacao", widget: "boolean", default: true }
+              - { label: "Mostrar Membros", name: "show_membros", widget: "boolean", default: true }
+              - { label: "Mostrar Galeria", name: "show_galeria", widget: "boolean", default: true }
+              - { label: "Mostrar Doações", name: "show_doacoes", widget: "boolean", default: true }
+              - { label: "Mostrar Objetivos", name: "show_objetivos", widget: "boolean", default: true }
+
           - label: "Redes Sociais"
             name: "redes"
             widget: "list"
             fields:
               - { label: "Nome", name: "nome", widget: "string" }
               - { label: "URL", name: "url", widget: "string" }
-              - { label: "Ícone (Font Awesome)", name: "icon", widget: "string", hint: "Ex.: fab fa-instagram" }
+              - { label: "Ícone (Font Awesome)", name: "icon", widget: "string" }
+
           - label: "Linha do Tempo"
             name: "timeline"
             widget: "list"
@@ -58,19 +71,19 @@ collections:
                 fields:
                   - { label: "Chave", name: "chave", widget: "string" }
                   - { label: "QR Code (imagem)", name: "qr", widget: "image", required: false }
-              - label: "Outras Formas (links)"
+              - label: "Links de Doação"
                 name: "links"
                 widget: "list"
                 fields:
                   - { label: "Nome", name: "nome", widget: "string" }
                   - { label: "URL", name: "url", widget: "string" }
-                  - { label: "Ícone", name: "icon", widget: "string", hint: "Ex.: fab fa-paypal" }
-              - label: "Relatórios (PDF)"
+                  - { label: "Ícone", name: "icon", widget: "string", required: false }
+              - label: "Relatórios (PDFs)"
                 name: "relatorios"
                 widget: "list"
                 fields:
-                  - { label: "Título", name: "titulo", widget: "string" }
-                  - { label: "Arquivo PDF", name: "url", widget: "file", media_library: { allow_multiple: false } }
+                  - { label: "Nome", name: "nome", widget: "string" }
+                  - { label: "URL", name: "url", widget: "string" }
 
           - label: "Objetivos"
             name: "objetivos"
@@ -78,7 +91,7 @@ collections:
             fields:
               - { label: "Título", name: "titulo", widget: "string" }
               - { label: "Descrição", name: "descricao", widget: "text" }
-              - { label: "Ícone (Font Awesome)", name: "icon", widget: "string" }
+              - { label: "Ícone (Font Awesome)", name: "icon", widget: "string", required: false }
 
           - label: "Metas"
             name: "metas"
@@ -86,21 +99,37 @@ collections:
             fields:
               - { label: "Título", name: "titulo", widget: "string" }
               - { label: "Descrição", name: "descricao", widget: "text" }
-              - { label: "Valor Atual", name: "atual", widget: "number" }
-              - { label: "Valor Total", name: "total", widget: "number" }
-              - { label: "Rótulo do Progresso", name: "atual_label", widget: "string", required: false }
+              - { label: "Atual (número)", name: "atual", widget: "number" }
+              - { label: "Total (número)", name: "total", widget: "number" }
 
           - label: "Contato"
             name: "contato"
             widget: "object"
             fields:
               - { label: "E-mail", name: "email", widget: "string" }
-              - { label: "Telefone", name: "telefone", widget: "string" }
-              - { label: "Endereço", name: "endereco", widget: "string", required: false }
+              - { label: "Telefone", name: "telefone", widget: "string", required: false }
+              - { label: "Endereço", name: "endereco", widget: "text", required: false }
 
-  # =======================
-  # Membros (JSON de lista)
-  # =======================
+  - name: "coordenacao"
+    label: "Coordenação"
+    files:
+      - name: "equipe"
+        label: "Equipe de Coordenação"
+        file: "data/coordenacao.json"
+        format: "json"
+        fields:
+          - label: "Equipe"
+            name: "equipe"
+            widget: "list"
+            fields:
+              - { label: "Nome", name: "nome", widget: "string" }
+              - label: "Cargo"
+                name: "cargo"
+                widget: "select"
+                options: ["Presidente","Vice-Presidente","Regente","Pianista","Secretário","Tesoureiro","Comunicação","Apoio Pastoral","Coordenação de Viagens","Logística"]
+              - { label: "Foto", name: "foto", widget: "image" }
+              - { label: "Descrição", name: "descricao", widget: "text", required: false }
+
   - name: "membros"
     label: "Membros"
     files:
@@ -110,41 +139,49 @@ collections:
         format: "json"
         fields:
           - label: "Membros"
-            name: ""
+            name: "membros"
             widget: "list"
-            summary: "{{fields.nome}} ({{fields.naipes}})"
             fields:
               - { label: "Nome", name: "nome", widget: "string" }
-              - { label: "Foto (quadrada ~800x800)", name: "foto", widget: "image" }
-              - label: "Naipes"
-                name: "naipes"
-                widget: "list"
-                default: ["1º Tenor","2º Tenor","Barítono","Baixo"]
+              - { label: "Foto", name: "foto", widget: "image" }
+              - { label: "Naipes", name: "naipes", widget: "list" }
               - { label: "Bio Curta", name: "bio", widget: "text", required: false }
+              - { label: "Desde (ano)", name: "desde", widget: "number", required: false }
 
-  # =======================
-  # Galeria (JSON de lista)
-  # =======================
   - name: "galeria"
     label: "Galeria"
     files:
-      - name: "fotos"
-        label: "Fotos"
-        file: "data/galeria.json"
-        format: "json"
-        fields:
-          - label: "Fotos"
-            name: ""
-            widget: "list"
-            fields:
-              - { label: "Álbum", name: "album", widget: "string" }
-              - { label: "Título", name: "titulo", widget: "string", required: false }
-              - { label: "Imagem", name: "src", widget: "image" }
-              - { label: "Alt", name: "alt", widget: "string", required: false }
+    - name: "albuns"
+      label: "Álbuns"
+      file: "data/galeria.json"
+      format: "json"
+      fields:
+        - label: "Álbuns"
+          name: "albuns"
+          widget: "list"
+          summary: "{{fields.titulo}}"
+          fields:
+            - { label: "Título do Álbum", name: "titulo", widget: "string" }
+            - { label: "Descrição (opcional)", name: "descricao", widget: "text", required: false }
+            - { label: "Capa do Álbum", name: "capa", widget: "image" }
 
-  # =======================
-  # Agenda (JSON simples)
-  # =======================
+            # >>> fotos múltiplas (um clique, várias fotos)
+            - label: "Fotos (seleção múltipla)"
+              name: "fotos_multi"
+              widget: "list"
+              field: { label: "Arquivo", name: "src", widget: "image" }
+
+            # (opcional) fotos/vídeos com tipo + legenda
+            - label: "Itens (fotos e vídeos)"
+              name: "itens"
+              widget: "list"
+              fields:
+                - { label: "Tipo", name: "tipo", widget: "select", options: ["foto", "video"], default: "foto" }
+                - { label: "Arquivo/URL", name: "src", widget: "string", hint: "Imagem (JPG/PNG/WebP) ou link de vídeo (MP4, YouTube, Vimeo)" }
+                - { label: "Thumb (opcional p/ vídeo)", name: "thumb", widget: "image", required: false }
+                - { label: "Alt (texto alternativo)", name: "alt", widget: "string", required: false }
+
+
   - name: "agenda"
     label: "Agenda"
     files:
@@ -154,9 +191,38 @@ collections:
         format: "json"
         fields:
           - label: "Eventos"
-            name: ""
+            name: "eventos"
             widget: "list"
             fields:
-              - { label: "Data", name: "data", widget: "string", hint: "Ex.: 15/10" }
+              - { label: "Data", name: "data", widget: "string" }
               - { label: "Título", name: "titulo", widget: "string" }
               - { label: "Local", name: "local", widget: "string" }
+
+  - name: "layout"
+    label: "Cabeçalho e Rodapé"
+    files:
+      - name: "header"
+        label: "Cabeçalho"
+        file: "data/header.json"
+        format: "json"
+        fields:
+          - { label: "Logo (header)", name: "logo", widget: "image", required: false }
+          - label: "Itens do Menu"
+            name: "menu"
+            widget: "list"
+            fields:
+              - { label: "Texto", name: "text", widget: "string" }
+              - { label: "Link", name: "url", widget: "string" }
+      - name: "footer"
+        label: "Rodapé"
+        file: "data/footer.json"
+        format: "json"
+        fields:
+          - { label: "Logo (rodapé, branco)", name: "logo", widget: "image", required: false }
+          - { label: "Texto do Rodapé", name: "texto", widget: "text" }
+          - label: "Links do Rodapé"
+            name: "links"
+            widget: "list"
+            fields:
+              - { label: "Nome", name: "nome", widget: "string" }
+              - { label: "URL", name: "url", widget: "string" }

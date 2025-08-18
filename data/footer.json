@@ -1,0 +1,14 @@
+{
+  "logo": "/img/uploads/logobranca.png",
+  "texto": "© 2025 HCP - Homens Cantores do Planalto. Todos os direitos reservados.",
+  "links": [
+    {
+      "nome": "Política de Privacidade",
+      "url": "#"
+    },
+    {
+      "nome": "Termos de Uso",
+      "url": "#"
+    }
+  ]
+}

@@ -1,32 +1,31 @@
-[
-  {
-    "album": "Concertos",
-    "titulo": "Concerto de Natal",
-    "src": "/img/galeria/concerto-natal.jpg",
-    "alt": "Concerto de Natal"
-  },
-  {
-    "album": "Concertos",
-    "titulo": "Concerto de Páscoa",
-    "src": "/img/galeria/concerto-pascoa.jpg",
-    "alt": "Concerto de Páscoa"
-  },
-  {
-    "album": "Ensaios",
-    "titulo": "Ensaio Semanal",
-    "src": "/img/galeria/ensaio-1.jpg",
-    "alt": "Ensaio"
-  },
-  {
-    "album": "Viagens",
-    "titulo": "Turnê Estadual",
-    "src": "/img/galeria/turne.jpg",
-    "alt": "Turnê"
-  },
-  {
-    "album": "Especiais",
-    "titulo": "25 anos do HCP",
-    "src": "/img/galeria/25-anos.jpg",
-    "alt": "25 anos"
-  }
-]
+{
+  "fotos": [],
+  "albuns": [
+    {
+      "titulo": "PIBS",
+      "descricao": "esse foi o dia de",
+      "capa": "/img/uploads/captura-de-tela-2025-08-18-115819.png",
+      "itens": [],
+      "fotos_multi": [
+        "/img/uploads/marcelomdr_21.jpg",
+        "/img/uploads/marcelomdr_17.jpg"
+      ]
+    },
+    {
+      "titulo": "teste2",
+      "descricao": "SDFAFADSJGGF",
+      "capa": "/img/uploads/marcelomdr_6.jpg",
+      "fotos_multi": [
+        "/img/uploads/captura-de-tela-2025-08-18-115819.png"
+      ]
+    },
+    {
+      "titulo": "teste3",
+      "capa": "/img/uploads/marcelomdr_21.jpg",
+      "fotos_multi": [
+        "/img/uploads/marcelomdr_17.jpg"
+      ]
+    }
+  ],
+  "fotos_multi": ""
+}

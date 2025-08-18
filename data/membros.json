@@ -1,34 +1,12 @@
-[
-  {
-    "nome": "João Silva",
-    "foto": "/img/membros/joao.jpg",
-    "naipes": [
-      "1º Tenor"
-    ],
-    "bio": "Membro desde 2015. Ministro de música."
-  },
-  {
-    "nome": "Carlos Oliveira",
-    "foto": "/img/membros/carlos.jpg",
-    "naipes": [
-      "2º Tenor"
-    ],
-    "bio": "Engenheiro e amante de música sacra."
-  },
-  {
-    "nome": "Pedro Santos",
-    "foto": "/img/membros/pedro.jpg",
-    "naipes": [
-      "Barítono"
-    ],
-    "bio": "Membro fundador e arranjador."
-  },
-  {
-    "nome": "Antônio Costa",
-    "foto": "/img/membros/antonio.jpg",
-    "naipes": [
-      "Baixo"
-    ],
-    "bio": "Voz grave e direção espiritual."
-  }
-]
+{
+  "membros": [
+    {
+      "nome": "Marcelo Madureira",
+      "foto": "/img/uploads/marcelomdr_17.jpg",
+      "naipes": [
+        "Baixo"
+      ],
+      "desde": 2025
+    }
+  ]
+}

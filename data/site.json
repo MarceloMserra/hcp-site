@@ -1,163 +1,46 @@
 {
-  "slogan": "HCP — Homens de Verdade Entoando a Verdade!",
-  "lema": "Todo ser que respira, louve ao Senhor! Louvai ao Senhor!",
-  "hero": "/img/hero.jpg",
-  "redes": [
-    {
-      "nome": "Facebook",
-      "url": "https://facebook.com/hcp",
-      "icon": "fab fa-facebook"
-    },
-    {
-      "nome": "Instagram",
-      "url": "https://instagram.com/hcp",
-      "icon": "fab fa-instagram"
-    },
-    {
-      "nome": "YouTube",
-      "url": "https://youtube.com/@hcp",
-      "icon": "fab fa-youtube"
-    }
-  ],
   "timeline": [
     {
-      "titulo": "Fundação do HCP",
+      "titulo": "Fundação",
       "ano": "1995",
-      "texto": "Homens batistas uniram-se para louvar a Deus com um coral masculino.",
-      "fotos": [
-        {
-          "src": "/img/timeline/fundacao.jpg",
-          "alt": "Fundação do HCP"
-        }
-      ]
-    },
+      "texto": "Início do HCP."
+    }
+  ],
+  "tema": {
+    "hero_overlay": 0.45,
+    "primaria": "#1F497D",
+    "cta": "preto",
+    "show_coordenacao": true,
+    "show_membros": true,
+    "show_galeria": true,
+    "show_doacoes": true,
+    "show_objetivos": true
+  },
+  "contato": {
+    "email": "contato@homenscantores.com.br"
+  },
+  "lema": "Todo ser que respira, louve ao Senhor! Louvai ao Senhor!",
+  "metas": [
     {
-      "titulo": "Primeiro Concerto Oficial",
-      "ano": "1996",
-      "texto": "Depois de um ano de ensaios, realizamos o primeiro concerto."
-    },
-    {
-      "titulo": "Primeira Turnê",
-      "ano": "2001",
-      "texto": "Visitamos 10 cidades com um repertório evangelístico.",
-      "fotos": [
-        {
-          "src": "/img/timeline/turne.jpg",
-          "alt": "Primeira turnê"
-        }
-      ]
-    },
-    {
-      "titulo": "Gravação do Primeiro CD",
-      "ano": "2008",
-      "texto": "Registramos arranjos próprios em nosso primeiro álbum."
-    },
-    {
-      "titulo": "25 anos de Ministério",
-      "ano": "2020",
-      "texto": "Mais de 300 apresentações e muitos testemunhos."
+      "titulo": "20% do ônibus",
+      "descricao": "Arrecadar 20%",
+      "atual": 45320,
+      "total": 200000
     }
   ],
   "doacoes": {
     "meta_total": 200000,
     "arrecadado": 45320,
     "pix": {
-      "chave": "hcp.doacoes@email.com",
-      "qr": ""
-    },
-    "links": [
-      {
-        "nome": "PayPal",
-        "url": "#",
-        "icon": "fab fa-paypal"
-      },
-      {
-        "nome": "Mercado Pago",
-        "url": "#",
-        "icon": "fas fa-hand-holding-usd"
-      },
-      {
-        "nome": "Transferência Bancária",
-        "url": "#",
-        "icon": "fas fa-university"
-      }
-    ],
-    "relatorios": [
-      {
-        "titulo": "Relatório Janeiro 2025",
-        "url": "/docs/relatorio-2025-01.pdf"
-      },
-      {
-        "titulo": "Relatório Fevereiro 2025",
-        "url": "/docs/relatorio-2025-02.pdf"
-      }
-    ]
+      "chave": "hcp.doacoes@email.com"
+    }
   },
   "objetivos": [
     {
       "titulo": "Evangelização",
-      "descricao": "Levar o Evangelho por meio da música sacra.",
-      "icon": "fas fa-cross"
-    },
-    {
-      "titulo": "Excelência Musical",
-      "descricao": "Manter alto padrão com ensaios regulares.",
-      "icon": "fas fa-music"
-    },
-    {
-      "titulo": "Serviço às Igrejas",
-      "descricao": "Edificar congregações em cultos e eventos.",
-      "icon": "fas fa-hands-helping"
-    },
-    {
-      "titulo": "Formação de Novos Vocais",
-      "descricao": "Treinar e integrar novos cantores.",
-      "icon": "fas fa-user-plus"
-    },
-    {
-      "titulo": "Aquisição do Ônibus",
-      "descricao": "Viabilizar viagens missionais.",
-      "icon": "fas fa-bus"
-    },
-    {
-      "titulo": "Novo Álbum",
-      "descricao": "Produzir novo repertório e gravação.",
-      "icon": "fas fa-compact-disc"
+      "descricao": "Levar o Evangelho pela música."
     }
   ],
-  "metas": [
-    {
-      "titulo": "25 Apresentações",
-      "descricao": "Agenda anual mínima.",
-      "atual": 15,
-      "total": 25,
-      "atual_label": "15 de 25 concluídas"
-    },
-    {
-      "titulo": "2 Turnês Regionais",
-      "descricao": "Expandir alcance.",
-      "atual": 1,
-      "total": 2,
-      "atual_label": "1 de 2 concluídas"
-    },
-    {
-      "titulo": "5 Novos Membros",
-      "descricao": "Recrutar por naipes.",
-      "atual": 2,
-      "total": 5,
-      "atual_label": "2 de 5 concluídas"
-    },
-    {
-      "titulo": "Meta do Ônibus",
-      "descricao": "Arrecadar 20% da meta.",
-      "atual": 45320,
-      "total": 200000,
-      "atual_label": "R$ 45.320 de R$ 200.000"
-    }
-  ],
-  "contato": {
-    "email": "contato@homenscantores.com.br",
-    "telefone": "(61) 9 9999-9999",
-    "endereco": "Memorial Batista da Asa Sul – Brasília, DF"
-  }
+  "hero": "/img/uploads/captura-de-tela-2025-08-18-115819.png",
+  "slogan": "HCP — Homens de Verdade Entoando a Verdade!"
 }

@@ -1,4 +1,3 @@
-# Site HCP — Homens Cantores do Planalto
+# HCP Site
 
-Atualize conteúdo em `/data/*.json`. Imagens em `/img`.
-Suba isso no GitHub e publique no Netlify (site estático, sem build).
+Rodar local: `npx decap-server` e em outro terminal `serve .`

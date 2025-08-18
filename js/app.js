@@ -1,214 +1,388 @@
-// Helpers
-const $ = (s, p=document) => p.querySelector(s);
-const $$ = (s, p=document) => [...p.querySelectorAll(s)];
-const fmtBRL = v => v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+// ===================== utilidades =====================
+async function getJSON(path) {
+  try { const r = await fetch(path, { cache: "no-store" }); if (!r.ok) throw 0; return await r.json(); }
+  catch { return null; }
+}
+function el(tag, cls, html) { const e = document.createElement(tag); if (cls) e.className = cls; if (html !== undefined) e.innerHTML = html; return e; }
+function formatCurrency(v) { try { return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) } catch { return "R$ " + v } }
 
-// Menu mobile
-const btnMenu = $('#btn-menu'), mobile = $('#mobile');
-btnMenu?.addEventListener('click', ()=>{
-  const open = mobile.classList.toggle('hidden') === false;
-  btnMenu.setAttribute('aria-expanded', String(open));
-});
+// ===================== app principal =====================
+(async () => {
+  const site    = await getJSON("data/site.json")         || {};
+  const header  = await getJSON("data/header.json")       || {};
+  const footer  = await getJSON("data/footer.json")       || {};
+  const coord   = await getJSON("data/coordenacao.json")  || {};
+  const membros = await getJSON("data/membros.json")      || {};
+  const galeria = await getJSON("data/galeria.json")      || {};
 
-// Smooth scroll & close mobile
-$$('a[href^="#"]').forEach(a=>{
-  a.addEventListener('click', e=>{
-    const id = a.getAttribute('href');
-    const el = $(id);
-    if(el){
+  // ---------- HERO ----------
+  document.getElementById("slogan").textContent = site.slogan || "";
+  document.getElementById("lema").textContent   = site.lema   || "";
+  const hero = document.getElementById("home");
+  if (site.hero) hero.style.backgroundImage = `url('${site.hero}')`;
+  document.getElementById("hero-overlay").style.background = `rgba(0,0,0,${(site.tema?.hero_overlay) ?? 0.45})`;
+
+  // ---------- HEADER (logo + menu + mobile) ----------
+  const logo = document.getElementById("logo-img");
+  if (header.logo) logo.src = header.logo;
+
+  // Clique na logo leva ao topo
+  const logoLink = document.getElementById("logo-link");
+  if (logoLink) {
+    logoLink.addEventListener("click", (e) => {
       e.preventDefault();
-      window.scrollTo({top: el.offsetTop-80, behavior:'smooth'});
-      if(!mobile.classList.contains('hidden')) mobile.classList.add('hidden');
-    }
-  });
-});
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  }
 
-// Lightbox
-const lb = $('#lightbox'), lbImg = $('#lightbox-img');
-const openLB = (src, alt) => { lbImg.src = src; lbImg.alt = alt||''; lb.classList.add('open'); document.body.style.overflow='hidden'; };
-const closeLB = ()=>{ lb.classList.remove('open'); document.body.style.overflow='auto'; };
-$('#close-lightbox')?.addEventListener('click', closeLB);
-lb?.addEventListener('click', e=>{ if(e.target===lb) closeLB(); });
-
-// Load data
-(async ()=>{
-  const site = await fetch('/data/site.json').then(r=>r.json());
-  const membros = await fetch('/data/membros.json').then(r=>r.json());
-  const galeria = await fetch('/data/galeria.json').then(r=>r.json());
-  let agenda = [];
-  try { agenda = await fetch('/data/agenda.json').then(r=>r.json()); } catch {}
-
-  // Hero + Footer
-  $('#slogan').textContent = site.slogan;
-  $('#lema').textContent = site.lema;
-  $('#footer-slogan').textContent = `"${site.slogan}"`;
-  $('#footer-lema').textContent = `"${site.lema} (Sl 150:6)"`;
-  document.documentElement.style.setProperty('--hero', `url('${site.hero || "/img/hero.jpg"}')`);
-  $('#ano').textContent = new Date().getFullYear();
-
-  // Socials
-  const redes = $('#redes');
-  site.redes?.forEach(r=>{
-    const a = document.createElement('a');
-    a.href = r.url; a.target='_blank'; a.rel='noopener';
-    a.className='hover:text-white'; a.innerHTML = `<i class="${r.icon}"></i>`;
-    redes.appendChild(a);
+  const nav    = document.getElementById("nav-links");
+  const mobile = document.getElementById("mobile-links");
+  (header.menu || []).forEach(item => {
+    const a = el("a", "text-gray-700 hover:text-blue-700 font-medium", item.text); a.href = item.url;
+    nav && nav.appendChild(a);
+    const am = a.cloneNode(true); am.className = "block py-2 text-gray-700 hover:text-blue-700 font-medium";
+    mobile && mobile.appendChild(am);
   });
 
-  // Agenda
-  const ul = $('#lista-agenda');
-  agenda.slice(0,4).forEach(ev=>{
-    const li = document.createElement('li');
-    li.innerHTML = `<span class="text-sky-500 mr-2">•</span>${ev.data} — ${ev.titulo} (${ev.local})`;
-    ul.appendChild(li);
+  const btn  = document.getElementById("mobile-menu-button");
+  const menu = document.getElementById("mobile-menu");
+  const closeMenu = () => menu && menu.classList.add("hidden");
+
+  if (btn && menu) {
+    btn.addEventListener("click", (e) => { e.stopPropagation(); menu.classList.toggle("hidden"); });
+
+    // fecha ao rolar, ao clicar fora, ou ao clicar em link
+    window.addEventListener("scroll", closeMenu, { passive: true });
+    document.addEventListener("click", (e) => {
+      if (!menu.classList.contains("hidden")) {
+        const clickInside = menu.contains(e.target) || btn.contains(e.target);
+        if (!clickInside) closeMenu();
+      }
+    });
+    mobile && mobile.addEventListener("click", (e) => { if (e.target.tagName === "A") closeMenu(); });
+  }
+
+  // Scroll suave em âncoras internas
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener("click", (e) => {
+      const id = a.getAttribute("href");
+      if (id && id.startsWith("#")) {
+        const elTarget = document.querySelector(id);
+        if (elTarget) {
+          e.preventDefault();
+          window.scrollTo({ top: elTarget.offsetTop - 80, behavior: "smooth" });
+        }
+      }
+    });
   });
 
-  // Timeline
-  const tl = $('#timeline');
-  site.timeline?.forEach(t=>{
-    const card = document.createElement('div');
-    card.className = 'relative timeline-item';
-    card.innerHTML = `
-      <div class="bg-gray-50 p-6 rounded-lg shadow-sm">
-        <h3 class="text-xl font-bold text-[color:var(--azul)] mb-1">${t.titulo}</h3>
-        <p class="text-slate-600 mb-2">${t.ano}</p>
-        <p class="text-slate-700">${t.texto}</p>
-        ${t.fotos?.length?`<div class="mt-4 grid grid-cols-2 md:grid-cols-3 gap-2">
-          ${t.fotos.map(f=>`<img src="${f.src}" alt="${f.alt||t.titulo}" class="rounded cursor-pointer hover:opacity-80" loading="lazy">`).join('')}
-        </div>`:''}
+  // ---------- TIMELINE ----------
+  const tl = document.getElementById("timeline");
+  (site.timeline || []).forEach(t => {
+    const box = el("div", "bg-gray-50 p-4 rounded shadow");
+    box.innerHTML = `
+      <h3 class="text-xl font-bold text-blue-900 mb-1">${t.titulo || ""}</h3>
+      <p class="text-gray-600 mb-2">${t.ano || ""}</p>
+      <p class="text-gray-700">${t.texto || ""}</p>`;
+    tl && tl.appendChild(box);
+  });
+
+  // ---------- COORDENAÇÃO ----------
+  const coordGrid = document.getElementById("coordenacao-grid");
+  const equipe = coord.equipe || coord.lista || [];
+  equipe.forEach(p => {
+    const c = el("div", "bg-white rounded-lg shadow overflow-hidden");
+    c.innerHTML = `
+      <img src="${p.foto || ''}" class="w-full h-56 object-cover" alt="${p.nome || ''}">
+      <div class="p-4">
+        <h3 class="text-lg font-bold">${p.nome || ''}</h3>
+        <span class="inline-block mt-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">${p.cargo || ''}</span>
+        ${p.descricao ? `<p class="text-sm text-gray-600 mt-2">${p.descricao}</p>` : ''}
       </div>`;
-    tl.appendChild(card);
-    $$('img', card).forEach(img=>img.addEventListener('click',()=>openLB(img.src, img.alt)));
+    coordGrid && coordGrid.appendChild(c);
+  });
+  if (coordGrid && equipe.length === 0) document.getElementById("coordenacao").classList.add("hidden");
+
+  // ---------- MEMBROS + FILTROS ----------
+  const filters = ["Todos", "1º Tenor", "2º Tenor", "Barítono", "Baixo"];
+  const naipeFilters = document.getElementById("naipe-filters");
+  let filtroAtual = "Todos";
+  filters.forEach(f => {
+    const b = el("button", "px-4 py-2 rounded border", f);
+    if (f === filtroAtual) b.classList.add("bg-blue-900", "text-white");
+    b.addEventListener("click", () => {
+      filtroAtual = f;
+      [...naipeFilters.children].forEach(x => x.className = "px-4 py-2 rounded border");
+      b.className = "px-4 py-2 rounded border bg-blue-900 text-white";
+      renderMembros();
+    });
+    naipeFilters && naipeFilters.appendChild(b);
   });
 
-  // Naipe filters
-  const naipes = Array.from(new Set(membros.map(m=>m.naipes).flat()));
-  const filtros = $('#filtros');
-  const mkBtn = (label,val,klass='')=>{
-    const b=document.createElement('button');
-    b.className=`px-4 py-2 text-sm rounded border bg-white text-slate-700 hover:bg-gray-50 ${klass}`;
-    b.dataset.naipe=val; b.textContent=label; return b;
-  };
-  filtros.appendChild(mkBtn('Todos','all','active-filter'));
-  naipes.forEach(n=>filtros.appendChild(mkBtn(n,n)));
-  filtros.addEventListener('click',e=>{
-    if(e.target.tagName!=='BUTTON')return;
-    $$('.active-filter',filtros).forEach(b=>b.classList.remove('active-filter'));
-    e.target.classList.add('active-filter');
-    renderMembros(e.target.dataset.naipe);
-  });
-
-  // Members grid
-  const gridM = $('#grid-membros');
-  function renderMembros(filtro='all'){
-    gridM.innerHTML='';
-    membros
-      .filter(m=>filtro==='all'||m.naipes.includes(filtro))
-      .forEach(m=>{
-        const card=document.createElement('article');
-        card.className='bg-white rounded-lg shadow overflow-hidden';
-        card.innerHTML=`
-          <img src="${m.foto}" alt="Foto de ${m.nome}" class="w-full h-64 object-cover" loading="lazy">
-          <div class="p-6">
-            <h3 class="text-xl font-bold mb-1">${m.nome}</h3>
-            <div class="flex flex-wrap gap-1 mb-3">
-              ${m.naipes.map(n=>`<span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">${n}</span>`).join('')}
-            </div>
-            ${m.bio?`<p class="text-slate-700">${m.bio}</p>`:''}
-          </div>`;
-        gridM.appendChild(card);
-      });
+  function renderMembros() {
+    const grid = document.getElementById("members-grid");
+    if (!grid) return;
+    grid.innerHTML = "";
+    (membros.membros || membros.lista || []).forEach(m => {
+      const match = (filtroAtual === "Todos") || (m.naipes || [m.naipe]).includes(filtroAtual);
+      if (!match) return;
+      const card = el("div", "bg-white rounded-lg shadow overflow-hidden");
+      card.innerHTML = `
+        <img src="${m.foto || ''}" class="w-full h-64 object-cover" alt="${m.nome || ''}">
+        <div class="p-4">
+          <h3 class="text-lg font-bold mb-1">${m.nome || ''}</h3>
+          <div class="flex flex-wrap gap-1 mb-2">
+            ${(m.naipes || [m.naipe]).filter(Boolean).map(n => `<span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">${n}</span>`).join('')}
+          </div>
+          ${m.bio ? `<p class="text-gray-700 text-sm">${m.bio}</p>` : ''}
+        </div>`;
+      grid.appendChild(card);
+    });
   }
   renderMembros();
 
-  // Gallery
-  const sel = $('#album-filter');
-  const gridG = $('#grid-galeria');
-  const albuns = Array.from(new Set(galeria.map(g=>g.album)));
-  albuns.forEach(a=>{
-    const opt=document.createElement('option');
-    opt.value=a; opt.textContent=a; sel.appendChild(opt);
-  });
-  function renderGaleria(f='all'){
-    gridG.innerHTML='';
-    galeria.filter(g=>f==='all'||g.album===f).forEach(foto=>{
-      const wrap=document.createElement('div');
-      wrap.className='relative group';
-      wrap.innerHTML=`
-        <img src="${foto.src}" alt="${foto.alt||foto.album}" class="w-full h-48 object-cover rounded cursor-pointer" loading="lazy">
-        <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition grid place-items-center">
-          <p class="text-white text-sm font-medium">${foto.titulo||foto.album}</p>
+  // ---------- GALERIA (fallback simples por fotos soltas) ----------
+  const ggrid = document.getElementById("gallery-grid");
+  if (ggrid && Array.isArray(galeria.fotos)) {
+    (galeria.fotos || []).forEach(f => {
+      const holder = el("div", "relative group");
+      holder.innerHTML = `
+        <img src="${f.src}" alt="${f.alt || ''}" class="w-full h-48 object-cover rounded">
+        <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+          <p class="text-white font-medium">${f.titulo || ''}</p>
         </div>`;
-      gridG.appendChild(wrap);
-      $('img',wrap).addEventListener('click',()=>openLB(foto.src,foto.alt||foto.titulo));
+      ggrid.appendChild(holder);
     });
   }
-  sel.addEventListener('change',()=>renderGaleria(sel.value));
-  renderGaleria();
 
-  // Donations
-  $('#meta-label').textContent = `Meta: ${fmtBRL(site.doacoes.meta_total)}`;
-  $('#arrecadado-label').textContent = `Arrecadado: ${fmtBRL(site.doacoes.arrecadado)}`;
-  $('#progress').style.width = `${Math.min(100,(site.doacoes.arrecadado/site.doacoes.meta_total)*100).toFixed(2)}%`;
-  $('#pix-chave').textContent = site.doacoes.pix.chave;
-  $('#pix-qr').src = site.doacoes.pix.qr || `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(site.doacoes.pix.chave)}`;
-  $('#copiar-pix').addEventListener('click',()=>navigator.clipboard.writeText(site.doacoes.pix.chave).then(()=>alert('Chave PIX copiada!')));
+  // ---------- DOAÇÕES ----------
+  if (site.doacoes) {
+    const meta = site.doacoes.meta_total || 0;
+    const val  = site.doacoes.arrecadado || 0;
+    const elMeta = document.getElementById("meta-total");
+    const elVal  = document.getElementById("valor-arrecadado");
+    const bar    = document.getElementById("progress");
+    elMeta  && (elMeta.textContent = formatCurrency(meta));
+    elVal   && (elVal.textContent  = formatCurrency(val));
+    const pct = meta > 0 ? Math.min(100, (val / meta) * 100) : 0;
+    bar && (bar.style.width = pct.toFixed(2) + "%");
 
-  const links = $('#links-doacao');
-  site.doacoes.links?.forEach(l=>{
-    const a=document.createElement('a');
-    a.href=l.url; a.target='_blank'; a.rel='noopener';
-    a.className='block bg-white hover:bg-gray-100 text-slate-800 font-medium py-2 px-4 rounded border transition';
-    a.innerHTML = `<i class="${l.icon} mr-2"></i>${l.nome}`;
-    links.appendChild(a);
+    const chave = document.getElementById("pix-chave");
+    chave && (chave.textContent = site.doacoes.pix?.chave || "");
+    const qr = document.getElementById("pix-qr");
+    if (qr) { if (site.doacoes.pix?.qr) qr.src = site.doacoes.pix.qr; else qr.classList.add("hidden"); }
+
+    const list = document.getElementById("doacao-links");
+    (site.doacoes.links || []).forEach(l => {
+      const li = el("li");
+      li.innerHTML = `<a href="${l.url}" class="inline-flex items-center gap-2 hover:underline"><i class="${l.icon || 'fas fa-link'}"></i> ${l.nome}</a>`;
+      list && list.appendChild(li);
+    });
+  }
+
+  // ---------- OBJETIVOS + METAS ----------
+  const objGrid = document.getElementById("objetivos-grid");
+  (site.objetivos || []).forEach(o => {
+    const c = el("div", "bg-white p-6 rounded-lg shadow");
+    c.innerHTML = `
+      <div class="text-blue-900 text-3xl mb-3"><i class="${o.icon || 'fas fa-check-circle'}"></i></div>
+      <h3 class="text-xl font-bold mb-2">${o.titulo || ''}</h3>
+      <p class="text-gray-700">${o.descricao || ''}</p>`;
+    objGrid && objGrid.appendChild(c);
   });
 
-  const rel = $('#relatorios');
-  site.doacoes.relatorios?.forEach(r=>{
-    const a=document.createElement('a');
-    a.href=r.url; a.target='_blank'; a.rel='noopener';
-    a.className='bg-white hover:bg-gray-50 p-4 rounded shadow-sm block';
-    a.innerHTML = `<div class="text-[color:var(--azul)] text-xl mb-1"><i class="fas fa-file-pdf"></i></div>
-                   <p class="font-medium">${r.titulo}</p><p class="text-sm text-slate-600">Download PDF</p>`;
-    rel.appendChild(a);
+  const metasGrid = document.getElementById("metas-grid");
+  (site.metas || []).forEach(m => {
+    const pct = m.total > 0 ? Math.min(100, (m.atual / m.total) * 100) : 0;
+    const c = el("div", "bg-white p-6 rounded-lg shadow border-l-4 border-blue-900");
+    c.innerHTML = `
+      <h4 class="text-lg font-bold mb-2">${m.titulo || ''}</h4>
+      <p class="text-gray-700 mb-3">${m.descricao || ''}</p>
+      <div class="w-full bg-gray-200 rounded-full h-2.5">
+        <div class="bg-blue-900 h-2.5 rounded-full" style="width:${pct.toFixed(2)}%"></div>
+      </div>
+      <p class="text-sm text-gray-600 mt-1">${formatCurrency(m.atual || 0)} de ${formatCurrency(m.total || 0)}</p>`;
+    metasGrid && metasGrid.appendChild(c);
   });
 
-  // Objectives & Goals
-  const gridObj = $('#grid-objetivos');
-  site.objetivos?.forEach(o=>{
-    const card=document.createElement('article');
-    card.className='bg-white p-6 rounded-lg shadow';
-    card.innerHTML=`<div class="text-[color:var(--azul)] text-3xl mb-3"><i class="${o.icon}"></i></div>
-      <h3 class="text-xl font-bold mb-1">${o.titulo}</h3><p class="text-slate-700">${o.descricao}</p>`;
-    gridObj.appendChild(card);
+  // ---------- CONTATO ----------
+  const cEmail = document.getElementById("contato-email");
+  const cTel   = document.getElementById("contato-telefone");
+  const cEnd   = document.getElementById("contato-endereco");
+  cEmail && (cEmail.textContent = site.contato?.email    || "");
+  cTel   && (cTel.textContent   = site.contato?.telefone || "");
+  cEnd   && (cEnd.textContent   = site.contato?.endereco || "");
+
+  // ---------- AGENDA ----------
+  const agenda  = await getJSON("data/agenda.json") || {};
+  const eventos = (agenda.eventos || []).map(e => ({ ...e, data: e.data || "" }));
+  eventos.sort((a, b) => (a.data > b.data ? 1 : -1));
+
+  const tipos = ["Todos", ...Array.from(new Set(eventos.map(e => e.tipo || "Outro")))];
+  const filtrosEl = document.getElementById("agenda-filtros");
+  const listaEl   = document.getElementById("agenda-lista");
+  let filtroAgenda = "Todos";
+
+  if (filtrosEl) {
+    tipos.forEach((t, idx) => {
+      const btn = el("button", "px-4 py-2 text-sm font-medium border border-gray-300 bg-white text-gray-700 hover:bg-gray-50", t);
+      if (idx === 0) btn.classList.add("rounded-l-lg");
+      if (idx === tipos.length - 1) btn.classList.add("rounded-r-lg");
+      if (t === filtroAgenda) { btn.classList.add("bg-blue-900", "text-white"); }
+      btn.addEventListener("click", () => {
+        filtroAgenda = t;
+        [...filtrosEl.children].forEach(x => x.className = "px-4 py-2 text-sm font-medium border border-gray-300 bg-white text-gray-700 hover:bg-gray-50");
+        if (filtrosEl.firstChild) filtrosEl.firstChild.classList.add("rounded-l-lg");
+        if (filtrosEl.lastChild)  filtrosEl.lastChild.classList.add("rounded-r-lg");
+        btn.classList.add("bg-blue-900", "text-white");
+        renderAgenda();
+      });
+      filtrosEl.appendChild(btn);
+    });
+  }
+
+  function badge(tipo) {
+    const cores = {
+      "Ensaio": "bg-yellow-100 text-yellow-800",
+      "Apresentação": "bg-green-100 text-green-800",
+      "Culto": "bg-indigo-100 text-indigo-800",
+      "Turnê": "bg-pink-100 text-pink-800",
+      "Outro": "bg-gray-100 text-gray-800"
+    };
+    return `<span class="text-xs ${cores[tipo] || cores.Outro} px-2 py-1 rounded">${tipo}</span>`;
+  }
+
+  function renderAgenda() {
+    if (!listaEl) return;
+    listaEl.innerHTML = "";
+    const filtered = eventos.filter(e => filtroAgenda === "Todos" || (e.tipo || "Outro") === filtroAgenda);
+    if (filtered.length === 0) {
+      listaEl.innerHTML = `<p class="text-center text-gray-600">Nenhum item na agenda.</p>`;
+      return;
+    }
+    filtered.forEach(e => {
+      const item = el("div", "bg-gray-50 p-4 rounded-lg shadow flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2");
+      item.innerHTML = `
+        <div>
+          <p class="text-sm text-gray-500">${e.data}</p>
+          <h4 class="text-lg font-bold">${e.titulo || ""}</h4>
+          ${e.descricao ? `<p class="text-gray-700">${e.descricao}</p>` : ""}
+          <p class="text-gray-700"><i class="fas fa-map-marker-alt mr-1"></i> ${e.local || ""}</p>
+        </div>
+        <div>${badge(e.tipo || "Outro")}</div>`;
+      listaEl.appendChild(item);
+    });
+  }
+  renderAgenda();
+
+  // ---------- FOOTER ----------
+  const footerLogo = document.getElementById("footer-logo");
+  footerLogo && (footerLogo.src = footer.logo || header.logo || "");
+  const fText = document.getElementById("footer-text");
+  fText && (fText.textContent = footer.texto || "");
+  const fl = document.getElementById("footer-links");
+  (footer.links || []).forEach(l => {
+    const a = el("a", "text-blue-200 hover:text-white transition", l.nome); a.href = l.url; fl && fl.appendChild(a);
+  });
+})();
+
+// ===================== GALERIA (ÁLBUNS com modal) =====================
+// Depende de getJSON e el já definidos acima
+(async function () {
+  const gal = await getJSON("data/galeria.json") || {};
+  // Mescla fotos_multi (upload múltiplo) em itens do álbum
+  const albuns = (gal.albuns || []).map(a => {
+    const itens = Array.isArray(a.itens) ? [...a.itens] : [];
+    if (Array.isArray(a.fotos_multi) && a.fotos_multi.length) {
+      a.fotos_multi.forEach(src => itens.push({ tipo: "foto", src }));
+    }
+    return { ...a, itens };
   });
 
-  const gridMetas = $('#grid-metas');
-  site.metas?.forEach(m=>{
-    const box=document.createElement('div');
-    box.className='bg-white p-6 rounded-lg shadow border-l-4 border-[color:var(--azul)]';
-    const pct = Math.min(100, (m.atual/m.total)*100);
-    box.innerHTML=`<h4 class="text-lg font-bold mb-1">${m.titulo}</h4>
-      <p class="text-slate-700 mb-2">${m.descricao}</p>
-      <div class="w-full bg-gray-200 rounded-full h-2.5 mb-1"><div class="bg-[color:var(--azul)] h-2.5 rounded-full" style="width:${pct}%"></div></div>
-      <p class="text-sm text-slate-600">${m.atual_label || ''}</p>`;
-    gridMetas.appendChild(box);
-  });
+  const albumsGrid = document.getElementById("albums-grid");
 
-  // Contacts
-  const bloco = $('#bloco-contatos');
-  bloco.innerHTML = `
-    <h3 class="text-xl font-bold text-[color:var(--azul)] mb-4">Informações de Contato</h3>
-    <div class="space-y-4">
-      <div class="flex gap-3"><i class="fas fa-envelope text-[color:var(--azul)] text-xl mt-1"></i>
-        <div><h4 class="font-bold">E-mail</h4><p class="text-slate-700">${site.contato.email}</p></div></div>
-      <div class="flex gap-3"><i class="fas fa-phone text-[color:var(--azul)] text-xl mt-1"></i>
-        <div><h4 class="font-bold">Telefone</h4><p class="text-slate-700">${site.contato.telefone}</p></div></div>
-      ${site.contato.endereco?`<div class="flex gap-3"><i class="fas fa-map-marker-alt text-[color:var(--azul)] text-xl mt-1"></i>
-        <div><h4 class="font-bold">Endereço</h4><p class="text-slate-700">${site.contato.endereco}</p></div></div>`:''}
-    </div>`;
+  function isVideo(url) {
+    return (url || "").match(/youtube\.com|youtu\.be|vimeo\.com|\.mp4($|\?)/i);
+  }
 
-  // Forms (demo)
-  $('#invite-form')?.addEventListener('submit', e=>{ e.preventDefault(); alert('Convite enviado!'); e.target.reset(); });
-  $('#contact-form')?.addEventListener('submit', e=>{ e.preventDefault(); alert('Mensagem enviada!'); e.target.reset(); });
+  function albumCard(album, idx) {
+    const card = el("div", "bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition");
+    card.innerHTML = `
+      <div class="h-48 overflow-hidden">
+        <img src="${album.capa || ''}" alt="${album.titulo || ''}" class="w-full h-48 object-cover">
+      </div>
+      <div class="p-4">
+        <h3 class="text-lg font-bold mb-1">${album.titulo || ''}</h3>
+        ${album.descricao ? `<p class="text-gray-600 text-sm">${album.descricao}</p>` : ""}
+        <button class="mt-3 text-sky-600 font-medium hover:underline">Abrir álbum →</button>
+      </div>`;
+    card.querySelector("button").addEventListener("click", () => openAlbum(idx));
+    return card;
+  }
+
+  if (albumsGrid) {
+    albumsGrid.innerHTML = "";
+    albuns.forEach((a, i) => albumsGrid.appendChild(albumCard(a, i)));
+  }
+
+  // ---- Modal de Álbum ----
+  let albumModal = document.getElementById("album-modal");
+  if (!albumModal) {
+    albumModal = el("div", "fixed inset-0 z-[9999] bg-black/80 hidden");
+    albumModal.id = "album-modal";
+    albumModal.innerHTML = `
+      <div class="w-full h-full flex items-center justify-center p-4">
+        <div class="bg-white max-w-5xl w-full rounded-lg overflow-hidden">
+          <div class="flex items-center justify-between px-4 py-3 border-b">
+            <h3 id="album-title" class="text-xl font-bold">Álbum</h3>
+            <button id="album-close" class="text-gray-600 hover:text-black text-2xl">&times;</button>
+          </div>
+          <div id="album-content" class="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[70vh] overflow-auto"></div>
+        </div>
+      </div>`;
+    document.body.appendChild(albumModal);
+    albumModal.addEventListener("click", (e) => { if (e.target === albumModal) closeAlbum(); });
+    albumModal.querySelector("#album-close").addEventListener("click", closeAlbum);
+  }
+
+  function closeAlbum() { albumModal.classList.add("hidden"); document.body.style.overflow = "auto"; }
+
+  function openAlbum(i) {
+    const a = albuns[i];
+    if (!a) return;
+    document.getElementById("album-title").textContent = a.titulo || "Álbum";
+    const cont = document.getElementById("album-content");
+    cont.innerHTML = "";
+
+    (a.itens || []).forEach(item => {
+      const wrap = el("div", "rounded overflow-hidden bg-gray-50");
+      if (item.tipo === "video" && isVideo(item.src)) {
+        let embed = "";
+        const url = item.src || "";
+        if (/youtube\.com|youtu\.be/.test(url)) {
+          const idMatch = url.match(/(?:v=|be\/)([A-Za-z0-9_-]{6,})/);
+          const vid = idMatch ? idMatch[1] : "";
+          embed = `<iframe class="w-full aspect-video" src="https://www.youtube.com/embed/${vid}" frameborder="0" allowfullscreen></iframe>`;
+        } else if (/vimeo\.com/.test(url)) {
+          const idMatch = url.match(/vimeo\.com\/(\d+)/);
+          const vid = idMatch ? idMatch[1] : "";
+          embed = `<iframe class="w-full aspect-video" src="https://player.vimeo.com/video/${vid}" frameborder="0" allowfullscreen></iframe>`;
+        } else if (/\.mp4($|\?)/i.test(url)) {
+          embed = `<video class="w-full" controls src="${url}"></video>`;
+        }
+        wrap.innerHTML = embed;
+      } else {
+        // foto
+        wrap.innerHTML = `<img src="${item.src || ''}" alt="${item.alt || ''}" class="w-full h-56 object-cover">`;
+      }
+      if (item.alt) {
+        const cap = el("div", "px-2 py-1 text-sm text-gray-600", item.alt);
+        wrap.appendChild(cap);
+      }
+      cont.appendChild(wrap);
+    });
+
+    albumModal.classList.remove("hidden");
+    document.body.style.overflow = "hidden";
+  }
 })();

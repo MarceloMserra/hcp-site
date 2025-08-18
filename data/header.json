@@ -1,0 +1,33 @@
+{
+  "logo": "/img/uploads/logoazul.png",
+  "menu": [
+    {
+      "text": "História",
+      "url": "#historia"
+    },
+    {
+      "text": "Membros",
+      "url": "#membros"
+    },
+    {
+      "text": "Galeria",
+      "url": "#galeria"
+    },
+    {
+      "text": "Doações",
+      "url": "#doacoes"
+    },
+    {
+      "text": "Convite",
+      "url": "#convite"
+    },
+    {
+      "text": "Objetivos",
+      "url": "#objetivos"
+    },
+    {
+      "text": "Contato",
+      "url": "#contato"
+    }
+  ]
+}
