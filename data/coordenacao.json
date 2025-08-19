@@ -3,7 +3,26 @@
     {
       "nome": "Jairo",
       "cargo": "Presidente",
-      "foto": "/img/uploads/marcelo.jpg"
+      "foto": "/img/uploads/marcelo.jpg",
+      "descricao": "Nosso coral HCP tem a alegria de ser liderado por um presidente dedicado, que com amor, compromisso e fé conduz cada passo do grupo. Sua liderança inspira os coristas a servirem com excelência e a levarem a mensagem de louvor a Deus por meio da música"
+    },
+    {
+      "nome": "Jessé",
+      "cargo": "Regente",
+      "foto": "/img/uploads/carlos.jpg",
+      "descricao": "Nosso querido regente sempre disposto a nos ensinar."
+    },
+    {
+      "nome": "Rubmaier Antunes",
+      "cargo": "Secretário",
+      "foto": "/img/uploads/carlos.jpg",
+      "descricao": "Nosso sercretario.\n"
+    },
+    {
+      "nome": "Pianista",
+      "cargo": "Pianista",
+      "foto": "/img/uploads/concerto-natal.jpg",
+      "descricao": "Sempre entoando os melhores hinos.\n"
     }
   ]
 }

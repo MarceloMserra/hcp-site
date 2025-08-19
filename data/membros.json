@@ -2,11 +2,26 @@
   "membros": [
     {
       "nome": "Marcelo Madureira",
-      "foto": "/img/uploads/marcelomdr_17.jpg",
+      "foto": "/img/uploads/design-sem-nome-21-.png",
       "naipes": [
         "Baixo"
       ],
       "desde": 2025
+    },
+    {
+      "nome": "Elias Monteiro",
+      "foto": "/img/uploads/carlos.jpg",
+      "naipes": [
+        "1ºTenor"
+      ],
+      "desde": 2010
+    },
+    {
+      "nome": "Adaiton Sampaio",
+      "naipes": [
+        "2ºTenor"
+      ],
+      "foto": "/img/uploads/carlos.jpg"
     }
   ]
 }

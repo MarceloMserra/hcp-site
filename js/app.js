@@ -64,12 +64,24 @@ function formatCurrency(v) {
 
   const btn = document.getElementById("mobile-menu-button");
   const menu = document.getElementById("mobile-menu");
-  const closeMenu = () => menu && menu.classList.add("hidden");
+  const mobileMenuIcon = document.getElementById("mobile-menu-icon"); // Referência ao ícone do menu
 
-  if (btn && menu) {
+  const closeMenu = () => {
+    if (menu) {
+      menu.classList.add("hidden");
+      if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-bars text-2xl"; // Ícone de hambúrguer
+    }
+  };
+
+  if (btn && menu && mobileMenuIcon) {
     btn.addEventListener("click", (e) => {
       e.stopPropagation();
       menu.classList.toggle("hidden");
+      if (menu.classList.contains("hidden")) {
+        mobileMenuIcon.className = "fas fa-bars text-2xl"; // Ícone de hambúrguer
+      } else {
+        mobileMenuIcon.className = "fas fa-times text-2xl"; // Ícone de X
+      }
     });
 
     // fecha ao rolar, ao clicar fora, ou ao clicar em link
@@ -200,9 +212,14 @@ function formatCurrency(v) {
     const elMeta = document.getElementById("meta-total");
     const elVal = document.getElementById("valor-arrecadado");
     const bar = document.getElementById("progress");
-    elMeta && (elMeta.textContent = formatCurrency(meta));
-    elVal && (elVal.textContent = formatCurrency(val));
+    
+    // Calcula a porcentagem
     const pct = meta > 0 ? Math.min(100, (val / meta) * 100) : 0;
+
+    // Altera para exibir em porcentagem
+    elMeta && (elMeta.textContent = "100%"); // Meta total sempre 100%
+    elVal && (elVal.textContent = pct.toFixed(2) + "%"); // Valor arrecadado em porcentagem
+    
     bar && (bar.style.width = pct.toFixed(2) + "%");
 
     const chave = document.getElementById("pix-chave");
@@ -215,12 +232,15 @@ function formatCurrency(v) {
 
     const list = document.getElementById("doacao-links");
     (site.doacoes.links || []).forEach((l) => {
-      const li = el("li");
-      li.innerHTML = `<a href="${
-        l.url
-      }" class="inline-flex items-center gap-2 hover:underline"><i class="${
-        l.icon || "fas fa-link"
-      }"></i> ${l.nome}</a>`;
+      const li = el(
+        "li",
+        "",
+        `<a href="${
+          l.url
+        }" class="inline-flex items-center gap-2 hover:underline"><i class="${
+          l.icon || "fas fa-link"
+        }"></i> ${l.nome}</a>`
+      );
       list && list.appendChild(li);
     });
   }
@@ -250,9 +270,7 @@ function formatCurrency(v) {
           2
         )}%"></div>
       </div>
-      <p class="text-sm text-gray-600 mt-1">${formatCurrency(
-        m.atual || 0
-      )} de ${formatCurrency(m.total || 0)}</p>`;
+      <p class="text-sm text-gray-600 mt-1">${pct.toFixed(2)}% de 100%</p>`;
     metasGrid && metasGrid.appendChild(c);
   });
 

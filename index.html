@@ -29,7 +29,7 @@
 
       <!-- Mobile hamburger -->
       <button class="md:hidden text-gray-700" id="mobile-menu-button" aria-label="Abrir menu">
-        <i class="fas fa-bars text-2xl"></i>
+        <i id="mobile-menu-icon" class="fas fa-bars text-2xl"></i>
       </button>
     </div>
     <!-- Mobile Menu -->
@@ -78,7 +78,7 @@
     <div id="albums-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
   </div>
 
-  <!-- Modal do Álbum -->
+  <!-- Modal do Álbum (mantido aqui caso haja alguma outra lógica que o use, mas não é mais usado para a galeria principal) -->
   <div id="album-modal" class="hidden fixed inset-0 z-50">
     <div class="absolute inset-0 bg-black/80" data-close="modal"></div>
     <div class="relative max-w-6xl mx-auto my-8 bg-white rounded-lg shadow-lg overflow-hidden">

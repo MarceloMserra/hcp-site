@@ -1,17 +1,17 @@
 {
   "eventos": [
     {
-      "data": "2025-08-25",
+      "data": "24/08/2025",
       "tipo": "Ensaio",
       "titulo": "Ensaio Geral",
-      "local": "Igreja Batista do Planalto - Salão 2",
+      "local": "PIBS",
       "descricao": "Revisão do repertório 'Hinos Clássicos'."
     },
     {
-      "data": "2025-09-01",
+      "data": "13/09/2025",
       "tipo": "Apresentação",
-      "titulo": "Culto na Igreja Batista Central",
-      "local": "Goiânia - GO",
+      "titulo": "2º ENCONTRO de Coros",
+      "local": "Igreja Adventista na L 2 Sul",
       "descricao": "Ministração no culto da noite."
     }
   ]

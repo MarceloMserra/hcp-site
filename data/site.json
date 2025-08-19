@@ -22,15 +22,15 @@
   "lema": "Todo ser que respira, louve ao Senhor! Louvai ao Senhor!",
   "metas": [
     {
-      "titulo": "20% do ônibus",
-      "descricao": "Arrecadar 20%",
-      "atual": 45320,
-      "total": 200000
+      "titulo": "Ônibus",
+      "descricao": "Aquisição de um ônibus para transportar nossos coristas em todos os compromissos, levando e trazendo cada um com segurança, para que juntos possamos louvar ao Deus vivo!",
+      "atual": 20,
+      "total": 100
     }
   ],
   "doacoes": {
-    "meta_total": 200000,
-    "arrecadado": 45320,
+    "meta_total": 1000000,
+    "arrecadado": 80000,
     "pix": {
       "chave": "hcp.doacoes@email.com"
     }
