@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Álbum - HCP</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Nunito', sans-serif; }
+    h1, h2, h3, h4 { font-family: 'Cormorant Garamond', serif; }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-900">
+  <!-- Header (pode ser o mesmo do index.html ou simplificado) -->
+  <header class="sticky top-0 z-50 bg-white shadow-md">
+    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+      <a href="index.html" class="flex items-center" aria-label="Voltar para o início">
+        <img id="logo-img-album" src="" alt="Logo HCP" class="h-10 w-auto object-contain" />
+      </a>
+      <a href="index.html#galeria" class="text-gray-700 hover:text-blue-700 font-medium flex items-center gap-2">
+        <i class="fas fa-arrow-left"></i> Voltar para a Galeria
+      </a>
+    </div>
+  </header>
+
+  <main class="py-16">
+    <div class="container mx-auto px-4">
+      <h1 id="album-page-title" class="text-4xl font-bold text-center mb-4"></h1>
+      <p id="album-page-description" class="text-lg text-gray-600 text-center mb-8"></p>
+
+      <!-- Grade de fotos do álbum -->
+      <div id="album-content-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+        <!-- Fotos serão carregadas aqui via JavaScript -->
+      </div>
+    </div>
+  </main>
+
+  <!-- Lightbox para imagem única -->
+  <div id="lightbox" class="hidden fixed inset-0 z-[9999]">
+    <div class="absolute inset-0 bg-black/90 cursor-pointer" data-close="lightbox"></div>
+    <img id="lightbox-img"
+         class="absolute max-h-[90%] max-w-[90%] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded shadow-lg cursor-pointer"
+         src="" alt="" data-close="lightbox">
+  </div>
+
+  <!-- Footer (pode ser o mesmo do index.html ou simplificado) -->
+  <footer class="bg-blue-900 text-white py-10">
+    <div class="container mx-auto px-4 text-center">
+      <p id="footer-text-album"></p>
+    </div>
+  </footer>
+
+  <script>
+    // ===================== utilidades (repetido para album.html) =====================
+    async function getJSON(path) {
+      try { const r = await fetch(path, { cache: "no-store" }); if (!r.ok) throw 0; return await r.json(); }
+      catch { return null; }
+    }
+    function el(tag, cls, html) { const e = document.createElement(tag); if (cls) e.className = cls; if (html !== undefined) e.innerHTML = html; return e; }
+    
+    function isVideo(url) {
+        return (url || "").match(/youtube\.com|youtu\.be|vimeo\.com|\.mp4($|\?)/i);
+    }
+
+    // ===================== Lógica da página de álbum =====================
+    (async () => {
+      // Lê o ID do álbum do localStorage
+      const albumId = parseInt(localStorage.getItem('currentAlbumId')); 
+      localStorage.removeItem('currentAlbumId'); // Limpa o item após ler para evitar problemas em futuras navegações
+
+      console.log("Album ID from localStorage:", albumId); // DEBUG: Mostra o ID lido
+
+      // Corrigido para caminho absoluto
+      const galeria = await getJSON("/data/galeria.json") || {}; 
+      console.log("Galeria data loaded:", galeria); // DEBUG: Mostra os dados da galeria
+      
+      // Corrigido para caminho absoluto
+      const site = await getJSON("/data/site.json") || {}; 
+      const header = await getJSON("/data/header.json") || {}; 
+      const footer = await getJSON("/data/footer.json") || {}; 
+
+      // Configura a logo do header
+      const logoImgAlbum = document.getElementById("logo-img-album");
+      if (logoImgAlbum) logoImgAlbum.src = header.logo || '';
+
+      // Configura o texto do footer
+      const footerTextAlbum = document.getElementById("footer-text-album");
+      if (footerTextAlbum) footerTextAlbum.textContent = footer.texto || '';
+
+      // Mescla fotos_multi (upload múltiplo) em itens do álbum
+      const albuns = (galeria.albuns || []).map(a => {
+        const itens = Array.isArray(a.itens) ? [...a.itens] : [];
+        if (Array.isArray(a.fotos_multi) && a.fotos_multi.length) {
+          a.fotos_multi.forEach(src => itens.push({ tipo: "foto", src }));
+        }
+        return { ...a, itens };
+      });
+      console.log("Processed Albums:", albuns); // DEBUG: Mostra a lista de álbuns processada
+
+      const currentAlbum = albuns[albumId];
+      console.log("Current Album:", currentAlbum); // DEBUG: Mostra o álbum que está tentando carregar
+
+      if (currentAlbum && !isNaN(albumId)) { // Adicionado verificação para isNaN
+        document.getElementById("album-page-title").textContent = currentAlbum.titulo || "Álbum";
+        document.getElementById("album-page-description").textContent = currentAlbum.descricao || "";
+        
+        const albumContentGrid = document.getElementById("album-content-grid");
+        // Limpa qualquer conteúdo pré-existente antes de adicionar as novas fotos
+        albumContentGrid.innerHTML = ""; 
+        
+        (currentAlbum.itens || []).forEach(item => {
+          console.log("Processing item:", item); // DEBUG: Mostra cada item sendo processado
+          const wrap = el("div", "rounded overflow-hidden bg-gray-50 relative aspect-square group"); // Grid item wrapper
+          
+          if (item.tipo === "video" && isVideo(item.src)) {
+            let embed = "";
+            const url = item.src || "";
+            if (/youtube\.com|youtu\.be/.test(url)) {
+              const idMatch = url.match(/(?:v=|be\/)([A-Za-z0-9_-]{6,})/);
+              const vid = idMatch ? idMatch[1] : "";
+              embed = `<iframe class="absolute inset-0 w-full h-full" src="https://www.youtube.com/embed/${vid}" frameborder="0" allowfullscreen></iframe>`;
+            } else if (/vimeo\.com/.test(url)) {
+              const idMatch = url.match(/vimeo\.com\/(\d+)/);
+              const vid = idMatch ? idMatch[1] : "";
+              embed = `<iframe class="absolute inset-0 w-full h-full" src="https://player.vimeo.com/video/${vid}" frameborder="0" allowfullscreen></iframe>`;
+            } else if (/\.mp4($|\?)/i.test(url)) {
+              embed = `<video class="absolute inset-0 w-full h-full object-cover" controls src="${url}"></video>`;
+            }
+            wrap.innerHTML = embed;
+          } else {
+            // photo
+            const imgEl = el("img", "absolute inset-0 w-full h-full object-cover cursor-pointer");
+            imgEl.src = item.src || '';
+            imgEl.alt = item.alt || '';
+            imgEl.addEventListener("click", () => openLightbox(item.src));
+            wrap.appendChild(imgEl);
+          }
+          if (item.alt) {
+            const cap = el("div", "absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity", item.alt);
+            wrap.appendChild(cap);
+          }
+          albumContentGrid.appendChild(wrap);
+        });
+
+      } else {
+        document.getElementById("album-page-title").textContent = "Álbum não encontrado";
+        document.getElementById("album-page-description").textContent = "O álbum que você está procurando não existe.";
+      }
+
+      // ---- Lightbox functions for album.html ----
+      const lightboxModal = document.getElementById("lightbox");
+      const lightboxImg = document.getElementById("lightbox-img");
+
+      lightboxModal.addEventListener("click", (e) => {
+        if (e.target.dataset.close === "lightbox" || e.target === lightboxModal) closeLightbox();
+      });
+
+      function openLightbox(src) {
+        lightboxImg.src = src;
+        lightboxModal.classList.remove("hidden");
+        document.body.style.overflow = "hidden";
+      }
+
+      function closeLightbox() {
+        lightboxModal.classList.add("hidden");
+        document.body.style.overflow = "auto";
+        lightboxImg.src = "";
+      }
+    })();
+  </script>
+</body>
+</html>

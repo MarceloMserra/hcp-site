@@ -5,10 +5,19 @@
       "titulo": "PIBS",
       "descricao": "esse foi o dia de",
       "capa": "/img/uploads/captura-de-tela-2025-08-18-115819.png",
-      "itens": [],
+      "itens": [
+        {
+          "tipo": "video",
+          "src": "https://youtu.be/fMS31SBaozY",
+          "thumb": "/img/uploads/captura-de-tela-2025-08-18-115819.png"
+        }
+      ],
       "fotos_multi": [
-        "/img/uploads/marcelomdr_21.jpg",
-        "/img/uploads/marcelomdr_17.jpg"
+        "/img/uploads/1.jpg",
+        "/img/uploads/a1.png",
+        "/img/uploads/6.jpg",
+        "/img/uploads/4.jpg",
+        "/img/uploads/2.jpg"
       ]
     },
     {
@@ -24,6 +33,17 @@
       "capa": "/img/uploads/marcelomdr_21.jpg",
       "fotos_multi": [
         "/img/uploads/marcelomdr_17.jpg"
+      ]
+    },
+    {
+      "titulo": "teste4",
+      "descricao": "bora ver agora",
+      "capa": "/img/uploads/a1.png",
+      "fotos_multi": [
+        "/img/uploads/2.jpg",
+        "/img/uploads/1.jpg",
+        "/img/uploads/6.jpg",
+        "/img/uploads/4.jpg"
       ]
     }
   ],
