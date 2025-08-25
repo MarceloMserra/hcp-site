@@ -15,7 +15,6 @@
   <script>
     window.addEventListener('DOMContentLoaded', function() {
       // Inicializa o Decap CMS com o caminho explícito para o config.yml
-      // Isso deve ser feito antes de qualquer interação com o Identity Widget para garantir que o CMS esteja pronto
       CMS.init({
         config: {
           config_path: '/admin/config.yml'
@@ -24,14 +23,12 @@
 
       if (window.netlifyIdentity) {
         // Inicializa o widget do Netlify Identity.
-        // O widget se auto-detectará o invite_token na URL.
         netlifyIdentity.init();
 
         // Ouve o evento 'init' do Netlify Identity
         netlifyIdentity.on("init", user => {
           if (!user && window.location.hash.includes("invite_token")) {
             // Abre o widget no modo de convite se não houver usuário logado e houver um token de convite
-            // Esta chamada só deve ocorrer após o widget estar completamente inicializado
             netlifyIdentity.open({ page: "invite" });
           }
         });
