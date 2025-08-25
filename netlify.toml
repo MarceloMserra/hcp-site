@@ -1,7 +1,7 @@
 # Desativa o processamento de funções e ativos na pasta admin
 # Isso garante que a página do CMS não seja interferida por otimizações do Netlify
 [build]
-  publish = "build" # Se você tiver uma pasta de build, ajuste aqui. Caso contrário, pode ser "." ou "public"
+  publish = "." # A pasta de publicação é a raiz do projeto
 
 [[redirects]]
   from = "/admin/*"
