@@ -31,11 +31,11 @@
         publish_mode: "editorial_workflow",
         collections: [
           {
-            name: "site",
+            name: "site_config", // Nome da coleção alterado para ser único
             label: "Configurações do Site",
             files: [
               {
-                name: "dados",
+                name: "dados_gerais", // Nome do arquivo alterado para ser único
                 label: "Conteúdo Geral",
                 file: "data/site.json",
                 format: "json",
@@ -61,7 +61,7 @@
                   },
                   {
                     label: "Redes Sociais",
-                    name: "redes",
+                    name: "redes_sociais", // Nome alterado para ser único
                     widget: "list",
                     fields: [
                       { label: "Nome", name: "nome", widget: "string" },
@@ -71,7 +71,7 @@
                   },
                   {
                     label: "Linha do Tempo",
-                    name: "timeline",
+                    name: "linha_do_tempo", // Nome alterado para ser único
                     widget: "list",
                     fields: [
                       { label: "Título", name: "titulo", widget: "string" },
@@ -79,7 +79,7 @@
                       { label: "Texto", name: "texto", widget: "text" },
                       {
                         label: "Fotos",
-                        name: "fotos",
+                        name: "fotos_timeline", // Nome alterado para ser único
                         widget: "list",
                         required: false,
                         fields: [
@@ -91,14 +91,14 @@
                   },
                   {
                     label: "Doações",
-                    name: "doacoes",
+                    name: "config_doacoes", // Nome alterado para ser único
                     widget: "object",
                     fields: [
                       { label: "Meta Total (R$)", name: "meta_total", widget: "number" },
                       { label: "Arrecadado (R$)", name: "arrecadado", widget: "number" },
                       {
                         label: "PIX",
-                        name: "pix",
+                        name: "pix_config", // Nome alterado para ser único
                         widget: "object",
                         fields: [
                           { label: "Chave", name: "chave", widget: "string" },
@@ -107,7 +107,7 @@
                       },
                       {
                         label: "Links de Doação",
-                        name: "links",
+                        name: "links_doacao", // Nome alterado para ser único
                         widget: "list",
                         fields: [
                           { label: "Nome", name: "nome", widget: "string" },
@@ -117,7 +117,7 @@
                       },
                       {
                         label: "Relatórios (PDFs)",
-                        name: "relatorios",
+                        name: "relatorios_doacao", // Nome alterado para ser único
                         widget: "list",
                         fields: [
                           { label: "Nome", name: "nome", widget: "string" },
@@ -128,7 +128,7 @@
                   },
                   {
                     label: "Objetivos",
-                    name: "objetivos",
+                    name: "lista_objetivos", // Nome alterado para ser único
                     widget: "list",
                     fields: [
                       { label: "Título", name: "titulo", widget: "string" },
@@ -138,7 +138,7 @@
                   },
                   {
                     label: "Metas",
-                    name: "metas",
+                    name: "lista_metas", // Nome alterado para ser único
                     widget: "list",
                     fields: [
                       { label: "Título", name: "titulo", widget: "string" },
@@ -149,7 +149,7 @@
                   },
                   {
                     label: "Contato",
-                    name: "contato",
+                    name: "info_contato", // Nome alterado para ser único
                     widget: "object",
                     fields: [
                       { label: "E-mail", name: "email", widget: "string" },
@@ -162,18 +162,18 @@
             ]
           },
           {
-            name: "coordenacao",
+            name: "coordenacao_equipe", // Nome da coleção alterado para ser único
             label: "Coordenação",
             files: [
               {
-                name: "equipe",
+                name: "equipe_coordenacao", // Nome do arquivo alterado para ser único
                 label: "Equipe de Coordenação",
                 file: "data/coordenacao.json",
                 format: "json",
                 fields: [
                   {
                     label: "Equipe",
-                    name: "equipe",
+                    name: "equipe_lista", // Nome alterado para ser único
                     widget: "list",
                     fields: [
                       { label: "Nome", name: "nome", widget: "string" },
@@ -192,18 +192,18 @@
             ]
           },
           {
-            name: "membros",
+            name: "membros_coral", // Nome da coleção alterado para ser único
             label: "Membros",
             files: [
               {
-                name: "lista",
+                name: "lista_integrantes", // Nome do arquivo alterado para ser único
                 label: "Integrantes",
                 file: "data/membros.json",
                 format: "json",
                 fields: [
                   {
                     label: "Membros",
-                    name: "membros",
+                    name: "membros_lista", // Nome alterado para ser único
                     widget: "list",
                     fields: [
                       { label: "Nome", name: "nome", widget: "string" },
@@ -218,18 +218,18 @@
             ]
           },
           {
-            name: "galeria",
+            name: "galeria_albuns", // Nome da coleção alterado para ser único
             label: "Galeria",
             files: [
               {
-                name: "albuns",
+                name: "albuns_fotos_videos", // Nome do arquivo alterado para ser único
                 label: "Álbuns",
                 file: "data/galeria.json",
                 format: "json",
                 fields: [
                   {
                     label: "Álbuns",
-                    name: "albuns",
+                    name: "albuns_lista", // Nome alterado para ser único
                     widget: "list",
                     summary: "{{fields.titulo}}",
                     fields: [
@@ -238,13 +238,13 @@
                       { label: "Capa do Álbum", name: "capa", widget: "image" },
                       {
                         label: "Fotos (seleção múltipla)",
-                        name: "fotos_multi",
+                        name: "fotos_multi_album", // Nome alterado para ser único
                         widget: "list",
                         field: { label: "Arquivo", name: "src", widget: "image" }
                       },
                       {
                         label: "Itens (fotos e vídeos)",
-                        name: "itens",
+                        name: "itens_album", // Nome alterado para ser único
                         widget: "list",
                         fields: [
                           { label: "Tipo", name: "tipo", widget: "select", options: ["foto", "video"], default: "foto" },
@@ -260,18 +260,18 @@
             ]
           },
           {
-            name: "agenda",
+            name: "agenda_eventos", // Nome da coleção alterado para ser único
             label: "Agenda",
             files: [
               {
-                name: "eventos",
+                name: "proximos_eventos", // Nome do arquivo alterado para ser único
                 label: "Próximos Eventos",
                 file: "data/agenda.json",
                 format: "json",
                 fields: [
                   {
                     label: "Eventos",
-                    name: "eventos",
+                    name: "eventos_lista", // Nome alterado para ser único
                     widget: "list",
                     fields: [
                       { label: "Data", name: "data", widget: "string" },
@@ -284,11 +284,11 @@
             ]
           },
           {
-            name: "layout",
+            name: "layout_config", // Nome da coleção alterado para ser único
             label: "Cabeçalho e Rodapé",
             files: [
               {
-                name: "header",
+                name: "config_header", // Nome do arquivo alterado para ser único
                 label: "Cabeçalho",
                 file: "data/header.json",
                 format: "json",
@@ -296,7 +296,7 @@
                   { label: "Logo (header)", name: "logo", widget: "image", required: false },
                   {
                     label: "Itens do Menu",
-                    name: "menu",
+                    name: "menu_itens", // Nome alterado para ser único
                     widget: "list",
                     fields: [
                       { label: "Texto", name: "text", widget: "string" },
@@ -306,7 +306,7 @@
                 ]
               },
               {
-                name: "footer",
+                name: "config_footer", // Nome do arquivo alterado para ser único
                 label: "Rodapé",
                 file: "data/footer.json",
                 format: "json",
@@ -315,7 +315,7 @@
                   { label: "Texto do Rodapé", name: "texto", widget: "text" },
                   {
                     label: "Links do Rodapé",
-                    name: "links",
+                    name: "footer_links", // Nome alterado para ser único
                     widget: "list",
                     fields: [
                       { label: "Nome", name: "nome", widget: "string" },
