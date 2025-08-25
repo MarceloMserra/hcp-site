@@ -1,13 +1,51 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex" />
-  <title>Admin - HCP</title>
+  <title>CMS - HCP</title>
+  <!-- Link para o script do Netlify Identity Widget -->
   <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 </head>
 <body>
-  <script src="https://unpkg.com/decap-cms@^3.1.10/dist/decap-cms.js"></script>
+  <!-- Ponto de montagem explícito para o Decap CMS (pode ajudar, mas o script de inicialização é o principal) -->
+  <div id="netlify-cms-root"></div>
+
+  <!-- O script da biblioteca do Decap CMS é carregado aqui -->
+  <script src="https://unpkg.com/decap-cms@^3.3.1/dist/decap-cms.js"></script>
+
+  <!-- Script para inicializar o Netlify Identity Widget e o Decap CMS -->
+  <script>
+    window.addEventListener('DOMContentLoaded', function() {
+      // Pequeno atraso para garantir que todos os scripts externos estejam carregados
+      // Isso é uma medida defensiva contra erros de tempo de execução
+      setTimeout(function() {
+        // Inicializa o Decap CMS com o caminho explícito para o config.yml
+        CMS.init({
+          config: {
+            config_path: '/admin/config.yml'
+          }
+        });
+
+        if (window.netlifyIdentity) {
+          // Inicializa o widget do Netlify Identity.
+          // O widget se auto-detectará o invite_token na URL.
+          netlifyIdentity.init();
+
+          // Ouve o evento 'init' do Netlify Identity
+          netlifyIdentity.on("init", user => {
+            if (!user && window.location.hash.includes("invite_token")) {
+              // Abre o widget no modo de convite se não houver usuário logado e houver um token de convite
+              netlifyIdentity.open({ page: "invite" });
+            }
+          });
+
+          // Ouve o evento 'error' do Netlify Identity para depuração
+          netlifyIdentity.on("error", err => console.error("Netlify Identity Error:", err));
+        }
+      }, 100); // Atraso de 100ms
+    });
+  </script>
 </body>
 </html>
