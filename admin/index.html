@@ -9,7 +9,7 @@
   <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 </head>
 <body>
-  <!-- Ponto de montagem explícito para o Decap CMS (pode ajudar, mas o script de inicialização é o principal) -->
+  <!-- Ponto de montagem explícito para o Decap CMS (não é estritamente necessário, mas pode ajudar em certos casos) -->
   <div id="netlify-cms-root"></div>
 
   <!-- O script da biblioteca do Decap CMS é carregado aqui -->
@@ -18,33 +18,36 @@
   <!-- Script para inicializar o Netlify Identity Widget e o Decap CMS -->
   <script>
     window.addEventListener('DOMContentLoaded', function() {
-      // Pequeno atraso para garantir que todos os scripts externos estejam carregados
-      // Isso é uma medida defensiva contra erros de tempo de execução
-      setTimeout(function() {
-        // Inicializa o Decap CMS com o caminho explícito para o config.yml
-        CMS.init({
-          config: {
-            config_path: '/admin/config.yml'
+      // Inicializa o Decap CMS com o caminho explícito para o config.yml
+      // e inclui uma configuração mínima do backend para evitar erros de "required property"
+      CMS.init({
+        config: {
+          backend: {
+            name: 'git-gateway',
+            branch: 'main',
+          },
+          media_folder: 'img/uploads',
+          public_folder: '/img/uploads',
+          collections: [], // Uma coleção vazia é suficiente para satisfazer a validação inicial
+          config_path: '/admin/config.yml' // Caminho do config.yml principal
+        }
+      });
+
+      if (window.netlifyIdentity) {
+        // Inicializa o widget do Netlify Identity.
+        netlifyIdentity.init();
+
+        // Ouve o evento 'init' do Netlify Identity
+        netlifyIdentity.on("init", user => {
+          if (!user && window.location.hash.includes("invite_token")) {
+            // Abre o widget no modo de convite se não houver usuário logado e houver um token de convite
+            netlifyIdentity.open({ page: "invite" });
           }
         });
 
-        if (window.netlifyIdentity) {
-          // Inicializa o widget do Netlify Identity.
-          // O widget se auto-detectará o invite_token na URL.
-          netlifyIdentity.init();
-
-          // Ouve o evento 'init' do Netlify Identity
-          netlifyIdentity.on("init", user => {
-            if (!user && window.location.hash.includes("invite_token")) {
-              // Abre o widget no modo de convite se não houver usuário logado e houver um token de convite
-              netlifyIdentity.open({ page: "invite" });
-            }
-          });
-
-          // Ouve o evento 'error' do Netlify Identity para depuração
-          netlifyIdentity.on("error", err => console.error("Netlify Identity Error:", err));
-        }
-      }, 100); // Atraso de 100ms
+        // Ouve o evento 'error' do Netlify Identity para depuração
+        netlifyIdentity.on("error", err => console.error("Netlify Identity Error:", err));
+      }
     });
   </script>
 </body>
