@@ -8,11 +8,16 @@
   <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 </head>
 <body>
+  <!-- Ponto de montagem explícito para o Decap CMS -->
+  <div id="netlify-cms-root"></div>
+
+  <!-- O script do Decap CMS é carregado primeiro -->
+  <script src="https://unpkg.com/decap-cms@^3.3.1/dist/decap-cms.js"></script>
+
   <!-- Script para inicializar o Netlify Identity Widget e o Decap CMS -->
   <script>
     window.addEventListener('DOMContentLoaded', function() {
       // Pequeno atraso para garantir que todos os scripts externos estejam carregados
-      // Isso é uma medida defensiva contra erros de tempo de execução
       setTimeout(function() {
         // Inicializa o Decap CMS com o caminho explícito para o config.yml
         CMS.init({
@@ -40,8 +45,5 @@
       }, 100); // Atraso de 100ms
     });
   </script>
-
-  <!-- O script do Decap CMS é carregado aqui (movido para depois do script de inicialização) -->
-  <script src="https://unpkg.com/decap-cms@^3.3.1/dist/decap-cms.js"></script>
 </body>
 </html>
