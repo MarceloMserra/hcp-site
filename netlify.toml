@@ -8,8 +8,9 @@
   to = "/admin/index.html"
   status = 200
 
-# Se você já tem um _redirects, mova a regra identity para cá
+# Redirecionamento para o convite do Netlify Identity
 [[redirects]]
   from = "/.netlify/identity/invite"
   to = "/admin/"
-  status = 302!
+  status = 302
+  force = true # Usa 'force = true' no netlify.toml em vez de '!'
