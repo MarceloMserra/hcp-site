@@ -28,7 +28,8 @@
           },
           media_folder: 'img/uploads',
           public_folder: '/img/uploads',
-          collections: [], // Uma coleção vazia é suficiente para satisfazer a validação inicial
+          // A linha collections: [] foi removida, pois o erro indica que deve haver pelo menos 1 item.
+          // O CMS agora dependerá do admin/config.yml para as coleções.
           config_path: '/admin/config.yml' // Caminho do config.yml principal
         }
       });
