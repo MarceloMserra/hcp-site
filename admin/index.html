@@ -5,38 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex" />
   <title>CMS - HCP</title>
-  <!-- Link para o script do Netlify Identity Widget -->
   <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 </head>
 <body>
-  <!-- Ponto de montagem explícito para o Decap CMS -->
   <div id="netlify-cms-root"></div>
 
-  <!-- O script da biblioteca do Decap CMS é carregado aqui -->
-  <script src="https://unpkg.com/decap-cms@^3.3.1/dist/decap-cms.js"></script>
+  <!-- PINE a versão exata; sem ^ -->
+  <script src="https://cdn.jsdelivr.net/npm/decap-cms@3.3.1/dist/decap-cms.js"></script>
 
-  <!-- Script para inicializar o Netlify Identity Widget e o Decap CMS -->
   <script>
-    window.addEventListener('DOMContentLoaded', function() {
-      // Inicializa o Decap CMS, ele buscará o config.yml automaticamente no mesmo diretório
-      CMS.init();
-
-      if (window.netlifyIdentity) {
-        // Inicializa o widget do Netlify Identity.
-        netlifyIdentity.init();
-
-        // Ouve o evento 'init' do Netlify Identity
-        netlifyIdentity.on("init", user => {
-          if (!user && window.location.hash.includes("invite_token")) {
-            // Abre o widget no modo de convite se não houver usuário logado e houver um token de convite
-            netlifyIdentity.open({ page: "invite" });
-          }
-        });
-
-        // Ouve o evento 'error' do Netlify Identity para depuração
-        netlifyIdentity.on("error", err => console.error("Netlify Identity Error:", err));
-      }
-    });
+    // NÃO chame CMS.init() manualmente aqui.
+    if (window.netlifyIdentity) {
+      netlifyIdentity.init();
+      netlifyIdentity.on("init", (user) => {
+        if (!user && window.location.hash.includes("invite_token")) {
+          netlifyIdentity.open({ page: "invite" });
+        }
+      });
+    }
   </script>
 </body>
 </html>
