@@ -1,4 +1,37 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CMS - HCP</title></head>
-<body><script src="https://unpkg.com/decap-cms@^3.3.1/dist/decap-cms.js"></script></body></html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CMS - HCP</title>
+  <!-- Link para o script do Netlify Identity Widget -->
+  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+  <!-- Define o base URL para garantir que os caminhos relativos funcionem corretamente -->
+  <base href="/admin/"> 
+</head>
+<body>
+  <!-- Configuração explícita para o caminho do config.yml -->
+  <script>
+    window.CMS_CONFIG = {
+      config_path: '/admin/config.yml'
+    };
+  </script>
+  <!-- O script do Decap CMS é carregado aqui -->
+  <script src="https://unpkg.com/decap-cms@^3.3.1/dist/decap-cms.js"></script>
+
+  <!-- Script para inicializar o Netlify Identity Widget e tratar o token de convite -->
+  <script>
+    if (window.netlifyIdentity) {
+      window.netlifyIdentity.on("init", user => {
+        if (!user) {
+          // Se não há usuário logado, verifica se há um token de convite na URL
+          if (window.location.hash.includes("invite_token")) {
+            // Isso força o widget a processar o token e mostrar a tela de criação de senha
+            window.netlifyIdentity.open({ page: "invite" });
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>
