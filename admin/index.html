@@ -1,49 +1,13 @@
-<!doctype html>
-<html lang="pt-BR">
+<!DOCTYPE html>
+<html>
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>CMS - HCP</title>
-  <!-- Link para o script do Netlify Identity Widget -->
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>Admin - HCP</title>
   <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 </head>
 <body>
-  <!-- Ponto de montagem explícito para o Decap CMS -->
-  <div id="netlify-cms-root"></div>
-
-  <!-- O script do Decap CMS é carregado primeiro -->
-  <script src="https://unpkg.com/decap-cms@^3.3.1/dist/decap-cms.js"></script>
-
-  <!-- Script para inicializar o Netlify Identity Widget e o Decap CMS -->
-  <script>
-    window.addEventListener('DOMContentLoaded', function() {
-      // Pequeno atraso para garantir que todos os scripts externos estejam carregados
-      setTimeout(function() {
-        // Inicializa o Decap CMS com o caminho explícito para o config.yml
-        CMS.init({
-          config: {
-            config_path: '/admin/config.yml'
-          }
-        });
-
-        if (window.netlifyIdentity) {
-          // Inicializa o widget do Netlify Identity.
-          // O widget se auto-detectará o invite_token na URL.
-          netlifyIdentity.init();
-
-          // Ouve o evento 'init' do Netlify Identity
-          netlifyIdentity.on("init", user => {
-            if (!user && window.location.hash.includes("invite_token")) {
-              // Abre o widget no modo de convite se não houver usuário logado e houver um token de convite
-              netlifyIdentity.open({ page: "invite" });
-            }
-          });
-
-          // Ouve o evento 'error' do Netlify Identity para depuração
-          netlifyIdentity.on("error", err => console.error("Netlify Identity Error:", err));
-        }
-      }, 100); // Atraso de 100ms
-    });
-  </script>
+  <script src="https://unpkg.com/decap-cms@^3.1.10/dist/decap-cms.js"></script>
 </body>
 </html>
