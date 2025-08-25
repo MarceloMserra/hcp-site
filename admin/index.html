@@ -9,7 +9,7 @@
   <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 </head>
 <body>
-  <!-- Ponto de montagem explícito para o Decap CMS (não é estritamente necessário, mas pode ajudar em certos casos) -->
+  <!-- Ponto de montagem explícito para o Decap CMS -->
   <div id="netlify-cms-root"></div>
 
   <!-- O script da biblioteca do Decap CMS é carregado aqui -->
@@ -18,21 +18,319 @@
   <!-- Script para inicializar o Netlify Identity Widget e o Decap CMS -->
   <script>
     window.addEventListener('DOMContentLoaded', function() {
-      // Inicializa o Decap CMS com o caminho explícito para o config.yml
-      // e inclui uma configuração mínima do backend para evitar erros de "required property"
-      CMS.init({
-        config: {
-          backend: {
-            name: 'git-gateway',
-            branch: 'main',
+      // Conteúdo do seu admin/config.yml embutido diretamente aqui
+      const cmsConfig = {
+        local_backend: true,
+        backend: {
+          name: 'git-gateway',
+          branch: 'main'
+        },
+        media_folder: "img/uploads",
+        public_folder: "/img/uploads",
+        locale: "pt_BR",
+        publish_mode: "editorial_workflow",
+        collections: [
+          {
+            name: "site",
+            label: "Configurações do Site",
+            files: [
+              {
+                name: "dados",
+                label: "Conteúdo Geral",
+                file: "data/site.json",
+                format: "json",
+                fields: [
+                  { label: "Slogan", name: "slogan", widget: "string" },
+                  { label: "Lema", name: "lema", widget: "string" },
+                  { label: "Imagem do Herói (capa)", name: "hero", widget: "image" },
+                  {
+                    label: "Tema (cores e opções)",
+                    name: "tema",
+                    widget: "object",
+                    collapsed: true,
+                    fields: [
+                      { label: "Cor Primária", name: "primaria", widget: "string", default: "#1F497D" },
+                      { label: "Cor CTA", name: "cta", widget: "string", default: "#0EA5E9" },
+                      { label: "Overlay do herói (0–0.7)", name: "hero_overlay", widget: "number", value_type: "float", min: 0, max: 0.7, default: 0.45 },
+                      { label: "Mostrar Coordenação", name: "show_coordenacao", widget: "boolean", default: true },
+                      { label: "Mostrar Membros", name: "show_membros", widget: "boolean", default: true },
+                      { label: "Mostrar Galeria", name: "show_galeria", widget: "boolean", default: true },
+                      { label: "Mostrar Doações", name: "show_doacoes", widget: "boolean", default: true },
+                      { label: "Mostrar Objetivos", name: "show_objetivos", widget: "boolean", default: true }
+                    ]
+                  },
+                  {
+                    label: "Redes Sociais",
+                    name: "redes",
+                    widget: "list",
+                    fields: [
+                      { label: "Nome", name: "nome", widget: "string" },
+                      { label: "URL", name: "url", widget: "string" },
+                      { label: "Ícone (Font Awesome)", name: "icon", widget: "string" }
+                    ]
+                  },
+                  {
+                    label: "Linha do Tempo",
+                    name: "timeline",
+                    widget: "list",
+                    fields: [
+                      { label: "Título", name: "titulo", widget: "string" },
+                      { label: "Ano", name: "ano", widget: "string" },
+                      { label: "Texto", name: "texto", widget: "text" },
+                      {
+                        label: "Fotos",
+                        name: "fotos",
+                        widget: "list",
+                        required: false,
+                        fields: [
+                          { label: "Arquivo", name: "src", widget: "image" },
+                          { label: "Alt", name: "alt", widget: "string", required: false }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    label: "Doações",
+                    name: "doacoes",
+                    widget: "object",
+                    fields: [
+                      { label: "Meta Total (R$)", name: "meta_total", widget: "number" },
+                      { label: "Arrecadado (R$)", name: "arrecadado", widget: "number" },
+                      {
+                        label: "PIX",
+                        name: "pix",
+                        widget: "object",
+                        fields: [
+                          { label: "Chave", name: "chave", widget: "string" },
+                          { label: "QR Code (imagem)", name: "qr", widget: "image", required: false }
+                        ]
+                      },
+                      {
+                        label: "Links de Doação",
+                        name: "links",
+                        widget: "list",
+                        fields: [
+                          { label: "Nome", name: "nome", widget: "string" },
+                          { label: "URL", name: "url", widget: "string" },
+                          { label: "Ícone", name: "icon", widget: "string", required: false }
+                        ]
+                      },
+                      {
+                        label: "Relatórios (PDFs)",
+                        name: "relatorios",
+                        widget: "list",
+                        fields: [
+                          { label: "Nome", name: "nome", widget: "string" },
+                          { label: "URL", name: "url", widget: "string" }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    label: "Objetivos",
+                    name: "objetivos",
+                    widget: "list",
+                    fields: [
+                      { label: "Título", name: "titulo", widget: "string" },
+                      { label: "Descrição", name: "descricao", widget: "text" },
+                      { label: "Ícone (Font Awesome)", name: "icon", widget: "string", required: false }
+                    ]
+                  },
+                  {
+                    label: "Metas",
+                    name: "metas",
+                    widget: "list",
+                    fields: [
+                      { label: "Título", name: "titulo", widget: "string" },
+                      { label: "Descrição", name: "descricao", widget: "text" },
+                      { label: "Atual (número)", name: "atual", widget: "number" },
+                      { label: "Total (número)", name: "total", widget: "number" }
+                    ]
+                  },
+                  {
+                    label: "Contato",
+                    name: "contato",
+                    widget: "object",
+                    fields: [
+                      { label: "E-mail", name: "email", widget: "string" },
+                      { label: "Telefone", name: "telefone", widget: "string", required: false },
+                      { label: "Endereço", name: "endereco", widget: "text", required: false }
+                    ]
+                  }
+                ]
+              }
+            ]
           },
-          media_folder: 'img/uploads',
-          public_folder: '/img/uploads',
-          // A linha collections: [] foi removida, pois o erro indica que deve haver pelo menos 1 item.
-          // O CMS agora dependerá do admin/config.yml para as coleções.
-          config_path: '/admin/config.yml' // Caminho do config.yml principal
-        }
-      });
+          {
+            name: "coordenacao",
+            label: "Coordenação",
+            files: [
+              {
+                name: "equipe",
+                label: "Equipe de Coordenação",
+                file: "data/coordenacao.json",
+                format: "json",
+                fields: [
+                  {
+                    label: "Equipe",
+                    name: "equipe",
+                    widget: "list",
+                    fields: [
+                      { label: "Nome", name: "nome", widget: "string" },
+                      {
+                        label: "Cargo",
+                        name: "cargo",
+                        widget: "select",
+                        options: ["Presidente","Vice-Presidente","Regente","Pianista","Secretário","Tesoureiro","Comunicação","Apoio Pastoral","Coordenação de Viagens","Logística"]
+                      },
+                      { label: "Foto", name: "foto", widget: "image" },
+                      { label: "Descrição", name: "descricao", widget: "text", required: false }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            name: "membros",
+            label: "Membros",
+            files: [
+              {
+                name: "lista",
+                label: "Integrantes",
+                file: "data/membros.json",
+                format: "json",
+                fields: [
+                  {
+                    label: "Membros",
+                    name: "membros",
+                    widget: "list",
+                    fields: [
+                      { label: "Nome", name: "nome", widget: "string" },
+                      { label: "Foto", name: "foto", widget: "image" },
+                      { label: "Naipes", name: "naipes", widget: "list" },
+                      { label: "Bio Curta", name: "bio", widget: "text", required: false },
+                      { label: "Desde (ano)", name: "desde", widget: "number", required: false }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            name: "galeria",
+            label: "Galeria",
+            files: [
+              {
+                name: "albuns",
+                label: "Álbuns",
+                file: "data/galeria.json",
+                format: "json",
+                fields: [
+                  {
+                    label: "Álbuns",
+                    name: "albuns",
+                    widget: "list",
+                    summary: "{{fields.titulo}}",
+                    fields: [
+                      { label: "Título do Álbum", name: "titulo", widget: "string" },
+                      { label: "Descrição (opcional)", name: "descricao", widget: "text", required: false },
+                      { label: "Capa do Álbum", name: "capa", widget: "image" },
+                      {
+                        label: "Fotos (seleção múltipla)",
+                        name: "fotos_multi",
+                        widget: "list",
+                        field: { label: "Arquivo", name: "src", widget: "image" }
+                      },
+                      {
+                        label: "Itens (fotos e vídeos)",
+                        name: "itens",
+                        widget: "list",
+                        fields: [
+                          { label: "Tipo", name: "tipo", widget: "select", options: ["foto", "video"], default: "foto" },
+                          { label: "Arquivo/URL", name: "src", widget: "string", hint: "Imagem (JPG/PNG/WebP) ou link de vídeo (MP4, YouTube, Vimeo)" },
+                          { label: "Thumb (opcional p/ vídeo)", name: "thumb", widget: "image", required: false },
+                          { label: "Alt (texto alternativo)", name: "alt", widget: "string", required: false }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            name: "agenda",
+            label: "Agenda",
+            files: [
+              {
+                name: "eventos",
+                label: "Próximos Eventos",
+                file: "data/agenda.json",
+                format: "json",
+                fields: [
+                  {
+                    label: "Eventos",
+                    name: "eventos",
+                    widget: "list",
+                    fields: [
+                      { label: "Data", name: "data", widget: "string" },
+                      { label: "Título", name: "titulo", widget: "string" },
+                      { label: "Local", name: "local", widget: "string" }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            name: "layout",
+            label: "Cabeçalho e Rodapé",
+            files: [
+              {
+                name: "header",
+                label: "Cabeçalho",
+                file: "data/header.json",
+                format: "json",
+                fields: [
+                  { label: "Logo (header)", name: "logo", widget: "image", required: false },
+                  {
+                    label: "Itens do Menu",
+                    name: "menu",
+                    widget: "list",
+                    fields: [
+                      { label: "Texto", name: "text", widget: "string" },
+                      { label: "Link", name: "url", widget: "string" }
+                    ]
+                  }
+                ]
+              },
+              {
+                name: "footer",
+                label: "Rodapé",
+                file: "data/footer.json",
+                format: "json",
+                fields: [
+                  { label: "Logo (rodapé, branco)", name: "logo", widget: "image", required: false },
+                  { label: "Texto do Rodapé", name: "texto", widget: "text" },
+                  {
+                    label: "Links do Rodapé",
+                    name: "links",
+                    widget: "list",
+                    fields: [
+                      { label: "Nome", name: "nome", widget: "string" },
+                      { label: "URL", name: "url", widget: "string" }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      };
+
+      // Inicializa o Decap CMS com a configuração embutida
+      CMS.init({ config: cmsConfig });
 
       if (window.netlifyIdentity) {
         // Inicializa o widget do Netlify Identity.
