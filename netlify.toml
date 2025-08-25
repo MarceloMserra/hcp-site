@@ -1,0 +1,15 @@
+# Desativa o processamento de funções e ativos na pasta admin
+# Isso garante que a página do CMS não seja interferida por otimizações do Netlify
+[build]
+  publish = "build" # Se você tiver uma pasta de build, ajuste aqui. Caso contrário, pode ser "." ou "public"
+
+[[redirects]]
+  from = "/admin/*"
+  to = "/admin/index.html"
+  status = 200
+
+# Se você já tem um _redirects, mova a regra identity para cá
+[[redirects]]
+  from = "/.netlify/identity/invite"
+  to = "/admin/"
+  status = 302!
