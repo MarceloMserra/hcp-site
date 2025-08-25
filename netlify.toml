@@ -3,6 +3,25 @@
 [build]
   publish = "." # A pasta de publicação é a raiz do projeto
 
+[build.processing]
+  skip_processing = true # Desativa todo o processamento para este site (pode ser demais)
+
+[build.processing.html]
+  pretty_urls = false
+  minify = false
+
+[build.processing.css]
+  bundle = false
+  minify = false
+
+[build.processing.js]
+  bundle = false
+  minify = false
+
+[build.processing.images]
+  compress = false
+  strip_metadata = false
+
 [[redirects]]
   from = "/admin/*"
   to = "/admin/index.html"
