@@ -64,12 +64,12 @@ function formatCurrency(v) {
 
   const btn = document.getElementById("mobile-menu-button");
   const menu = document.getElementById("mobile-menu");
-  const mobileMenuIcon = document.getElementById("mobile-menu-icon"); // Referência ao ícone do menu
+  const mobileMenuIcon = document.getElementById("mobile-menu-icon");
 
   const closeMenu = () => {
     if (menu) {
       menu.classList.add("hidden");
-      if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-bars text-2xl"; // Ícone de hambúrguer
+      if (mobileMenuIcon) mobileMenuIcon.className = "fas fa-bars text-2xl";
     }
   };
 
@@ -78,13 +78,12 @@ function formatCurrency(v) {
       e.stopPropagation();
       menu.classList.toggle("hidden");
       if (menu.classList.contains("hidden")) {
-        mobileMenuIcon.className = "fas fa-bars text-2xl"; // Ícone de hambúrguer
+        mobileMenuIcon.className = "fas fa-bars text-2xl";
       } else {
-        mobileMenuIcon.className = "fas fa-times text-2xl"; // Ícone de X
+        mobileMenuIcon.className = "fas fa-times text-2xl";
       }
     });
 
-    // fecha ao rolar, ao clicar fora, ou ao clicar em link
     window.addEventListener("scroll", closeMenu, { passive: true });
     document.addEventListener("click", (e) => {
       if (!menu.classList.contains("hidden")) {
@@ -98,7 +97,6 @@ function formatCurrency(v) {
       });
   }
 
-  // Scroll suave em âncoras internas
   document.querySelectorAll('a[href^="#"]').forEach((a) => {
     a.addEventListener("click", (e) => {
       const id = a.getAttribute("href");
@@ -142,7 +140,7 @@ function formatCurrency(v) {
   if (coordGrid && equipe.length === 0)
     document.getElementById("coordenacao").classList.add("hidden");
 
-  // ---------- MEMBROS + FILTROS ----------
+  // ---------- MEMBROS + FILTROS (AJUSTADO AQUI) ----------
   const filters = ["Todos", "1º Tenor", "2º Tenor", "Barítono", "Baixo"];
   const naipeFilters = document.getElementById("naipe-filters");
   let filtroAtual = "Todos";
@@ -152,7 +150,9 @@ function formatCurrency(v) {
     b.addEventListener("click", () => {
       filtroAtual = f;
       [...naipeFilters.children].forEach(
-        (x) => (x.className = "px-4 py-2 rounded border")
+        (x) =>
+          (x.className =
+            "px-4 py-2 rounded border bg-white text-gray-700 hover:bg-gray-50")
       );
       b.className = "px-4 py-2 rounded border bg-blue-900 text-white";
       renderMembros();
@@ -169,10 +169,15 @@ function formatCurrency(v) {
         filtroAtual === "Todos" || (m.naipes || [m.naipe]).includes(filtroAtual);
       if (!match) return;
       const card = el("div", "bg-white rounded-lg shadow overflow-hidden");
+      
+      // >>> AQUI ESTÁ A MUDANÇA <<<
+      // Adicionamos a classe object-top para focar no topo da imagem e ajustamos a altura do container da imagem.
       card.innerHTML = `
-        <img src="${m.foto || ""}" class="w-full h-64 object-cover" alt="${
+        <div class="h-72 overflow-hidden">
+          <img src="${m.foto || ""}" class="w-full h-full object-cover object-top" alt="${
         m.nome || ""
       }">
+        </div>
         <div class="p-4">
           <h3 class="text-lg font-bold">${m.nome || ""}</h3>
           <div class="flex flex-wrap gap-1 mb-2">
@@ -191,209 +196,9 @@ function formatCurrency(v) {
   }
   renderMembros();
 
-  // ---------- GALERIA (fallback simples por fotos soltas) ----------
-  const ggrid = document.getElementById("gallery-grid");
-  if (ggrid && Array.isArray(galeria.fotos)) {
-    (galeria.fotos || []).forEach((f) => {
-      const holder = el("div", "relative group");
-      holder.innerHTML = `
-        <img src="${f.src}" alt="${f.alt || ""}" class="w-full h-48 object-cover rounded">
-        <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-          <p class="text-white font-medium">${f.titulo || ""}</p>
-        </div>`;
-      ggrid.appendChild(holder);
-    });
-  }
-
-  // ---------- DOAÇÕES ----------
-  if (site.doacoes) {
-    const meta = site.doacoes.meta_total || 0;
-    const val = site.doacoes.arrecadado || 0;
-    const elMeta = document.getElementById("meta-total");
-    const elVal = document.getElementById("valor-arrecadado");
-    const bar = document.getElementById("progress");
-    
-    // Calcula a porcentagem
-    const pct = meta > 0 ? Math.min(100, (val / meta) * 100) : 0;
-
-    // Altera para exibir em porcentagem
-    elMeta && (elMeta.textContent = "100%"); // Meta total sempre 100%
-    elVal && (elVal.textContent = pct.toFixed(2) + "%"); // Valor arrecadado em porcentagem
-    
-    bar && (bar.style.width = pct.toFixed(2) + "%");
-
-    const chave = document.getElementById("pix-chave");
-    chave && (chave.textContent = site.doacoes.pix?.chave || "");
-    const qr = document.getElementById("pix-qr");
-    if (qr) {
-      if (site.doacoes.pix?.qr) qr.src = site.doacoes.pix.qr;
-      else qr.classList.add("hidden");
-    }
-
-    const list = document.getElementById("doacao-links");
-    (site.doacoes.links || []).forEach((l) => {
-      const li = el(
-        "li",
-        "",
-        `<a href="${
-          l.url
-        }" class="inline-flex items-center gap-2 hover:underline"><i class="${
-          l.icon || "fas fa-link"
-        }"></i> ${l.nome}</a>`
-      );
-      list && list.appendChild(li);
-    });
-  }
-
-  // ---------- OBJETIVOS + METAS ----------
-  const objGrid = document.getElementById("objetivos-grid");
-  (site.objetivos || []).forEach((o) => {
-    const c = el("div", "bg-white p-6 rounded-lg shadow");
-    c.innerHTML = `
-      <div class="text-blue-900 text-3xl mb-3"><i class="${
-        o.icon || "fas fa-check-circle"
-      }"></i></div>
-      <h3 class="text-xl font-bold mb-2">${o.titulo || ""}</h3>
-      <p class="text-gray-700">${o.descricao || ""}</p>`;
-    objGrid && objGrid.appendChild(c);
-  });
-
-  const metasGrid = document.getElementById("metas-grid");
-  (site.metas || []).forEach((m) => {
-    const pct = m.total > 0 ? Math.min(100, (m.atual / m.total) * 100) : 0;
-    const c = el("div", "bg-white p-6 rounded-lg shadow border-l-4 border-blue-900");
-    c.innerHTML = `
-      <h4 class="text-lg font-bold mb-2">${m.titulo || ""}</h4>
-      <p class="text-gray-700 mb-3">${m.descricao || ""}</p>
-      <div class="w-full bg-gray-200 rounded-full h-2.5">
-        <div class="bg-blue-900 h-2.5 rounded-full" style="width:${pct.toFixed(
-          2
-        )}%"></div>
-      </div>
-      <p class="text-sm text-gray-600 mt-1">${pct.toFixed(2)}% de 100%</p>`;
-    metasGrid && metasGrid.appendChild(c);
-  });
-
-  // ---------- CONTATO ----------
-  const cEmail = document.getElementById("contato-email");
-  const cTel = document.getElementById("contato-telefone");
-  const cEnd = document.getElementById("contato-endereco");
-  cEmail && (cEmail.textContent = site.contato?.email || "");
-  cTel && (cTel.textContent = site.contato?.telefone || "");
-  cEnd && (cEnd.textContent = site.contato?.endereco || "");
-
-  // ---------- AGENDA ----------
-  const agenda = await getJSON("data/agenda.json") || {};
-  const eventos = (agenda.eventos || []).map((e) => ({ ...e, data: e.data || "" }));
-  eventos.sort((a, b) => (a.data > b.data ? 1 : -1));
-
-  const tipos = ["Todos", ...Array.from(new Set(eventos.map((e) => e.tipo || "Outro")))];
-  const filtrosEl = document.getElementById("agenda-filtros");
-  const listaEl = document.getElementById("agenda-lista");
-  let filtroAgenda = "Todos";
-
-  if (filtrosEl) {
-    tipos.forEach((t, idx) => {
-      const btn = el(
-        "button",
-        "px-4 py-2 text-sm font-medium border border-gray-300 bg-white text-gray-700 hover:bg-gray-50",
-        t
-      );
-      if (idx === 0) btn.classList.add("rounded-l-lg");
-      if (idx === tipos.length - 1) btn.classList.add("rounded-r-lg");
-      if (t === filtroAgenda) {
-        btn.classList.add("bg-blue-900", "text-white");
-      }
-      btn.addEventListener("click", () => {
-        filtroAgenda = t;
-        [...filtrosEl.children].forEach(
-          (x) =>
-            (x.className =
-              "px-4 py-2 text-sm font-medium border border-gray-300 bg-white text-gray-700 hover:bg-gray-50")
-        );
-        if (filtrosEl.firstChild) filtrosEl.firstChild.classList.add("rounded-l-lg");
-        if (filtrosEl.lastChild) filtrosEl.lastChild.classList.add("rounded-r-lg");
-        btn.classList.add("bg-blue-900", "text-white");
-        renderAgenda();
-      });
-      filtrosEl.appendChild(btn);
-    });
-  }
-
-  function badge(tipo) {
-    const cores = {
-      Ensaio: "bg-yellow-100 text-yellow-800",
-      Apresentação: "bg-green-100 text-green-800",
-      Culto: "bg-indigo-100 text-indigo-800",
-      Turnê: "bg-pink-100 text-pink-800",
-      Outro: "bg-gray-100 text-gray-800",
-    };
-    return `<span class="text-xs ${
-      cores[tipo] || cores.Outro
-    } px-2 py-1 rounded">${tipo}</span>`;
-  }
-
-  function renderAgenda() {
-    if (!listaEl) return;
-    listaEl.innerHTML = "";
-    const filtered = eventos.filter(
-      (e) => filtroAgenda === "Todos" || (e.tipo || "Outro") === filtroAgenda
-    );
-    if (filtered.length === 0) {
-      listaEl.innerHTML = `<p class="text-center text-gray-600">Nenhum item na agenda.</p>`;
-      return;
-    }
-    filtered.forEach((e) => {
-      const item = el(
-        "div",
-        "bg-gray-50 p-4 rounded-lg shadow flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"
-      );
-      item.innerHTML = `
-        <div>
-          <p class="text-sm text-gray-500">${e.data}</p>
-          <h4 class="text-lg font-bold">${e.titulo || ""}</h4>
-          ${e.descricao ? `<p class="text-gray-700">${e.descricao}</p>` : ""}
-          <p class="text-gray-700"><i class="fas fa-map-marker-alt mr-1"></i> ${
-            e.local || ""
-          }</p>
-        </div>
-        <div>${badge(e.tipo || "Outro")}</div>`;
-      listaEl.appendChild(item);
-    });
-  }
-  renderAgenda();
-
-  // ---------- FOOTER ----------
-  const footerLogo = document.getElementById("footer-logo");
-  footerLogo && (footerLogo.src = footer.logo || header.logo || "");
-  const fText = document.getElementById("footer-text");
-  fText && (fText.textContent = footer.texto || "");
-  const fl = document.getElementById("footer-links");
-  (footer.links || []).forEach((l) => {
-    const a = el(
-      "a",
-      "text-blue-200 hover:text-white transition",
-      l.nome
-    );
-    a.href = l.url;
-    fl && fl.appendChild(a);
-  });
-})();
-
-// ===================== GALERIA (ÁLBUNS com redirecionamento) =====================
-// Depende de getJSON e el já definidos acima
-(async function () {
-  const gal = await getJSON("data/galeria.json") || {};
-  // Mescla fotos_multi (upload múltiplo) em itens do álbum
-  const albuns = (gal.albuns || []).map((a) => {
-    const itens = Array.isArray(a.itens) ? [...a.itens] : [];
-    if (Array.isArray(a.fotos_multi) && a.fotos_multi.length) {
-      a.fotos_multi.forEach((src) => itens.push({ tipo: "foto", src }));
-    }
-    return { ...a, itens };
-  });
-
+  // ---------- GALERIA (com modal) ----------
   const albumsGrid = document.getElementById("albums-grid");
+  const albumModal = document.getElementById("album-modal");
 
   function albumCard(album, idx) {
     const card = el(
@@ -415,19 +220,124 @@ function formatCurrency(v) {
         }
         <button data-album-id="${idx}" class="mt-3 text-sky-600 font-medium hover:underline">Abrir álbum →</button>
       </div>`;
-    // Adiciona event listener ao botão para salvar o ID no localStorage e redirecionar
     card.querySelector("button").addEventListener("click", () => {
-      localStorage.setItem('currentAlbumId', idx);
-      window.location.href = '/album.html'; // Redireciona para a página do álbum
+        openAlbumModal(album);
     });
     return card;
   }
 
   if (albumsGrid) {
+    const galeria = await getJSON("data/galeria.json") || {};
+    const albuns = (galeria.albuns || []).map((a) => {
+        const itens = Array.isArray(a.itens) ? [...a.itens] : [];
+        if (Array.isArray(a.fotos_multi) && a.fotos_multi.length) {
+          a.fotos_multi.forEach((src) => itens.push({ tipo: "foto", src }));
+        }
+        return { ...a, itens };
+    });
     albumsGrid.innerHTML = "";
     albuns.forEach((a, i) => albumsGrid.appendChild(albumCard(a, i)));
   }
 
-  // Removido todo o código do modal de álbum e lightbox desta parte do app.js
-  // pois agora eles serão controlados pela nova página album.html
+  function isVideo(url) {
+    return (url || "").match(/youtube\.com|youtu\.be|vimeo\.com|\.mp4($|\?)/i);
+  }
+
+  function openAlbumModal(album) {
+    if (!albumModal) return;
+
+    document.getElementById("album-modal-title").textContent = album.titulo || "Álbum";
+    const modalContent = document.getElementById("album-modal-content");
+    modalContent.innerHTML = '';
+    
+    (album.itens || []).forEach(item => {
+        const wrap = el("div", "rounded overflow-hidden bg-gray-50 relative aspect-square group");
+        
+        if (item.tipo === "video" && isVideo(item.src)) {
+            let embed = "";
+            const url = item.src || "";
+            if (/youtube\.com|youtu\.be/.test(url)) {
+                const idMatch = url.match(/(?:v=|be\/)([A-Za-z0-9_-]{6,})/);
+                const vid = idMatch ? idMatch[1] : "";
+                embed = `<iframe class="absolute inset-0 w-full h-full" src="https://www.youtube.com/embed/${vid}" frameborder="0" allowfullscreen></iframe>`;
+            } else if (/vimeo\.com/.test(url)) {
+                const idMatch = url.match(/vimeo\.com\/(\d+)/);
+                const vid = idMatch ? idMatch[1] : "";
+                embed = `<iframe class="absolute inset-0 w-full h-full" src="https://player.vimeo.com/video/${vid}" frameborder="0" allowfullscreen></iframe>`;
+            } else if (/\.mp4($|\?)/i.test(url)) {
+                embed = `<video class="absolute inset-0 w-full h-full object-cover" controls src="${url}"></video>`;
+            }
+            wrap.innerHTML = embed;
+        } else {
+            const imgEl = el("img", "absolute inset-0 w-full h-full object-cover cursor-pointer");
+            imgEl.src = item.src || '';
+            imgEl.alt = item.alt || '';
+            imgEl.addEventListener("click", () => openLightbox(item.src));
+            wrap.appendChild(imgEl);
+        }
+        if (item.alt) {
+            const cap = el("div", "absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity", item.alt);
+            wrap.appendChild(cap);
+        }
+        modalContent.appendChild(wrap);
+    });
+
+    albumModal.classList.remove("hidden");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeAlbumModal() {
+    if (albumModal) {
+      albumModal.classList.add("hidden");
+      document.body.style.overflow = "auto";
+    }
+  }
+
+  if (albumModal) {
+    albumModal.addEventListener("click", (e) => {
+        if (e.target.dataset.close === "modal" || e.target === albumModal) closeAlbumModal();
+    });
+    const closeBtn = document.getElementById("album-modal-close");
+    if (closeBtn) closeBtn.addEventListener("click", closeAlbumModal);
+  }
+
+  const lightboxModal = document.getElementById("lightbox");
+  const lightboxImg = document.getElementById("lightbox-img");
+
+  if (lightboxModal) {
+      lightboxModal.addEventListener("click", (e) => {
+          if (e.target.dataset.close === "lightbox" || e.target === lightboxModal || e.target === lightboxImg) closeLightbox();
+      });
+  }
+
+  function openLightbox(src) {
+    if (!lightboxModal) return;
+    lightboxImg.src = src;
+    lightboxModal.classList.remove("hidden");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeLightbox() {
+    if (!lightboxModal) return;
+    lightboxModal.classList.add("hidden");
+    document.body.style.overflow = "auto";
+    lightboxImg.src = "";
+  }
+
+
+  // ---------- FOOTER ----------
+  const footerLogo = document.getElementById("footer-logo");
+  footerLogo && (footerLogo.src = footer.logo || header.logo || "");
+  const fText = document.getElementById("footer-text");
+  fText && (fText.textContent = footer.texto || "");
+  const fl = document.getElementById("footer-links");
+  (footer.links || []).forEach((l) => {
+    const a = el(
+      "a",
+      "text-blue-200 hover:text-white transition",
+      l.nome
+    );
+    a.href = l.url;
+    fl && fl.appendChild(a);
+  });
 })();
