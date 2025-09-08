@@ -121,13 +121,16 @@ function formatCurrency(v) {
     tl && tl.appendChild(box);
   });
 
-  // ---------- COORDENAÇÃO ----------
+  // ---------- COORDENAÇÃO (AJUSTADO AQUI) ----------
   const coordGrid = document.getElementById("coordenacao-grid");
   const equipe = coord.equipe || coord.lista || [];
   equipe.forEach((p) => {
     const c = el("div", "bg-white rounded-lg shadow overflow-hidden");
+    // Aplicando as mesmas classes de ajuste que usamos para os membros
     c.innerHTML = `
-      <img src="${p.foto || ""}" class="w-full h-56 object-cover" alt="${p.nome || ""}">
+      <div class="h-56 overflow-hidden">
+        <img src="${p.foto || ""}" class="w-full h-full object-cover object-top" alt="${p.nome || ""}">
+      </div>
       <div class="p-4">
         <h3 class="text-lg font-bold">${p.nome || ""}</h3>
         <span class="inline-block mt-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">${
@@ -140,7 +143,7 @@ function formatCurrency(v) {
   if (coordGrid && equipe.length === 0)
     document.getElementById("coordenacao").classList.add("hidden");
 
-  // ---------- MEMBROS + FILTROS (AJUSTADO AQUI) ----------
+  // ---------- MEMBROS + FILTROS ----------
   const filters = ["Todos", "1º Tenor", "2º Tenor", "Barítono", "Baixo"];
   const naipeFilters = document.getElementById("naipe-filters");
   let filtroAtual = "Todos";
@@ -170,8 +173,6 @@ function formatCurrency(v) {
       if (!match) return;
       const card = el("div", "bg-white rounded-lg shadow overflow-hidden");
       
-      // >>> AQUI ESTÁ A MUDANÇA <<<
-      // Adicionamos a classe object-top para focar no topo da imagem e ajustamos a altura do container da imagem.
       card.innerHTML = `
         <div class="h-72 overflow-hidden">
           <img src="${m.foto || ""}" class="w-full h-full object-cover object-top" alt="${
