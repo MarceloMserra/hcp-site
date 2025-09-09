@@ -28,19 +28,30 @@ function isCloudinary(url) {
 }
 
 /**
- * Aplica recorte padronizado em retratos do Cloudinary.
- * - ratio "3:4" (padrão) → w=600, h=800
- * - g_face: foca automaticamente no rosto
- * - c_fill: cobre a área sem distorcer (corte nas bordas se preciso)
- * Para URLs não-Cloudinary, retorna a URL original.
+ * Gera URL Cloudinary com retrato 3:4, foco em rosto e otimizações.
+ * Se a URL JÁ tiver transformações (porque você recortou manualmente),
+ * não mexe — respeita o recorte existente.
  */
-function cloudPortrait(url, { ratio = "3:4", w = 600 } = {}) {
+function cloudPortrait(url, { w = 600 } = {}) {
   if (!url || !isCloudinary(url)) return url;
-  const [num, den] = ratio.split(":").map(Number);
-  const h = Math.round(w * (den / num));
-  const params = `c_fill,g_face,w_${w},h_${h}`;
-  // insere os parâmetros após o segmento /upload/
-  return url.replace("/upload/", `/upload/${params}/`);
+
+  // Se já existem transformações no segmento imediatamente após /upload/, não altera
+  const parts = url.split("/upload/");
+  if (parts.length > 1) {
+    const after = parts[1] || "";
+    const firstSeg = after.split("/")[0]; // ex.: "c_fill,w_600/..." -> pega "c_fill,w_600"
+    const hasTransforms = /\b(c_|w_|h_|ar_|g_)/.test(firstSeg);
+    if (hasTransforms) return url;
+  }
+
+  const t = `f_auto,q_auto,dpr_auto,c_fill,g_auto:face,ar_3:4,w_${w}`;
+  return url.replace("/upload/", `/upload/${t}/`);
+}
+
+/** Cria srcset responsivo; se não for Cloudinary, retorna string vazia */
+function cloudPortraitSrcset(url, widths = [400, 600, 900]) {
+  if (!isCloudinary(url)) return "";
+  return widths.map(w => `${cloudPortrait(url, { w })} ${w}w`).join(", ");
 }
 
 // ===================== app principal =====================
@@ -69,7 +80,6 @@ function cloudPortrait(url, { ratio = "3:4", w = 600 } = {}) {
   const logo = document.getElementById("logo-img");
   if (header.logo) logo.src = header.logo;
 
-  // Clique na logo leva ao topo
   const logoLink = document.getElementById("logo-link");
   if (logoLink) {
     logoLink.addEventListener("click", (e) => {
@@ -105,11 +115,9 @@ function cloudPortrait(url, { ratio = "3:4", w = 600 } = {}) {
     btn.addEventListener("click", (e) => {
       e.stopPropagation();
       menu.classList.toggle("hidden");
-      if (menu.classList.contains("hidden")) {
-        mobileMenuIcon.className = "fas fa-bars text-2xl";
-      } else {
-        mobileMenuIcon.className = "fas fa-times text-2xl";
-      }
+      mobileMenuIcon.className = menu.classList.contains("hidden")
+        ? "fas fa-bars text-2xl"
+        : "fas fa-times text-2xl";
     });
 
     window.addEventListener("scroll", closeMenu, { passive: true });
@@ -125,7 +133,7 @@ function cloudPortrait(url, { ratio = "3:4", w = 600 } = {}) {
       });
   }
 
-  // Smooth scroll em âncoras
+  // Smooth scroll
   document.querySelectorAll('a[href^="#"]').forEach((a) => {
     a.addEventListener("click", (e) => {
       const id = a.getAttribute("href");
@@ -150,15 +158,21 @@ function cloudPortrait(url, { ratio = "3:4", w = 600 } = {}) {
     tl && tl.appendChild(box);
   });
 
-  // ---------- COORDENAÇÃO (retratos 3:4 via Cloudinary) ----------
+  // ---------- COORDENAÇÃO (retratos 3:4 auto) ----------
   const coordGrid = document.getElementById("coordenacao-grid");
   const equipe = coord.equipe || coord.lista || [];
   equipe.forEach((p) => {
-    const foto = cloudPortrait(p.foto, { ratio: "3:4", w: 600 });
+    const foto = cloudPortrait(p.foto); // aplica auto-crop se for Cloudinary
+    const srcset = cloudPortraitSrcset(p.foto);
     const c = el("div", "bg-white rounded-lg shadow overflow-hidden");
     c.innerHTML = `
       <div class="h-72 overflow-hidden">
-        <img src="${foto || ""}" class="w-full h-full object-cover" alt="${p.nome || ""}">
+        <img
+          src="${foto || ""}"
+          ${srcset ? `srcset="${srcset}"` : ""}
+          sizes="(min-width:1280px) 300px, (min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"
+          class="w-full h-full object-cover"
+          alt="${p.nome || ""}">
       </div>
       <div class="p-4">
         <h3 class="text-lg font-bold">${p.nome || ""}</h3>
@@ -172,7 +186,7 @@ function cloudPortrait(url, { ratio = "3:4", w = 600 } = {}) {
     sec && sec.classList.add("hidden");
   }
 
-  // ---------- MEMBROS (filtros + retratos 3:4 via Cloudinary) ----------
+  // ---------- MEMBROS (filtros + retratos 3:4 auto) ----------
   const filters = ["Todos", "1º Tenor", "2º Tenor", "Barítono", "Baixo"];
   const naipeFilters = document.getElementById("naipe-filters");
   let filtroAtual = "Todos";
@@ -201,11 +215,17 @@ function cloudPortrait(url, { ratio = "3:4", w = 600 } = {}) {
         filtroAtual === "Todos" || (m.naipes || [m.naipe]).includes(filtroAtual);
       if (!match) return;
 
-      const foto = cloudPortrait(m.foto, { ratio: "3:4", w: 600 });
+      const foto = cloudPortrait(m.foto);
+      const srcset = cloudPortraitSrcset(m.foto);
       const card = el("div", "bg-white rounded-lg shadow overflow-hidden");
       card.innerHTML = `
         <div class="h-72 overflow-hidden">
-          <img src="${foto || ""}" class="w-full h-full object-cover" alt="${m.nome || ""}">
+          <img
+            src="${foto || ""}"
+            ${srcset ? `srcset="${srcset}"` : ""}
+            sizes="(min-width:1280px) 300px, (min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"
+            class="w-full h-full object-cover"
+            alt="${m.nome || ""}">
         </div>
         <div class="p-4">
           <h3 class="text-lg font-bold">${m.nome || ""}</h3>
@@ -365,9 +385,8 @@ function cloudPortrait(url, { ratio = "3:4", w = 600 } = {}) {
   const pixChave = document.getElementById("pix-chave");
   const pixQr    = document.getElementById("pix-qr");
   if (pixChave) pixChave.textContent = doacoes.pix_chave || "";
-  if (pixQr && doacoes.pix_qr) {
-    pixQr.src = doacoes.pix_qr;
-  }
+  if (pixQr && doacoes.pix_qr) pixQr.src = doacoes.pix_qr;
+
   const doacaoLinks = document.getElementById("doacao-links");
   (doacoes.links || []).forEach((l) => {
     const li = el("li");
