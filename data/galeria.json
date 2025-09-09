@@ -2,25 +2,6 @@
   "fotos": [],
   "albuns": [
     {
-      "titulo": "PIBS",
-      "descricao": "esse foi o dia de",
-      "capa": "/img/uploads/captura-de-tela-2025-08-18-115819.png",
-      "itens": [
-        {
-          "tipo": "video",
-          "src": "https://youtu.be/fMS31SBaozY",
-          "thumb": "/img/uploads/captura-de-tela-2025-08-18-115819.png"
-        }
-      ],
-      "fotos_multi": [
-        "/img/uploads/1.jpg",
-        "/img/uploads/a1.png",
-        "/img/uploads/6.jpg",
-        "/img/uploads/4.jpg",
-        "/img/uploads/2.jpg"
-      ]
-    },
-    {
       "titulo": "Ensaio PIBS",
       "descricao": "",
       "capa": "https://res.cloudinary.com/dqfkwolc8/image/upload/f_auto,q_auto/v1757445773/WhatsApp_Image_2025-08-24_at_15.59.22_wuhad6.jpg",
