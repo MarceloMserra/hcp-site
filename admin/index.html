@@ -5,16 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex" />
   <title>CMS - HCP</title>
+
+  <!-- Netlify Identity (login) -->
   <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 </head>
 <body>
   <div id="netlify-cms-root"></div>
 
-  <!-- PINE a versão exata; sem ^ -->
+  <!-- Decap CMS (versão pinada) -->
   <script src="https://cdn.jsdelivr.net/npm/decap-cms@3.3.1/dist/decap-cms.js"></script>
 
+  <!-- Cloudinary media library p/ Decap (versão pinada) -->
+  <script src="https://unpkg.com/netlify-cms-media-library-cloudinary@1.3.4/dist/NetlifyCmsMediaLibraryCloudinary.js"></script>
+
   <script>
-    // NÃO chame CMS.init() manualmente aqui.
+    // NÃO chame CMS.init() manualmente: o Decap inicializa sozinho.
     if (window.netlifyIdentity) {
       netlifyIdentity.init();
       netlifyIdentity.on("init", (user) => {
