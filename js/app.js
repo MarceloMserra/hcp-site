@@ -23,14 +23,13 @@ function formatCurrency(v) {
 }
 
 // ===================== Cloudinary helpers =====================
-// Troque pelo seu cloud_name se mudar
 const CLOUDINARY_CLOUD = "dqfkwolc8";
 
 function isCloudinary(url) {
   return /^https?:\/\/res\.cloudinary\.com\//.test(url || "");
 }
 
-// Respeita URLs Cloudinary que JÁ tenham transformações (recorte salvo no Studio)
+// Respeita URLs Cloudinary já transformadas
 function cloudPortrait(url, { w = 600 } = {}) {
   if (!url || !isCloudinary(url)) return url;
   const parts = url.split("/upload/");
@@ -39,12 +38,12 @@ function cloudPortrait(url, { w = 600 } = {}) {
     const hasTransforms = /\b(c_|w_|h_|ar_|g_|z_)/.test(firstSeg);
     if (hasTransforms) return url;
   }
-  // foco no sujeito + leve zoom-out para dar “respiro” no topo
+  // foco no sujeito + leve zoom-out
   const t = `f_auto,q_auto,dpr_auto,c_fill,g_auto:subject,ar_3:4,w_${w},z_0.9`;
   return url.replace("/upload/", `/upload/${t}/`);
 }
 
-// Força QUALQUER URL (inclusive /img/uploads/...) a passar pelo Cloudinary via fetch
+// Força QUALQUER URL (incluindo /img/uploads/...) a passar pelo Cloudinary via fetch
 function cloudAny(url, { w = 600 } = {}) {
   if (!url) return url;
   if (isCloudinary(url)) return cloudPortrait(url, { w });
@@ -53,7 +52,6 @@ function cloudAny(url, { w = 600 } = {}) {
   const base = `https://res.cloudinary.com/${CLOUDINARY_CLOUD}/image/fetch/`;
   return `${base}${t}/${encodeURIComponent(abs)}`;
 }
-
 function cloudAnySrcset(url, widths = [400, 600, 900]) {
   return widths.map(w => `${cloudAny(url, { w })} ${w}w`).join(", ");
 }
@@ -168,14 +166,14 @@ function cloudAnySrcset(url, widths = [400, 600, 900]) {
   equipe.forEach((p) => {
     const foto = cloudAny(p.foto);
     const srcset = cloudAnySrcset(p.foto);
-    const c = el("div", "bg-white rounded-lg shadow overflow-hidden");
+    const c = el("div", "bg-white rounded-lg shadow overflow-hidden cursor-pointer group");
     c.innerHTML = `
       <div class="overflow-hidden" style="aspect-ratio: 3 / 4;">
         <img
           src="${foto || ""}"
           ${srcset ? `srcset="${srcset}"` : ""}
           sizes="(min-width:1280px) 300px, (min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"
-          class="w-full h-full object-cover"
+          class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
           alt="${p.nome || ""}">
       </div>
       <div class="p-4">
@@ -236,10 +234,7 @@ function cloudAnySrcset(url, widths = [400, 600, 900]) {
           <div class="flex flex-wrap gap-1 mb-2">
             ${(m.naipes || [m.naipe])
               .filter(Boolean)
-              .map(
-                (n) =>
-                  `<span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">${n}</span>`
-              )
+              .map(n => `<span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">${n}</span>`)
               .join("")}
           </div>
           ${m.bio ? `<p class="text-gray-700 text-sm">${m.bio}</p>` : ""}
@@ -249,41 +244,53 @@ function cloudAnySrcset(url, widths = [400, 600, 900]) {
   }
   renderMembros();
 
-  // ---------- GALERIA ----------
+  // ---------- GALERIA (cards → modal) ----------
   const albumsGrid = document.getElementById("albums-grid");
   const albumModal = document.getElementById("album-modal");
+  const albumTitle = document.getElementById("album-modal-title");
+  const albumContentWrapper = document.getElementById("album-modal-content");
+  const albumClose = document.getElementById("album-modal-close");
+
+  // normaliza entradas (string ou objeto)
+  function normalizePhotoItem(x) {
+    if (!x) return null;
+    if (typeof x === "string") return x;
+    return x.imagem || x.image || x.url || x.src || null;
+  }
+
+  function buildAlbumList(raw) {
+    const itens = Array.isArray(raw.itens) ? [...raw.itens] : [];
+    // anexar fotos_multi
+    if (Array.isArray(raw.fotos_multi)) {
+      raw.fotos_multi.forEach(f => {
+        const src = normalizePhotoItem(f);
+        if (src) itens.push({ tipo: "foto", src });
+      });
+    }
+    return { ...raw, itens };
+  }
 
   function albumCard(album, idx) {
     const capa = album.capa || "";
-    const card = el(
-      "div",
-      "bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition"
-    );
+    const card = el("div", "bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition cursor-pointer group");
     card.innerHTML = `
       <div class="h-48 overflow-hidden">
-        <img src="${capa}" alt="${album.titulo || ""}" class="w-full h-48 object-cover">
+        <img src="${capa}" alt="${album.titulo || ""}" class="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-[1.02]">
       </div>
       <div class="p-4">
         <h3 class="text-lg font-bold mb-1">${album.titulo || ""}</h3>
         ${album.descricao ? `<p class="text-gray-600 text-sm">${album.descricao}</p>` : ""}
-        <button data-album-id="${idx}" class="mt-3 text-sky-600 font-medium hover:underline">Abrir álbum →</button>
+        <span class="mt-3 inline-block text-sky-600 font-medium">Abrir álbum →</span>
       </div>`;
-    card.querySelector("button").addEventListener("click", () => {
-      openAlbumModal(album);
-    });
+    // o card todo abre o álbum
+    card.addEventListener("click", () => openAlbumModal(album));
     return card;
   }
 
   if (albumsGrid) {
-    const albuns = (galeriaD.albuns || []).map((a) => {
-      const itens = Array.isArray(a.itens) ? [...a.itens] : [];
-      if (Array.isArray(a.fotos_multi) && a.fotos_multi.length) {
-        a.fotos_multi.forEach((src) => itens.push({ tipo: "foto", src }));
-      }
-      return { ...a, itens };
-    });
+    const albuns = (galeriaD.albuns || []).map(buildAlbumList);
     albumsGrid.innerHTML = "";
-    albuns.forEach((a, i) => albumsGrid.appendChild(albumCard(a, i)));
+    albuns.forEach((a) => albumsGrid.appendChild(albumCard(a)));
   }
 
   function isVideo(url) {
@@ -292,17 +299,13 @@ function cloudAnySrcset(url, widths = [400, 600, 900]) {
 
   function openAlbumModal(album) {
     if (!albumModal) return;
-
-    document.getElementById("album-modal-title").textContent = album.titulo || "Álbum";
-    const modalContent = document.getElementById("album-modal-content");
-    modalContent.innerHTML = `
-      <div id="album-items" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"></div>
-    `;
+    albumTitle.textContent = album.titulo || "Álbum";
+    albumContentWrapper.innerHTML = `<div id="album-items" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"></div>`;
     const albumItems = document.getElementById("album-items");
 
     (album.itens || []).forEach(item => {
       const wrap = el("div", "rounded overflow-hidden bg-gray-50 relative aspect-square group");
-
+      // vídeo
       if (item.tipo === "video" && isVideo(item.src)) {
         let embed = "";
         const url = item.src || "";
@@ -319,14 +322,15 @@ function cloudAnySrcset(url, widths = [400, 600, 900]) {
         }
         wrap.innerHTML = embed;
       } else {
+        // foto
         const imgEl = el("img", "absolute inset-0 w-full h-full object-cover cursor-pointer");
-        imgEl.src = item.src || '';
-        imgEl.alt = item.alt || '';
-        imgEl.addEventListener("click", () => openLightbox(item.src));
+        imgEl.src = cloudAny(item.src, { w: 900 });
+        imgEl.alt = item.alt || album.titulo || "";
+        imgEl.addEventListener("click", () => openLightbox(imgEl.src));
         wrap.appendChild(imgEl);
       }
       if (item.alt) {
-        const cap = el("div", "absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity", item.alt);
+        const cap = el("div", "absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity", item.alt);
         wrap.appendChild(cap);
       }
       albumItems.appendChild(wrap);
@@ -334,31 +338,37 @@ function cloudAnySrcset(url, widths = [400, 600, 900]) {
 
     albumModal.classList.remove("hidden");
     document.body.style.overflow = "hidden";
+    // hash para permitir "voltar"
+    history.pushState({ albumOpen: true }, "", "#album");
   }
 
   function closeAlbumModal() {
-    if (albumModal) {
-      albumModal.classList.add("hidden");
-      document.body.style.overflow = "auto";
-    }
+    if (!albumModal) return;
+    albumModal.classList.add("hidden");
+    document.body.style.overflow = "auto";
+    albumTitle.textContent = "";
+    albumContentWrapper.innerHTML = "";
+    // limpar hash, sem sair da página
+    if (location.hash === "#album") history.replaceState(null, "", " ");
   }
 
+  // fechar com overlay / botão / Esc / back
   if (albumModal) {
     albumModal.addEventListener("click", (e) => {
       if (e.target.dataset.close === "modal" || e.target === albumModal) closeAlbumModal();
     });
-    const closeBtn = document.getElementById("album-modal-close");
-    if (closeBtn) closeBtn.addEventListener("click", closeAlbumModal);
   }
+  if (albumClose) albumClose.addEventListener("click", closeAlbumModal);
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeAlbumModal();
+  });
+  window.addEventListener("popstate", () => {
+    if (!albumModal.classList.contains("hidden")) closeAlbumModal();
+  });
 
+  // ---------- LIGHTBOX ----------
   const lightboxModal = document.getElementById("lightbox");
   const lightboxImg = document.getElementById("lightbox-img");
-
-  if (lightboxModal) {
-    lightboxModal.addEventListener("click", (e) => {
-      if (e.target.dataset.close === "lightbox" || e.target === lightboxModal || e.target === lightboxImg) closeLightbox();
-    });
-  }
 
   function openLightbox(src) {
     if (!lightboxModal) return;
@@ -366,12 +376,19 @@ function cloudAnySrcset(url, widths = [400, 600, 900]) {
     lightboxModal.classList.remove("hidden");
     document.body.style.overflow = "hidden";
   }
-
   function closeLightbox() {
     if (!lightboxModal) return;
     lightboxModal.classList.add("hidden");
     document.body.style.overflow = "auto";
     lightboxImg.src = "";
+  }
+  if (lightboxModal) {
+    lightboxModal.addEventListener("click", (e) => {
+      if (e.target.dataset.close === "lightbox" || e.target === lightboxModal || e.target === lightboxImg) closeLightbox();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeLightbox();
+    });
   }
 
   // ---------- DOAÇÕES ----------
@@ -388,7 +405,7 @@ function cloudAnySrcset(url, widths = [400, 600, 900]) {
   }
   const pixChave = document.getElementById("pix-chave");
   const pixQr    = document.getElementById("pix-qr");
-  if (pixChave) pixChave.textContent = doacoes.pix_chave || "";
+  if (pixChave) pixChave.textContent = doacoes.pix_chave || doacoes.pix?.chave || "";
   if (pixQr && doacoes.pix_qr) pixQr.src = doacoes.pix_qr;
 
   const doacaoLinks = document.getElementById("doacao-links");

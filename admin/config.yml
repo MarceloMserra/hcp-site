@@ -4,59 +4,164 @@ backend:
 
 local_backend: true
 
+site_url: https://homens-hcp.netlify.app
+display_url: https://homens-hcp.netlify.app
+logo_url: https://homens-hcp.netlify.app/img/logo.png
+
+# Biblioteca de mídia: Cloudinary
 media_library:
   name: cloudinary
   config:
-    cloud_name: dqfkwolc8             # <- do seu dashboard
-    api_key: "683915392936961"        # <- do seu dashboard (pública)
-    upload_preset: "hcp_site"         # <- se você criou o preset unsigned
+    cloud_name: dqfkwolc8
+    api_key: "683915392936961"
+    # Apenas para preview/gerenciamento na library
     default_transformations:
       - - fetch_format: auto
           quality: auto
 
-# Apenas para preview do Decap; os arquivos reais ficam no Cloudinary
-media_folder: "assets/uploads"
-public_folder: "/assets/uploads"
-
-site_url: "https://homens-hcp.netlify.app"
-
-slug:
-  encoding: "ascii"
-  clean_accents: true
-  sanitize_replacement: "-"
+publish_mode: editorial_workflow
+locale: pt
 
 collections:
   - name: "dados"
     label: "Dados do Site"
-    editor:
-      preview: false
     files:
-
-      # -------- SITE (hero, tema, timeline) --------
+      # -------------------- SITE --------------------
       - name: "site"
-        label: "Site (Hero, Tema, Timeline)"
+        label: "Site (home/flags)"
         file: "data/site.json"
         fields:
           - { label: "Slogan", name: "slogan", widget: "string", required: false }
           - { label: "Lema", name: "lema", widget: "string", required: false }
-          - { label: "Hero (imagem de fundo)", name: "hero", widget: "image", required: false }
+          - label: "Timeline"
+            name: "timeline"
+            widget: "list"
+            collapsed: true
+            fields:
+              - { label: "Título", name: "titulo", widget: "string" }
+              - { label: "Ano", name: "ano", widget: "string" }
+              - { label: "Texto", name: "texto", widget: "text" }
           - label: "Tema"
             name: "tema"
             widget: "object"
             collapsed: true
             fields:
-              - { label: "Opacidade do overlay do hero (0–1)", name: "hero_overlay", widget: "number", value_type: "float", min: 0, max: 1, step: 0.05, default: 0.45 }
-          - label: "Linha do tempo (Timeline)"
-            name: "timeline"
+              - { label: "Overlay do Hero (0-1)", name: "hero_overlay", widget: "number", value_type: "float", min: 0, max: 1, default: 0.45 }
+              - { label: "Cor primária", name: "primaria", widget: "string", default: "#1F497D", required: false }
+              - { label: "CTA", name: "cta", widget: "string", default: "preto", required: false }
+              - { label: "Mostrar Coordenação", name: "show_coordenacao", widget: "boolean", default: true }
+              - { label: "Mostrar Membros", name: "show_membros", widget: "boolean", default: true }
+              - { label: "Mostrar Galeria", name: "show_galeria", widget: "boolean", default: true }
+              - { label: "Mostrar Doações", name: "show_doacoes", widget: "boolean", default: true }
+              - { label: "Mostrar Objetivos", name: "show_objetivos", widget: "boolean", default: true }
+
+      # -------------------- COORDENAÇÃO --------------------
+      - name: "coordenacao"
+        label: "Coordenação"
+        file: "data/coordenacao.json"
+        fields:
+          - label: "Equipe"
+            name: "equipe"
             widget: "list"
+            summary: "{{fields.nome}}"
+            fields:
+              - { label: "Nome", name: "nome", widget: "string" }
+              - { label: "Cargo (opcional)", name: "cargo", widget: "string", required: false }
+              - { label: "Descrição (opcional)", name: "descricao", widget: "text", required: false }
+              - label: "Foto (Cloudinary)"
+                name: "foto"
+                widget: "image"
+
+      # -------------------- MEMBROS --------------------
+      - name: "membros"
+        label: "Membros"
+        file: "data/membros.json"
+        fields:
+          - label: "Membros"
+            name: "membros"
+            widget: "list"
+            summary: "{{fields.nome}}"
+            fields:
+              - { label: "Nome", name: "nome", widget: "string" }
+              - label: "Naipe(s)"
+                name: "naipes"
+                widget: "select"
+                multiple: true
+                options: ["1º Tenor", "2º Tenor", "Barítono", "Baixo"]
+              - { label: "Bio (opcional)", name: "bio", widget: "text", required: false }
+              - label: "Foto (Cloudinary)"
+                name: "foto"
+                widget: "image"
+
+      # -------------------- GALERIA --------------------
+      - name: "galeria"
+        label: "Galeria"
+        file: "data/galeria.json"
+        fields:
+          - label: "Álbuns"
+            name: "albuns"
+            widget: "list"
+            summary: "{{fields.titulo}}"
             fields:
               - { label: "Título", name: "titulo", widget: "string" }
-              - { label: "Ano", name: "ano", widget: "string", required: false }
-              - { label: "Texto", name: "texto", widget: "text" }
+              - { label: "Descrição (opcional)", name: "descricao", widget: "text", required: false }
+              - { label: "Capa do álbum", name: "capa", widget: "image" }
 
-      # -------- HEADER (logo e menu) --------
+              # (opcional) vídeos no álbum
+              - label: "Vídeos (opcional)"
+                name: "itens"
+                widget: "list"
+                collapsed: true
+                fields:
+                  - { label: "Tipo", name: "tipo", widget: "select", options: ["video", "foto"], default: "video" }
+                  - { label: "Fonte (URL YouTube/Vimeo/MP4 ou Cloudinary)", name: "src", widget: "string" }
+                  - { label: "Thumb (opcional)", name: "thumb", widget: "image", required: false }
+
+              # Fotos em lote (seleciona várias de uma vez na Cloudinary Media Library)
+              - label: "Fotos (múltiplas)"
+                name: "fotos_multi"
+                widget: "list"
+                summary: "{{fields.imagem}}"
+                field:
+                  label: "Imagem"
+                  name: "imagem"
+                  widget: "image"
+                  media_library:
+                    config:
+                      multiple: true
+
+      # -------------------- DOAÇÕES --------------------
+      - name: "doacoes"
+        label: "Doações"
+        file: "data/doacoes.json"
+        fields:
+          - { label: "Meta total (R$)", name: "meta_total", widget: "number" }
+          - { label: "Arrecadado (R$)", name: "arrecadado", widget: "number" }
+          - label: "PIX"
+            name: "pix"
+            widget: "object"
+            fields:
+              - { label: "Chave", name: "chave", widget: "string" }
+          - { label: "QR Code (opcional)", name: "pix_qr", widget: "image", required: false }
+          - label: "Links (opcional)"
+            name: "links"
+            widget: "list"
+            fields:
+              - { label: "Nome", name: "nome", widget: "string" }
+              - { label: "URL", name: "url", widget: "string" }
+
+      # -------------------- CONTATO --------------------
+      - name: "contato"
+        label: "Contato"
+        file: "data/contato.json"
+        fields:
+          - { label: "Email", name: "email", widget: "string" }
+          - { label: "Telefone (opcional)", name: "telefone", widget: "string", required: false }
+          - { label: "Endereço (opcional)", name: "endereco", widget: "string", required: false }
+
+      # -------------------- HEADER --------------------
       - name: "header"
-        label: "Header (Logo e Menu)"
+        label: "Header"
         file: "data/header.json"
         fields:
           - { label: "Logo", name: "logo", widget: "image" }
@@ -65,91 +170,18 @@ collections:
             widget: "list"
             fields:
               - { label: "Texto", name: "text", widget: "string" }
-              - { label: "URL (âncora ou link)", name: "url", widget: "string" }
+              - { label: "URL", name: "url", widget: "string" }
 
-      # -------- FOOTER --------
+      # -------------------- FOOTER --------------------
       - name: "footer"
         label: "Footer"
         file: "data/footer.json"
         fields:
-          - { label: "Logo", name: "logo", widget: "image", required: false }
-          - { label: "Texto", name: "texto", widget: "string", required: false }
+          - { label: "Logo (opcional)", name: "logo", widget: "image", required: false }
+          - { label: "Texto (opcional)", name: "texto", widget: "string", required: false }
           - label: "Links"
             name: "links"
             widget: "list"
             fields:
               - { label: "Nome", name: "nome", widget: "string" }
               - { label: "URL", name: "url", widget: "string" }
-
-      # -------- COORDENAÇÃO --------
-      - name: "coordenacao"
-        label: "Coordenação"
-        file: "data/coordenacao.json"
-        fields:
-          - label: "Equipe"
-            name: "equipe"
-            widget: "list"
-            fields:
-              - { label: "Nome", name: "nome", widget: "string" }
-              - { label: "Cargo", name: "cargo", widget: "string", required: false }
-              - { label: "Descrição", name: "descricao", widget: "text", required: false }
-              - { label: "Foto (Cloudinary)", name: "foto", widget: "image" }
-
-      # -------- MEMBROS --------
-      - name: "membros"
-        label: "Membros"
-        file: "data/membros.json"
-        fields:
-          - label: "Membros"
-            name: "membros"
-            widget: "list"
-            fields:
-              - { label: "Nome", name: "nome", widget: "string" }
-              - { label: "Foto (Cloudinary)", name: "foto", widget: "image" }
-              - { label: "Naipe(s)", name: "naipes", widget: "select", multiple: true, options: ["1º Tenor","2º Tenor","Barítono","Baixo"], required: false }
-              - { label: "Bio", name: "bio", widget: "text", required: false }
-
-      # -------- GALERIA --------
-      - name: "galeria"
-        label: "Galeria"
-        file: "data/galeria.json"
-        fields:
-          - label: "Álbuns"
-            name: "albuns"
-            widget: "list"
-            fields:
-              - { label: "Título", name: "titulo", widget: "string" }
-              - { label: "Descrição", name: "descricao", widget: "text", required: false }
-              - { label: "Capa (Cloudinary)", name: "capa", widget: "image", required: false }
-              - label: "Itens"
-                name: "itens"
-                widget: "list"
-                fields:
-                  - { label: "Tipo", name: "tipo", widget: "select", options: ["foto","video"], default: "foto" }
-                  - { label: "Fonte (URL da imagem ou vídeo)", name: "src", widget: "string" }
-                  - { label: "Legenda/alt", name: "alt", widget: "string", required: false }
-
-      # -------- DOAÇÕES --------
-      - name: "doacoes"
-        label: "Doações"
-        file: "data/doacoes.json"
-        fields:
-          - { label: "Meta total (R$)", name: "meta_total", widget: "number", value_type: "float", required: false }
-          - { label: "Arrecadado (R$)", name: "arrecadado", widget: "number", value_type: "float", required: false }
-          - { label: "Chave PIX", name: "pix_chave", widget: "string", required: false }
-          - { label: "QR Code PIX (imagem)", name: "pix_qr", widget: "image", required: false }
-          - label: "Outras formas (links)"
-            name: "links"
-            widget: "list"
-            fields:
-              - { label: "Nome", name: "nome", widget: "string" }
-              - { label: "URL", name: "url", widget: "string" }
-
-      # -------- CONTATO --------
-      - name: "contato"
-        label: "Contato"
-        file: "data/contato.json"
-        fields:
-          - { label: "E-mail", name: "email", widget: "string", required: false }
-          - { label: "Telefone", name: "telefone", widget: "string", required: false }
-          - { label: "Endereço", name: "endereco", widget: "string", required: false }
