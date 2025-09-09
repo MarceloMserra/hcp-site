@@ -22,21 +22,48 @@ function formatCurrency(v) {
   }
 }
 
+// ===================== Cloudinary helpers =====================
+function isCloudinary(url) {
+  return /^https?:\/\/res\.cloudinary\.com\//.test(url || "");
+}
+
+/**
+ * Aplica recorte padronizado em retratos do Cloudinary.
+ * - ratio "3:4" (padrão) → w=600, h=800
+ * - g_face: foca automaticamente no rosto
+ * - c_fill: cobre a área sem distorcer (corte nas bordas se preciso)
+ * Para URLs não-Cloudinary, retorna a URL original.
+ */
+function cloudPortrait(url, { ratio = "3:4", w = 600 } = {}) {
+  if (!url || !isCloudinary(url)) return url;
+  const [num, den] = ratio.split(":").map(Number);
+  const h = Math.round(w * (den / num));
+  const params = `c_fill,g_face,w_${w},h_${h}`;
+  // insere os parâmetros após o segmento /upload/
+  return url.replace("/upload/", `/upload/${params}/`);
+}
+
 // ===================== app principal =====================
 (async () => {
-  const site = await getJSON("data/site.json") || {};
-  const header = await getJSON("data/header.json") || {};
-  const footer = await getJSON("data/footer.json") || {};
-  const coord = await getJSON("data/coordenacao.json") || {};
-  const membros = await getJSON("data/membros.json") || {};
-  const galeria = await getJSON("data/galeria.json") || {};
+  const site     = await getJSON("data/site.json")        || {};
+  const header   = await getJSON("data/header.json")      || {};
+  const footer   = await getJSON("data/footer.json")      || {};
+  const coord    = await getJSON("data/coordenacao.json") || {};
+  const membros  = await getJSON("data/membros.json")     || {};
+  const galeriaD = await getJSON("data/galeria.json")     || {};
+  const doacoes  = await getJSON("data/doacoes.json")     || {};
+  const contato  = await getJSON("data/contato.json")     || {};
 
   // ---------- HERO ----------
-  document.getElementById("slogan").textContent = site.slogan || "";
-  document.getElementById("lema").textContent = site.lema || "";
+  const slogan = document.getElementById("slogan");
+  const lema   = document.getElementById("lema");
+  if (slogan) slogan.textContent = site.slogan || "";
+  if (lema)   lema.textContent   = site.lema   || "";
+
   const hero = document.getElementById("home");
-  if (site.hero) hero.style.backgroundImage = `url('${site.hero}')`;
-  document.getElementById("hero-overlay").style.background = `rgba(0,0,0,${site.tema?.hero_overlay ?? 0.45})`;
+  if (hero && site.hero) hero.style.backgroundImage = `url('${site.hero}')`;
+  const heroOverlay = document.getElementById("hero-overlay");
+  if (heroOverlay) heroOverlay.style.background = `rgba(0,0,0,${site.tema?.hero_overlay ?? 0.45})`;
 
   // ---------- HEADER (logo + menu + mobile) ----------
   const logo = document.getElementById("logo-img");
@@ -52,14 +79,15 @@ function formatCurrency(v) {
   }
 
   const nav = document.getElementById("nav-links");
-  const mobile = document.getElementById("mobile-links");
+  const mobileLinks = document.getElementById("mobile-links");
   (header.menu || []).forEach((item) => {
     const a = el("a", "text-gray-700 hover:text-blue-700 font-medium", item.text);
     a.href = item.url;
     nav && nav.appendChild(a);
+
     const am = a.cloneNode(true);
     am.className = "block py-2 text-gray-700 hover:text-blue-700 font-medium";
-    mobile && mobile.appendChild(am);
+    mobileLinks && mobileLinks.appendChild(am);
   });
 
   const btn = document.getElementById("mobile-menu-button");
@@ -91,12 +119,13 @@ function formatCurrency(v) {
         if (!clickInside) closeMenu();
       }
     });
-    mobile &&
-      mobile.addEventListener("click", (e) => {
+    mobileLinks &&
+      mobileLinks.addEventListener("click", (e) => {
         if (e.target.tagName === "A") closeMenu();
       });
   }
 
+  // Smooth scroll em âncoras
   document.querySelectorAll('a[href^="#"]').forEach((a) => {
     a.addEventListener("click", (e) => {
       const id = a.getAttribute("href");
@@ -121,28 +150,29 @@ function formatCurrency(v) {
     tl && tl.appendChild(box);
   });
 
-  // ---------- COORDENAÇÃO (AGORA IGUAL AOS MEMBROS) ----------
+  // ---------- COORDENAÇÃO (retratos 3:4 via Cloudinary) ----------
   const coordGrid = document.getElementById("coordenacao-grid");
   const equipe = coord.equipe || coord.lista || [];
   equipe.forEach((p) => {
+    const foto = cloudPortrait(p.foto, { ratio: "3:4", w: 600 });
     const c = el("div", "bg-white rounded-lg shadow overflow-hidden");
     c.innerHTML = `
       <div class="h-72 overflow-hidden">
-        <img src="${p.foto || ""}" class="w-full h-full object-cover object-top" alt="${p.nome || ""}">
+        <img src="${foto || ""}" class="w-full h-full object-cover" alt="${p.nome || ""}">
       </div>
       <div class="p-4">
         <h3 class="text-lg font-bold">${p.nome || ""}</h3>
-        <span class="inline-block mt-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-          ${p.cargo || ""}
-        </span>
+        ${p.cargo ? `<span class="inline-block mt-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">${p.cargo}</span>` : ""}
         ${p.descricao ? `<p class="text-sm text-gray-600 mt-2">${p.descricao}</p>` : ""}
       </div>`;
     coordGrid && coordGrid.appendChild(c);
   });
-  if (coordGrid && equipe.length === 0)
-    document.getElementById("coordenacao").classList.add("hidden");
+  if (coordGrid && equipe.length === 0) {
+    const sec = document.getElementById("coordenacao");
+    sec && sec.classList.add("hidden");
+  }
 
-  // ---------- MEMBROS + FILTROS ----------
+  // ---------- MEMBROS (filtros + retratos 3:4 via Cloudinary) ----------
   const filters = ["Todos", "1º Tenor", "2º Tenor", "Barítono", "Baixo"];
   const naipeFilters = document.getElementById("naipe-filters");
   let filtroAtual = "Todos";
@@ -170,10 +200,12 @@ function formatCurrency(v) {
       const match =
         filtroAtual === "Todos" || (m.naipes || [m.naipe]).includes(filtroAtual);
       if (!match) return;
+
+      const foto = cloudPortrait(m.foto, { ratio: "3:4", w: 600 });
       const card = el("div", "bg-white rounded-lg shadow overflow-hidden");
       card.innerHTML = `
         <div class="h-72 overflow-hidden">
-          <img src="${m.foto || ""}" class="w-full h-full object-cover object-top" alt="${m.nome || ""}">
+          <img src="${foto || ""}" class="w-full h-full object-cover" alt="${m.nome || ""}">
         </div>
         <div class="p-4">
           <h3 class="text-lg font-bold">${m.nome || ""}</h3>
@@ -193,18 +225,19 @@ function formatCurrency(v) {
   }
   renderMembros();
 
-  // ---------- GALERIA (com modal) ----------
+  // ---------- GALERIA (com modal/lightbox) ----------
   const albumsGrid = document.getElementById("albums-grid");
   const albumModal = document.getElementById("album-modal");
 
   function albumCard(album, idx) {
+    const capa = album.capa || "";
     const card = el(
       "div",
       "bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition"
     );
     card.innerHTML = `
       <div class="h-48 overflow-hidden">
-        <img src="${album.capa || ""}" alt="${album.titulo || ""}" class="w-full h-48 object-cover">
+        <img src="${capa}" alt="${album.titulo || ""}" class="w-full h-48 object-cover">
       </div>
       <div class="p-4">
         <h3 class="text-lg font-bold mb-1">${album.titulo || ""}</h3>
@@ -218,8 +251,7 @@ function formatCurrency(v) {
   }
 
   if (albumsGrid) {
-    const galeria = await getJSON("data/galeria.json") || {};
-    const albuns = (galeria.albuns || []).map((a) => {
+    const albuns = (galeriaD.albuns || []).map((a) => {
       const itens = Array.isArray(a.itens) ? [...a.itens] : [];
       if (Array.isArray(a.fotos_multi) && a.fotos_multi.length) {
         a.fotos_multi.forEach((src) => itens.push({ tipo: "foto", src }));
@@ -239,7 +271,10 @@ function formatCurrency(v) {
 
     document.getElementById("album-modal-title").textContent = album.titulo || "Álbum";
     const modalContent = document.getElementById("album-modal-content");
-    modalContent.innerHTML = '';
+    modalContent.innerHTML = `
+      <div id="album-items" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"></div>
+    `;
+    const albumItems = document.getElementById("album-items");
 
     (album.itens || []).forEach(item => {
       const wrap = el("div", "rounded overflow-hidden bg-gray-50 relative aspect-square group");
@@ -270,7 +305,7 @@ function formatCurrency(v) {
         const cap = el("div", "absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity", item.alt);
         wrap.appendChild(cap);
       }
-      modalContent.appendChild(wrap);
+      albumItems.appendChild(wrap);
     });
 
     albumModal.classList.remove("hidden");
@@ -315,18 +350,47 @@ function formatCurrency(v) {
     lightboxImg.src = "";
   }
 
+  // ---------- DOAÇÕES ----------
+  const metaEl = document.getElementById("meta-total");
+  const arrEl  = document.getElementById("valor-arrecadado");
+  const bar    = document.getElementById("progress");
+  if (metaEl && arrEl && bar) {
+    const meta = Number(doacoes.meta_total || 0);
+    const arr  = Number(doacoes.arrecadado || 0);
+    metaEl.textContent = meta ? formatCurrency(meta) : "-";
+    arrEl.textContent  = formatCurrency(arr);
+    const pct = meta ? Math.min(100, Math.round((arr / meta) * 100)) : 0;
+    bar.style.width = pct + "%";
+  }
+  const pixChave = document.getElementById("pix-chave");
+  const pixQr    = document.getElementById("pix-qr");
+  if (pixChave) pixChave.textContent = doacoes.pix_chave || "";
+  if (pixQr && doacoes.pix_qr) {
+    pixQr.src = doacoes.pix_qr;
+  }
+  const doacaoLinks = document.getElementById("doacao-links");
+  (doacoes.links || []).forEach((l) => {
+    const li = el("li");
+    li.innerHTML = `<a class="text-sky-600 hover:underline" href="${l.url}" target="_blank" rel="noopener">${l.nome}</a>`;
+    doacaoLinks && doacaoLinks.appendChild(li);
+  });
+
+  // ---------- CONTATO ----------
+  const contatoEmail = document.getElementById("contato-email");
+  const contatoTel   = document.getElementById("contato-telefone");
+  const contatoEnd   = document.getElementById("contato-endereco");
+  if (contatoEmail) contatoEmail.textContent = contato.email || "";
+  if (contatoTel)   contatoTel.textContent   = contato.telefone || "";
+  if (contatoEnd)   contatoEnd.textContent   = contato.endereco || "";
+
   // ---------- FOOTER ----------
   const footerLogo = document.getElementById("footer-logo");
-  footerLogo && (footerLogo.src = footer.logo || header.logo || "");
+  if (footerLogo) footerLogo.src = footer.logo || header.logo || "";
   const fText = document.getElementById("footer-text");
-  fText && (fText.textContent = footer.texto || "");
+  if (fText) fText.textContent = footer.texto || "";
   const fl = document.getElementById("footer-links");
   (footer.links || []).forEach((l) => {
-    const a = el(
-      "a",
-      "text-blue-200 hover:text-white transition",
-      l.nome
-    );
+    const a = el("a", "text-blue-200 hover:text-white transition", l.nome);
     a.href = l.url;
     fl && fl.appendChild(a);
   });
