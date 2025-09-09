@@ -4,7 +4,6 @@
       "titulo": "Ensaio PIBS",
       "descricao": "Esse foi o dia de ensaio.",
       "capa": "/img/uploads/captura-de-tela-2025-08-18-115819.png",
-
       "itens": [
         {
           "tipo": "video",
@@ -12,13 +11,23 @@
           "thumb": "/img/uploads/captura-de-tela-2025-08-18-115819.png"
         }
       ],
-
       "fotos_multi": [
-        "/img/uploads/1.jpg",
-        "/img/uploads/a1.png",
-        { "imagem": "/img/uploads/6.jpg" },
-        { "imagem": "/img/uploads/4.jpg" },
-        "/img/uploads/2.jpg"
+        [
+          "https://res.cloudinary.com/dqfkwolc8/image/upload/f_auto,q_auto/v1757447401/WhatsApp_Image_2025-08-24_at_15.59.22_ivkvua.jpg",
+          "https://res.cloudinary.com/dqfkwolc8/image/upload/f_auto,q_auto/v1757447401/WhatsApp_Image_2025-08-24_at_15.59.24_zfqgml.jpg",
+          "https://res.cloudinary.com/dqfkwolc8/image/upload/f_auto,q_auto/v1757447401/WhatsApp_Image_2025-08-24_at_15.59.27_1_agkwkq.jpg",
+          "https://res.cloudinary.com/dqfkwolc8/image/upload/f_auto,q_auto/v1757447401/WhatsApp_Image_2025-08-24_at_15.59.23_1_wrhye1.jpg",
+          "https://res.cloudinary.com/dqfkwolc8/image/upload/f_auto,q_auto/v1757447401/WhatsApp_Image_2025-08-24_at_15.59.27_f5z5zy.jpg",
+          "https://res.cloudinary.com/dqfkwolc8/image/upload/f_auto,q_auto/v1757447401/WhatsApp_Image_2025-08-24_at_15.59.23_tb6315.jpg",
+          "https://res.cloudinary.com/dqfkwolc8/image/upload/f_auto,q_auto/v1757447402/WhatsApp_Image_2025-08-24_at_15.59.31_srpx2p.jpg",
+          "https://res.cloudinary.com/dqfkwolc8/image/upload/f_auto,q_auto/v1757447402/WhatsApp_Image_2025-08-24_at_15.59.31_1_p3rnyf.jpg",
+          "https://res.cloudinary.com/dqfkwolc8/image/upload/f_auto,q_auto/v1757447402/WhatsApp_Image_2025-08-24_at_15.59.30_fnmmtm.jpg",
+          "https://res.cloudinary.com/dqfkwolc8/image/upload/f_auto,q_auto/v1757447402/WhatsApp_Image_2025-08-24_at_15.59.30_1_rw1dgy.jpg",
+          "https://res.cloudinary.com/dqfkwolc8/image/upload/f_auto,q_auto/v1757447402/WhatsApp_Image_2025-08-24_at_15.59.29_2_ru8kzi.jpg",
+          "https://res.cloudinary.com/dqfkwolc8/image/upload/f_auto,q_auto/v1757447402/WhatsApp_Image_2025-08-24_at_15.59.29_m9vtno.jpg",
+          "https://res.cloudinary.com/dqfkwolc8/image/upload/f_auto,q_auto/v1757447401/WhatsApp_Image_2025-08-24_at_15.59.28_pbia5t.jpg",
+          "https://res.cloudinary.com/dqfkwolc8/image/upload/f_auto,q_auto/v1757447401/WhatsApp_Image_2025-08-24_at_15.59.29_1_bsyboq.jpg"
+        ]
       ]
     }
   ],
