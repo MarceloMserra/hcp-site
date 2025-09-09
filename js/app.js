@@ -121,21 +121,20 @@ function formatCurrency(v) {
     tl && tl.appendChild(box);
   });
 
-  // ---------- COORDENAÇÃO (AJUSTADO AQUI) ----------
+  // ---------- COORDENAÇÃO (AGORA IGUAL AOS MEMBROS) ----------
   const coordGrid = document.getElementById("coordenacao-grid");
   const equipe = coord.equipe || coord.lista || [];
   equipe.forEach((p) => {
     const c = el("div", "bg-white rounded-lg shadow overflow-hidden");
-    // Aplicando as mesmas classes de ajuste que usamos para os membros
     c.innerHTML = `
-      <div class="h-56 overflow-hidden">
+      <div class="h-72 overflow-hidden">
         <img src="${p.foto || ""}" class="w-full h-full object-cover object-top" alt="${p.nome || ""}">
       </div>
       <div class="p-4">
         <h3 class="text-lg font-bold">${p.nome || ""}</h3>
-        <span class="inline-block mt-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">${
-          p.cargo || ""
-        }</span>
+        <span class="inline-block mt-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+          ${p.cargo || ""}
+        </span>
         ${p.descricao ? `<p class="text-sm text-gray-600 mt-2">${p.descricao}</p>` : ""}
       </div>`;
     coordGrid && coordGrid.appendChild(c);
@@ -172,12 +171,9 @@ function formatCurrency(v) {
         filtroAtual === "Todos" || (m.naipes || [m.naipe]).includes(filtroAtual);
       if (!match) return;
       const card = el("div", "bg-white rounded-lg shadow overflow-hidden");
-      
       card.innerHTML = `
         <div class="h-72 overflow-hidden">
-          <img src="${m.foto || ""}" class="w-full h-full object-cover object-top" alt="${
-        m.nome || ""
-      }">
+          <img src="${m.foto || ""}" class="w-full h-full object-cover object-top" alt="${m.nome || ""}">
         </div>
         <div class="p-4">
           <h3 class="text-lg font-bold">${m.nome || ""}</h3>
@@ -208,21 +204,15 @@ function formatCurrency(v) {
     );
     card.innerHTML = `
       <div class="h-48 overflow-hidden">
-        <img src="${album.capa || ""}" alt="${
-      album.titulo || ""
-    }" class="w-full h-48 object-cover">
+        <img src="${album.capa || ""}" alt="${album.titulo || ""}" class="w-full h-48 object-cover">
       </div>
       <div class="p-4">
         <h3 class="text-lg font-bold mb-1">${album.titulo || ""}</h3>
-        ${
-          album.descricao
-            ? `<p class="text-gray-600 text-sm">${album.descricao}</p>`
-            : ""
-        }
+        ${album.descricao ? `<p class="text-gray-600 text-sm">${album.descricao}</p>` : ""}
         <button data-album-id="${idx}" class="mt-3 text-sky-600 font-medium hover:underline">Abrir álbum →</button>
       </div>`;
     card.querySelector("button").addEventListener("click", () => {
-        openAlbumModal(album);
+      openAlbumModal(album);
     });
     return card;
   }
@@ -230,11 +220,11 @@ function formatCurrency(v) {
   if (albumsGrid) {
     const galeria = await getJSON("data/galeria.json") || {};
     const albuns = (galeria.albuns || []).map((a) => {
-        const itens = Array.isArray(a.itens) ? [...a.itens] : [];
-        if (Array.isArray(a.fotos_multi) && a.fotos_multi.length) {
-          a.fotos_multi.forEach((src) => itens.push({ tipo: "foto", src }));
-        }
-        return { ...a, itens };
+      const itens = Array.isArray(a.itens) ? [...a.itens] : [];
+      if (Array.isArray(a.fotos_multi) && a.fotos_multi.length) {
+        a.fotos_multi.forEach((src) => itens.push({ tipo: "foto", src }));
+      }
+      return { ...a, itens };
     });
     albumsGrid.innerHTML = "";
     albuns.forEach((a, i) => albumsGrid.appendChild(albumCard(a, i)));
@@ -250,37 +240,37 @@ function formatCurrency(v) {
     document.getElementById("album-modal-title").textContent = album.titulo || "Álbum";
     const modalContent = document.getElementById("album-modal-content");
     modalContent.innerHTML = '';
-    
+
     (album.itens || []).forEach(item => {
-        const wrap = el("div", "rounded overflow-hidden bg-gray-50 relative aspect-square group");
-        
-        if (item.tipo === "video" && isVideo(item.src)) {
-            let embed = "";
-            const url = item.src || "";
-            if (/youtube\.com|youtu\.be/.test(url)) {
-                const idMatch = url.match(/(?:v=|be\/)([A-Za-z0-9_-]{6,})/);
-                const vid = idMatch ? idMatch[1] : "";
-                embed = `<iframe class="absolute inset-0 w-full h-full" src="https://www.youtube.com/embed/${vid}" frameborder="0" allowfullscreen></iframe>`;
-            } else if (/vimeo\.com/.test(url)) {
-                const idMatch = url.match(/vimeo\.com\/(\d+)/);
-                const vid = idMatch ? idMatch[1] : "";
-                embed = `<iframe class="absolute inset-0 w-full h-full" src="https://player.vimeo.com/video/${vid}" frameborder="0" allowfullscreen></iframe>`;
-            } else if (/\.mp4($|\?)/i.test(url)) {
-                embed = `<video class="absolute inset-0 w-full h-full object-cover" controls src="${url}"></video>`;
-            }
-            wrap.innerHTML = embed;
-        } else {
-            const imgEl = el("img", "absolute inset-0 w-full h-full object-cover cursor-pointer");
-            imgEl.src = item.src || '';
-            imgEl.alt = item.alt || '';
-            imgEl.addEventListener("click", () => openLightbox(item.src));
-            wrap.appendChild(imgEl);
+      const wrap = el("div", "rounded overflow-hidden bg-gray-50 relative aspect-square group");
+
+      if (item.tipo === "video" && isVideo(item.src)) {
+        let embed = "";
+        const url = item.src || "";
+        if (/youtube\.com|youtu\.be/.test(url)) {
+          const idMatch = url.match(/(?:v=|be\/)([A-Za-z0-9_-]{6,})/);
+          const vid = idMatch ? idMatch[1] : "";
+          embed = `<iframe class="absolute inset-0 w-full h-full" src="https://www.youtube.com/embed/${vid}" frameborder="0" allowfullscreen></iframe>`;
+        } else if (/vimeo\.com/.test(url)) {
+          const idMatch = url.match(/vimeo\.com\/(\d+)/);
+          const vid = idMatch ? idMatch[1] : "";
+          embed = `<iframe class="absolute inset-0 w-full h-full" src="https://player.vimeo.com/video/${vid}" frameborder="0" allowfullscreen></iframe>`;
+        } else if (/\.mp4($|\?)/i.test(url)) {
+          embed = `<video class="absolute inset-0 w-full h-full object-cover" controls src="${url}"></video>`;
         }
-        if (item.alt) {
-            const cap = el("div", "absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity", item.alt);
-            wrap.appendChild(cap);
-        }
-        modalContent.appendChild(wrap);
+        wrap.innerHTML = embed;
+      } else {
+        const imgEl = el("img", "absolute inset-0 w-full h-full object-cover cursor-pointer");
+        imgEl.src = item.src || '';
+        imgEl.alt = item.alt || '';
+        imgEl.addEventListener("click", () => openLightbox(item.src));
+        wrap.appendChild(imgEl);
+      }
+      if (item.alt) {
+        const cap = el("div", "absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity", item.alt);
+        wrap.appendChild(cap);
+      }
+      modalContent.appendChild(wrap);
     });
 
     albumModal.classList.remove("hidden");
@@ -296,7 +286,7 @@ function formatCurrency(v) {
 
   if (albumModal) {
     albumModal.addEventListener("click", (e) => {
-        if (e.target.dataset.close === "modal" || e.target === albumModal) closeAlbumModal();
+      if (e.target.dataset.close === "modal" || e.target === albumModal) closeAlbumModal();
     });
     const closeBtn = document.getElementById("album-modal-close");
     if (closeBtn) closeBtn.addEventListener("click", closeAlbumModal);
@@ -306,9 +296,9 @@ function formatCurrency(v) {
   const lightboxImg = document.getElementById("lightbox-img");
 
   if (lightboxModal) {
-      lightboxModal.addEventListener("click", (e) => {
-          if (e.target.dataset.close === "lightbox" || e.target === lightboxModal || e.target === lightboxImg) closeLightbox();
-      });
+    lightboxModal.addEventListener("click", (e) => {
+      if (e.target.dataset.close === "lightbox" || e.target === lightboxModal || e.target === lightboxImg) closeLightbox();
+    });
   }
 
   function openLightbox(src) {
@@ -324,7 +314,6 @@ function formatCurrency(v) {
     document.body.style.overflow = "auto";
     lightboxImg.src = "";
   }
-
 
   // ---------- FOOTER ----------
   const footerLogo = document.getElementById("footer-logo");
