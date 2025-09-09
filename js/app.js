@@ -23,35 +23,40 @@ function formatCurrency(v) {
 }
 
 // ===================== Cloudinary helpers =====================
+// Troque pelo seu cloud_name
+const CLOUDINARY_CLOUD = "dqfkwolc8";
+
 function isCloudinary(url) {
   return /^https?:\/\/res\.cloudinary\.com\//.test(url || "");
 }
 
-/**
- * Gera URL Cloudinary com retrato 3:4, foco em rosto e otimizações.
- * Se a URL JÁ tiver transformações (porque você recortou manualmente),
- * não mexe — respeita o recorte existente.
- */
+// Se a URL Cloudinary JÁ tiver transformações (pq você recortou no Studio), respeita e não altera.
 function cloudPortrait(url, { w = 600 } = {}) {
   if (!url || !isCloudinary(url)) return url;
-
-  // Se já existem transformações no segmento imediatamente após /upload/, não altera
   const parts = url.split("/upload/");
   if (parts.length > 1) {
-    const after = parts[1] || "";
-    const firstSeg = after.split("/")[0]; // ex.: "c_fill,w_600/..." -> pega "c_fill,w_600"
-    const hasTransforms = /\b(c_|w_|h_|ar_|g_)/.test(firstSeg);
+    const firstSeg = (parts[1] || "").split("/")[0];
+    const hasTransforms = /\b(c_|w_|h_|ar_|g_|z_)/.test(firstSeg);
     if (hasTransforms) return url;
   }
-
-  const t = `f_auto,q_auto,dpr_auto,c_fill,g_auto:face,ar_3:4,w_${w}`;
+  // foco no sujeito + leve zoom-out para dar “respiro” no topo
+  const t = `f_auto,q_auto,dpr_auto,c_fill,g_auto:subject,ar_3:4,w_${w},z_0.9`;
   return url.replace("/upload/", `/upload/${t}/`);
 }
 
-/** Cria srcset responsivo; se não for Cloudinary, retorna string vazia */
-function cloudPortraitSrcset(url, widths = [400, 600, 900]) {
-  if (!isCloudinary(url)) return "";
-  return widths.map(w => `${cloudPortrait(url, { w })} ${w}w`).join(", ");
+// Força QUALQUER URL (inclusive /img/uploads/...) a passar pelo Cloudinary via fetch
+function cloudAny(url, { w = 600 } = {}) {
+  if (!url) return url;
+  if (isCloudinary(url)) return cloudPortrait(url, { w });
+  // Absolutiza a partir do domínio do site
+  const abs = new URL(url, window.location.origin).href;
+  const t = `f_auto,q_auto,dpr_auto,c_fill,g_auto:subject,ar_3:4,w_${w},z_0.9`;
+  const base = `https://res.cloudinary.com/${CLOUDINARY_CLOUD}/image/fetch/`;
+  return `${base}${t}/${encodeURIComponent(abs)}`;
+}
+
+function cloudAnySrcset(url, widths = [400, 600, 900]) {
+  return widths.map(w => `${cloudAny(url, { w })} ${w}w`).join(", ");
 }
 
 // ===================== app principal =====================
@@ -158,12 +163,12 @@ function cloudPortraitSrcset(url, widths = [400, 600, 900]) {
     tl && tl.appendChild(box);
   });
 
-  // ---------- COORDENAÇÃO (retratos 3:4 auto) ----------
+  // ---------- COORDENAÇÃO (retratos 3:4 auto + fetch) ----------
   const coordGrid = document.getElementById("coordenacao-grid");
   const equipe = coord.equipe || coord.lista || [];
   equipe.forEach((p) => {
-    const foto = cloudPortrait(p.foto); // aplica auto-crop se for Cloudinary
-    const srcset = cloudPortraitSrcset(p.foto);
+    const foto = cloudAny(p.foto); // aplica em qualquer origem
+    const srcset = cloudAnySrcset(p.foto);
     const c = el("div", "bg-white rounded-lg shadow overflow-hidden");
     c.innerHTML = `
       <div class="h-72 overflow-hidden">
@@ -186,7 +191,7 @@ function cloudPortraitSrcset(url, widths = [400, 600, 900]) {
     sec && sec.classList.add("hidden");
   }
 
-  // ---------- MEMBROS (filtros + retratos 3:4 auto) ----------
+  // ---------- MEMBROS (filtros + retratos 3:4 auto + fetch) ----------
   const filters = ["Todos", "1º Tenor", "2º Tenor", "Barítono", "Baixo"];
   const naipeFilters = document.getElementById("naipe-filters");
   let filtroAtual = "Todos";
@@ -215,8 +220,8 @@ function cloudPortraitSrcset(url, widths = [400, 600, 900]) {
         filtroAtual === "Todos" || (m.naipes || [m.naipe]).includes(filtroAtual);
       if (!match) return;
 
-      const foto = cloudPortrait(m.foto);
-      const srcset = cloudPortraitSrcset(m.foto);
+      const foto = cloudAny(m.foto);
+      const srcset = cloudAnySrcset(m.foto);
       const card = el("div", "bg-white rounded-lg shadow overflow-hidden");
       card.innerHTML = `
         <div class="h-72 overflow-hidden">
