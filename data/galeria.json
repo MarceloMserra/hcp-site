@@ -3,7 +3,7 @@
     {
       "titulo": "Ensaio PIBS",
       "descricao": "Esse foi o dia de ensaio.",
-      "capa": "/img/uploads/captura-de-tela-2025-08-18-115819.png",
+      "capa": "https://res.cloudinary.com/dqfkwolc8/image/upload/f_auto,q_auto/v1757447401/WhatsApp_Image_2025-08-24_at_15.59.23_1_wrhye1.jpg",
       "itens": [
         {
           "tipo": "video",
