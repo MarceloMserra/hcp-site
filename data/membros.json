@@ -12,16 +12,30 @@
       "nome": "Elias Monteiro",
       "foto": "/img/uploads/whatsapp-image-2025-08-24-at-14.12.42.jpeg",
       "naipes": [
-        "1ºTenor"
+        "1º Tenor"
       ],
       "desde": ""
     },
     {
       "nome": "Nilton Lopes",
       "naipes": [
-        "1ºTenor"
+        "1º Tenor"
       ],
       "foto": "/img/uploads/whatsapp-image-2025-08-24-at-14.17.05.jpeg"
+    },
+    {
+      "nome": "Evandro Viana",
+      "naipes": [
+        "Baixo"
+      ],
+      "foto": "/img/uploads/whatsapp-image-2025-08-24-at-13.08.16.jpeg"
+    },
+    {
+      "nome": "Ariovaldo",
+      "naipes": [
+        "Barítono"
+      ],
+      "foto": "/img/uploads/whatsapp-image-2025-08-23-at-22.09.20.jpeg"
     }
   ]
 }
