@@ -21,15 +21,16 @@
       ]
     },
     {
-      "titulo": "teste4",
-      "descricao": "bora ver agora",
-      "capa": "/img/uploads/a1.png",
+      "titulo": "Ensaio PIBS",
+      "descricao": "",
+      "capa": "https://res.cloudinary.com/dqfkwolc8/image/upload/f_auto,q_auto/v1757445773/WhatsApp_Image_2025-08-24_at_15.59.22_wuhad6.jpg",
       "fotos_multi": [
         "/img/uploads/2.jpg",
         "/img/uploads/1.jpg",
         "/img/uploads/6.jpg",
         "/img/uploads/4.jpg"
-      ]
+      ],
+      "itens": []
     }
   ],
   "fotos_multi": ""
