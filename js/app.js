@@ -23,14 +23,14 @@ function formatCurrency(v) {
 }
 
 // ===================== Cloudinary helpers =====================
-// Troque pelo seu cloud_name
+// Troque pelo seu cloud_name se mudar
 const CLOUDINARY_CLOUD = "dqfkwolc8";
 
 function isCloudinary(url) {
   return /^https?:\/\/res\.cloudinary\.com\//.test(url || "");
 }
 
-// Se a URL Cloudinary JÁ tiver transformações (pq você recortou no Studio), respeita e não altera.
+// Respeita URLs Cloudinary que JÁ tenham transformações (recorte salvo no Studio)
 function cloudPortrait(url, { w = 600 } = {}) {
   if (!url || !isCloudinary(url)) return url;
   const parts = url.split("/upload/");
@@ -48,7 +48,6 @@ function cloudPortrait(url, { w = 600 } = {}) {
 function cloudAny(url, { w = 600 } = {}) {
   if (!url) return url;
   if (isCloudinary(url)) return cloudPortrait(url, { w });
-  // Absolutiza a partir do domínio do site
   const abs = new URL(url, window.location.origin).href;
   const t = `f_auto,q_auto,dpr_auto,c_fill,g_auto:subject,ar_3:4,w_${w},z_0.9`;
   const base = `https://res.cloudinary.com/${CLOUDINARY_CLOUD}/image/fetch/`;
@@ -81,7 +80,7 @@ function cloudAnySrcset(url, widths = [400, 600, 900]) {
   const heroOverlay = document.getElementById("hero-overlay");
   if (heroOverlay) heroOverlay.style.background = `rgba(0,0,0,${site.tema?.hero_overlay ?? 0.45})`;
 
-  // ---------- HEADER (logo + menu + mobile) ----------
+  // ---------- HEADER ----------
   const logo = document.getElementById("logo-img");
   if (header.logo) logo.src = header.logo;
 
@@ -163,15 +162,15 @@ function cloudAnySrcset(url, widths = [400, 600, 900]) {
     tl && tl.appendChild(box);
   });
 
-  // ---------- COORDENAÇÃO (retratos 3:4 auto + fetch) ----------
+  // ---------- COORDENAÇÃO ----------
   const coordGrid = document.getElementById("coordenacao-grid");
   const equipe = coord.equipe || coord.lista || [];
   equipe.forEach((p) => {
-    const foto = cloudAny(p.foto); // aplica em qualquer origem
+    const foto = cloudAny(p.foto);
     const srcset = cloudAnySrcset(p.foto);
     const c = el("div", "bg-white rounded-lg shadow overflow-hidden");
     c.innerHTML = `
-      <div class="h-72 overflow-hidden">
+      <div class="overflow-hidden" style="aspect-ratio: 3 / 4;">
         <img
           src="${foto || ""}"
           ${srcset ? `srcset="${srcset}"` : ""}
@@ -191,7 +190,7 @@ function cloudAnySrcset(url, widths = [400, 600, 900]) {
     sec && sec.classList.add("hidden");
   }
 
-  // ---------- MEMBROS (filtros + retratos 3:4 auto + fetch) ----------
+  // ---------- MEMBROS ----------
   const filters = ["Todos", "1º Tenor", "2º Tenor", "Barítono", "Baixo"];
   const naipeFilters = document.getElementById("naipe-filters");
   let filtroAtual = "Todos";
@@ -224,7 +223,7 @@ function cloudAnySrcset(url, widths = [400, 600, 900]) {
       const srcset = cloudAnySrcset(m.foto);
       const card = el("div", "bg-white rounded-lg shadow overflow-hidden");
       card.innerHTML = `
-        <div class="h-72 overflow-hidden">
+        <div class="overflow-hidden" style="aspect-ratio: 3 / 4;">
           <img
             src="${foto || ""}"
             ${srcset ? `srcset="${srcset}"` : ""}
@@ -250,7 +249,7 @@ function cloudAnySrcset(url, widths = [400, 600, 900]) {
   }
   renderMembros();
 
-  // ---------- GALERIA (com modal/lightbox) ----------
+  // ---------- GALERIA ----------
   const albumsGrid = document.getElementById("albums-grid");
   const albumModal = document.getElementById("album-modal");
 
