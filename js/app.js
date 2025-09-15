@@ -55,10 +55,11 @@ function cloudAny(url, { w = 600 } = {}) {
   if (!url) return url;
   if (isCloudinary(url)) return cloudPortrait(url, { w });
   const abs = new URL(url, window.location.origin).href;
-  const t = `f_auto,q_auto,dpr_auto,c_fill,g_auto:subject,ar_3:4,w_${w},z_0.9`;
+  const t = `f_auto,q_auto,dpr_auto,w_${w}`;
   const base = `https://res.cloudinary.com/${CLOUDINARY_CLOUD}/image/fetch/`;
   return `${base}${t}/${encodeURIComponent(abs)}`;
 }
+
 function cloudAnySrcset(url, widths = [400, 600, 900]) {
   return widths.map(w => `${cloudAny(url, { w })} ${w}w`).join(", ");
 }
@@ -154,20 +155,20 @@ function isVideo(url) {
 
 // ===================== app principal =====================
 (async () => {
-  const site     = await getJSON("data/site.json")        || {};
-  const header   = await getJSON("data/header.json")      || {};
-  const footer   = await getJSON("data/footer.json")      || {};
-  const coord    = await getJSON("data/coordenacao.json") || {};
-  const membros  = await getJSON("data/membros.json")     || {};
-  const galeriaD = await getJSON("data/galeria.json")     || {};
-  const doacoes  = await getJSON("data/doacoes.json")     || {};
-  const contato  = await getJSON("data/contato.json")     || {};
+  const site = await getJSON("data/site.json") || {};
+  const header = await getJSON("data/header.json") || {};
+  const footer = await getJSON("data/footer.json") || {};
+  const coord = await getJSON("data/coordenacao.json") || {};
+  const membros = await getJSON("data/membros.json") || {};
+  const galeriaD = await getJSON("data/galeria.json") || {};
+  const doacoes = await getJSON("data/doacoes.json") || {};
+  const contato = await getJSON("data/contato.json") || {};
 
   // ---------- HERO ----------
   const slogan = document.getElementById("slogan");
-  const lema   = document.getElementById("lema");
+  const lema = document.getElementById("lema");
   if (slogan) slogan.textContent = site.slogan || "";
-  if (lema)   lema.textContent   = site.lema   || "";
+  if (lema) lema.textContent = site.lema || "";
 
   const hero = document.getElementById("home");
   if (hero && site.hero) hero.style.backgroundImage = `url('${site.hero}')`;
@@ -261,16 +262,16 @@ function isVideo(url) {
   const coordGrid = document.getElementById("coordenacao-grid");
   const equipe = coord.equipe || coord.lista || [];
   equipe.forEach((p) => {
-    const foto = cloudAny(p.foto);
+    const foto = cloudPortrait(p.foto);
     const srcset = cloudAnySrcset(p.foto);
     const c = el("div", "bg-white rounded-lg shadow overflow-hidden cursor-pointer group");
     c.innerHTML = `
-      <div class="overflow-hidden" style="aspect-ratio: 3 / 4;">
+      <div class="h-56 overflow-hidden">
         <img
           src="${foto || ""}"
           ${srcset ? `srcset="${srcset}"` : ""}
           sizes="(min-width:1280px) 300px, (min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"
-          class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+          class="w-full h-full object-cover object-top transition-transform duration-300 group-hover:scale-[1.02]"
           alt="${p.nome || ""}">
       </div>
       <div class="p-4">
@@ -316,16 +317,16 @@ function isVideo(url) {
         filtroAtual === "Todos" || (m.naipes || [m.naipe]).includes(filtroAtual);
       if (!match) return;
 
-      const foto = cloudAny(m.foto);
+      const foto = cloudPortrait(m.foto);
       const srcset = cloudAnySrcset(m.foto);
       const card = el("div", "bg-white rounded-lg shadow overflow-hidden");
       card.innerHTML = `
-        <div class="overflow-hidden" style="aspect-ratio: 3 / 4;">
+        <div class="h-72 overflow-hidden">
           <img
             src="${foto || ""}"
             ${srcset ? `srcset="${srcset}"` : ""}
             sizes="(min-width:1280px) 300px, (min-width:1024px) 25vw, (min-width:640px) 33vw, 100vw"
-            class="w-full h-full object-cover"
+            class="w-full h-full object-cover object-top"
             alt="${m.nome || ""}">
         </div>
         <div class="p-4">
