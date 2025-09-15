@@ -378,62 +378,43 @@ function isVideo(url) {
     return card;
   }
 
+  // estado da lightbox p/ navegar
+  let LB_ITEMS = [];
+  let LB_INDEX = 0;
+
   function openAlbumModal(album) {
     if (!albumModal) return;
     albumTitle.textContent = album.titulo || "Álbum";
-    albumContentWrapper.innerHTML = `<div id="album-items" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"></div>`;
+
+    // grid responsiva, sem forçar corte: cada foto mantém sua proporção
+    albumContentWrapper.innerHTML = `
+      <div id="album-items"
+           class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"></div>`;
     const albumItems = document.getElementById("album-items");
 
-    asArray(album.itens).forEach(item => {
-      if (!item) return;
-      const wrap = el("div", "rounded overflow-hidden bg-gray-50 relative aspect-square group");
+    // prepara itens normalizados p/ lightbox
+    LB_ITEMS = asArray(album.itens).map((item) => {
+      const src = item?.src || normalizePhotoItem(item) || normalizeVideoItem(item) || "";
+      const tipo = item?.tipo || (isVideo(src) ? "video" : "foto");
+      const alt  = item?.alt || item?.legenda || item?.caption || album.titulo || "";
+      return { tipo, src, alt };
+    });
 
-      // normaliza
-      const src = item.src || normalizePhotoItem(item) || normalizeVideoItem(item);
-
-      if (item.tipo === "video" || isVideo(src)) {
-        // --- vídeo
-        let embed = "";
-        const url = src || "";
-        if (/youtube\.com|youtu\.be/.test(url)) {
-          // pega id (watch?v=, youtu.be/, shorts/)
-          const idMatch =
-            url.match(/(?:v=|be\/|shorts\/)([A-Za-z0-9_-]{6,})/) ||
-            url.match(/[?&]v=([A-Za-z0-9_-]{6,})/);
-          const vid = idMatch ? idMatch[1] : "";
-          embed = `<iframe class="absolute inset-0 w-full h-full" src="https://www.youtube.com/embed/${vid}" frameborder="0" allowfullscreen></iframe>`;
-        } else if (/vimeo\.com/.test(url)) {
-          const idMatch = url.match(/vimeo\.com\/(\d+)/);
-          const vid = idMatch ? idMatch[1] : "";
-          embed = `<iframe class="absolute inset-0 w-full h-full" src="https://player.vimeo.com/video/${vid}" frameborder="0" allowfullscreen></iframe>`;
-        } else if (/\.mp4($|\?)/i.test(url)) {
-          embed = `<video class="absolute inset-0 w-full h-full object-cover" controls src="${url}"></video>`;
-        } else {
-          // fallback: trata como imagem
-          const imgEl = el("img", "absolute inset-0 w-full h-full object-cover cursor-pointer");
-          imgEl.src = cloudAny(src, { w: 900 });
-          imgEl.alt = item.alt || album.titulo || "";
-          imgEl.addEventListener("click", () => openLightbox(imgEl.src));
-          wrap.appendChild(imgEl);
-        }
-        if (embed) wrap.innerHTML = embed;
+    // miniaturas (sem corte → object-contain e altura auto)
+    LB_ITEMS.forEach((item, i) => {
+      const wrap = el("div", "rounded bg-white/60 p-1 relative");
+      if (item.tipo === "video") {
+        // thumb de vídeo (iframe só dentro da lightbox)
+        const thumb = el("div", "aspect-video bg-black/10 rounded grid place-items-center cursor-pointer");
+        thumb.innerHTML = `<span class="text-xs text-gray-700">▶ Vídeo</span>`;
+        thumb.addEventListener("click", () => openLightboxIndex(i));
+        wrap.appendChild(thumb);
       } else {
-        // --- foto
-        const imgEl = el("img", "absolute inset-0 w-full h-full object-cover cursor-pointer");
-        imgEl.src = cloudAny(src, { w: 900 });
-        imgEl.alt = item.alt || item.legenda || item.caption || album.titulo || "";
-        imgEl.addEventListener("click", () => openLightbox(imgEl.src));
+        const imgEl = el("img", "w-full h-auto block cursor-pointer");
+        imgEl.src = cloudAny(item.src, { w: 900 });
+        imgEl.alt = item.alt;
+        imgEl.addEventListener("click", () => openLightboxIndex(i));
         wrap.appendChild(imgEl);
-      }
-
-      const altTxt = item.alt || item.legenda || item.caption;
-      if (altTxt) {
-        const cap = el(
-          "div",
-          "absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity",
-          altTxt
-        );
-        wrap.appendChild(cap);
       }
       albumItems.appendChild(wrap);
     });
@@ -460,7 +441,7 @@ function isVideo(url) {
   }
   if (albumClose) albumClose.addEventListener("click", closeAlbumModal);
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") closeAlbumModal();
+    if (e.key === "Escape" && !lightboxIsOpen()) closeAlbumModal();
   });
   window.addEventListener("popstate", () => {
     if (!albumModal.classList.contains("hidden")) closeAlbumModal();
@@ -468,26 +449,148 @@ function isVideo(url) {
 
   // ---------- LIGHTBOX ----------
   const lightboxModal = document.getElementById("lightbox");
-  const lightboxImg = document.getElementById("lightbox-img");
+  const lightboxImg   = document.getElementById("lightbox-img");
 
-  function openLightbox(src) {
+  // cria/garante botões de navegação na lightbox
+  function ensureLightboxControls() {
     if (!lightboxModal) return;
-    lightboxImg.src = src;
+    // container de controles
+    let ctrls = document.getElementById("lb-ctrls");
+    if (!ctrls) {
+      ctrls = el("div", "pointer-events-none");
+      ctrls.id = "lb-ctrls";
+      ctrls.style.position = "fixed";
+      ctrls.style.inset = "0";
+      lightboxModal.appendChild(ctrls);
+    } else {
+      ctrls.innerHTML = "";
+    }
+
+    const mkBtn = (id, text, posClass) => {
+      const b = el(
+        "button",
+        "pointer-events-auto bg-black/60 text-white rounded-full w-10 h-10 grid place-items-center hover:bg-black/80 focus:outline-none",
+        text
+      );
+      b.id = id;
+      b.style.position = "fixed";
+      b.classList.add(...posClass.split(" "));
+      return b;
+    };
+
+    // prev / next / close / back
+    const prev = mkBtn("lb-prev", "‹", "left-4 top-1/2 -translate-y-1/2");
+    const next = mkBtn("lb-next", "›", "right-4 top-1/2 -translate-y-1/2");
+    const close= mkBtn("lb-close","✕","right-4 top-4");
+    const back = el(
+      "button",
+      "pointer-events-auto bg-white/90 text-gray-900 rounded px-3 py-1 text-sm hover:bg-white fixed left-4 bottom-4",
+      "Voltar ao álbum"
+    );
+
+    prev.addEventListener("click", prevLightbox);
+    next.addEventListener("click", nextLightbox);
+    close.addEventListener("click", closeLightbox);
+    back.addEventListener("click", closeLightbox);
+
+    ctrls.appendChild(prev);
+    ctrls.appendChild(next);
+    ctrls.appendChild(close);
+    ctrls.appendChild(back);
+  }
+
+  function lightboxIsOpen() {
+    return lightboxModal && !lightboxModal.classList.contains("hidden");
+  }
+
+  // abre lightbox na posição i
+  function openLightboxIndex(i) {
+    if (!lightboxModal) return;
+    LB_INDEX = (i + LB_ITEMS.length) % LB_ITEMS.length;
+
+    const item = LB_ITEMS[LB_INDEX];
+    ensureLightboxControls();
+
+    // imagem “tamanho real” dentro da viewport
+    if (item.tipo === "video") {
+      const url = item.src || "";
+      // trocar lightbox-img por iframe/video se necessário
+      if (lightboxImg.tagName !== "DIV") {
+        const holder = document.createElement("div");
+        holder.id = "lightbox-img";
+        lightboxImg.replaceWith(holder);
+      }
+      const holder = document.getElementById("lightbox-img");
+      holder.className = "w-[90vw] h-[90vh] max-w-[90vw] max-h-[90vh] mx-auto block rounded shadow-xl";
+      if (/youtube\.com|youtu\.be/.test(url)) {
+        const idMatch =
+          url.match(/(?:v=|be\/|shorts\/)([A-Za-z0-9_-]{6,})/) ||
+          url.match(/[?&]v=([A-Za-z0-9_-]{6,})/);
+        const vid = idMatch ? idMatch[1] : "";
+        holder.innerHTML = `<iframe class="w-full h-full" src="https://www.youtube.com/embed/${vid}" frameborder="0" allowfullscreen></iframe>`;
+      } else if (/vimeo\.com/.test(url)) {
+        const idMatch = url.match(/vimeo\.com\/(\d+)/);
+        const vid = idMatch ? idMatch[1] : "";
+        holder.innerHTML = `<iframe class="w-full h-full" src="https://player.vimeo.com/video/${vid}" frameborder="0" allowfullscreen></iframe>`;
+      } else if (/\.mp4($|\?)/i.test(url)) {
+        holder.innerHTML = `<video class="w-full h-full object-contain" controls src="${url}"></video>`;
+      } else {
+        // fallback imagem
+        holder.innerHTML = `<img class="max-w-[90vw] max-h-[90vh] w-auto h-auto object-contain mx-auto block shadow-xl rounded" src="${cloudAny(url, { w: 2000 })}" alt="">`;
+      }
+    } else {
+      // garantir que tenhamos <img id="lightbox-img">
+      if (lightboxImg.tagName !== "IMG") {
+        const newImg = document.createElement("img");
+        newImg.id = "lightbox-img";
+        document.getElementById("lightbox-img").replaceWith(newImg);
+      }
+      const img = document.getElementById("lightbox-img");
+      img.className = "max-w-[90vw] max-h-[90vh] w-auto h-auto object-contain mx-auto block shadow-xl rounded";
+      img.src = cloudAny(item.src, { w: 2000 });
+      img.alt = item.alt || "";
+    }
+
     lightboxModal.classList.remove("hidden");
     document.body.style.overflow = "hidden";
   }
+
+  // navegação
+  function nextLightbox() {
+    if (!LB_ITEMS.length) return;
+    openLightboxIndex(LB_INDEX + 1);
+  }
+  function prevLightbox() {
+    if (!LB_ITEMS.length) return;
+    openLightboxIndex(LB_INDEX - 1);
+  }
+
+  // fechar lightbox
   function closeLightbox() {
     if (!lightboxModal) return;
     lightboxModal.classList.add("hidden");
     document.body.style.overflow = "auto";
-    lightboxImg.src = "";
+    // restaura elemento imagem simples (se tiver trocado por iframe/video)
+    const holder = document.getElementById("lightbox-img");
+    if (holder && holder.tagName !== "IMG") {
+      const img = document.createElement("img");
+      img.id = "lightbox-img";
+      img.className = "max-w-[90vw] max-h-[90vh] w-auto h-auto object-contain mx-auto block shadow-xl rounded";
+      holder.replaceWith(img);
+    }
   }
+
+  // interações do overlay e teclado
   if (lightboxModal) {
     lightboxModal.addEventListener("click", (e) => {
-      if (e.target.dataset.close === "lightbox" || e.target === lightboxModal || e.target === lightboxImg) closeLightbox();
+      const isOverlay = e.target.dataset.close === "lightbox" || e.target === lightboxModal;
+      if (isOverlay) closeLightbox();
     });
     document.addEventListener("keydown", (e) => {
+      if (!lightboxIsOpen()) return;
       if (e.key === "Escape") closeLightbox();
+      if (e.key === "ArrowRight") nextLightbox();
+      if (e.key === "ArrowLeft") prevLightbox();
     });
   }
 
