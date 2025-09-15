@@ -29,6 +29,33 @@
           "https://res.cloudinary.com/dqfkwolc8/image/upload/f_auto,q_auto/v1757447401/WhatsApp_Image_2025-08-24_at_15.59.29_1_bsyboq.jpg"
         ]
       ]
+    },
+    {
+      "titulo": "IBCAL (16º Aniversário)",
+      "descricao": "Igreja Batista Central de Aguas Lindas",
+      "capa": "https://res.cloudinary.com/dqfkwolc8/image/upload/f_auto,q_auto/v1757960989/WhatsApp_Image_2025-09-13_at_19.28.39_qt4ygu.jpg",
+      "itens": [
+        {
+          "tipo": "video",
+          "src": "https://www.youtube.com/watch?v=gzrClrp7p0g",
+          "thumb": "https://res.cloudinary.com/dqfkwolc8/image/upload/f_auto,q_auto/v1757961056/hcp_thumb_C_ljdo52.jpg"
+        }
+      ],
+      "fotos_multi": [
+        [
+          "https://res.cloudinary.com/dqfkwolc8/image/upload/f_auto,q_auto/v1757961101/WhatsApp_Image_2025-09-15_at_08.14.58_rochez.jpg",
+          "https://res.cloudinary.com/dqfkwolc8/image/upload/f_auto,q_auto/v1757961100/WhatsApp_Image_2025-09-15_at_08.14.58_1_exunj9.jpg",
+          "https://res.cloudinary.com/dqfkwolc8/image/upload/f_auto,q_auto/v1757961224/WhatsApp_Image_2025-09-14_at_01.23.53_dvnhgq.jpg",
+          "https://res.cloudinary.com/dqfkwolc8/image/upload/f_auto,q_auto/v1757961226/WhatsApp_Image_2025-09-13_at_19.59.37_dnzdmd.jpg",
+          "https://res.cloudinary.com/dqfkwolc8/image/upload/f_auto,q_auto/v1757961226/WhatsApp_Image_2025-09-13_at_18.01.16_kaooiz.jpg",
+          "https://res.cloudinary.com/dqfkwolc8/image/upload/f_auto,q_auto/v1757961227/WhatsApp_Image_2025-09-13_at_17.58.42_b0lm90.jpg",
+          "https://res.cloudinary.com/dqfkwolc8/image/upload/f_auto,q_auto/v1757961233/WhatsApp_Image_2025-09-13_at_17.42.48_wt71vi.jpg",
+          "https://res.cloudinary.com/dqfkwolc8/image/upload/f_auto,q_auto/v1757961232/WhatsApp_Image_2025-09-13_at_17.56.29_ox8a4r.jpg",
+          "https://res.cloudinary.com/dqfkwolc8/image/upload/f_auto,q_auto/v1757961227/WhatsApp_Image_2025-09-13_at_18.59.30_rwkimm.jpg",
+          "https://res.cloudinary.com/dqfkwolc8/image/upload/f_auto,q_auto/v1757961226/WhatsApp_Image_2025-09-13_at_20.50.24_pxzvab.jpg",
+          "https://res.cloudinary.com/dqfkwolc8/image/upload/f_auto,q_auto/v1757961227/WhatsApp_Image_2025-09-13_at_17.57.38_bq8esu.jpg"
+        ]
+      ]
     }
   ],
   "fotos": []
