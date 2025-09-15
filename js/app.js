@@ -22,6 +22,14 @@ function formatCurrency(v) {
   }
 }
 
+// helpers genéricos
+const asArray = (x) => (Array.isArray(x) ? x : x ? [x] : []);
+const pick = (obj, keys, def = undefined) => {
+  if (!obj) return def;
+  for (const k of keys) if (obj[k] !== undefined) return obj[k];
+  return def;
+};
+
 // ===================== Cloudinary helpers =====================
 const CLOUDINARY_CLOUD = "dqfkwolc8";
 
@@ -38,7 +46,6 @@ function cloudPortrait(url, { w = 600 } = {}) {
     const hasTransforms = /\b(c_|w_|h_|ar_|g_|z_)/.test(firstSeg);
     if (hasTransforms) return url;
   }
-  // foco no sujeito + leve zoom-out
   const t = `f_auto,q_auto,dpr_auto,c_fill,g_auto:subject,ar_3:4,w_${w},z_0.9`;
   return url.replace("/upload/", `/upload/${t}/`);
 }
@@ -54,6 +61,95 @@ function cloudAny(url, { w = 600 } = {}) {
 }
 function cloudAnySrcset(url, widths = [400, 600, 900]) {
   return widths.map(w => `${cloudAny(url, { w })} ${w}w`).join(", ");
+}
+
+// ===================== normalizadores (CMS <-> Front) =====================
+
+// aceita string OU objeto e tenta achar a URL da imagem
+function normalizePhotoItem(x) {
+  if (!x) return null;
+  if (typeof x === "string") return x;
+  return (
+    x.src ||
+    x.url ||
+    x.imagem ||
+    x.image ||
+    x.foto ||
+    x.path ||
+    null
+  );
+}
+
+// idem para vídeos (string ou objeto)
+function normalizeVideoItem(x) {
+  if (!x) return null;
+  if (typeof x === "string") return x;
+  return x.src || x.url || x.video || null;
+}
+
+// transforma qualquer “raw album” em um formato uniforme:
+// { titulo, descricao, capa, itens: [{tipo:'foto'|'video', src, alt?}] }
+function normalizeAlbum(raw) {
+  if (!raw) return null;
+
+  const titulo = pick(raw, ["titulo", "title", "nome"], "");
+  const descricao = pick(raw, ["descricao", "descrição", "description"], "");
+  const capa = normalizePhotoItem(
+    pick(raw, ["capa", "cover", "thumb", "thumbnail", "imagem"])
+  );
+
+  // possíveis nomes para lista de fotos
+  const fotosLists = asArray(pick(raw, ["fotos", "fotos_multi", "fotos_multiplas", "fotos_multipla", "imagens", "images", "photos"], []))
+    .flat();
+
+  // possíveis nomes para lista de vídeos
+  const videosLists = asArray(pick(raw, ["videos", "vídeos", "clips"], []))
+    .flat();
+
+  // algumas coleções salvam um campo "itens"/"items" já misto
+  const itensMistos = asArray(pick(raw, ["itens", "items"], [])).flat();
+
+  const itens = [];
+
+  // fotos explícitas
+  for (const f of fotosLists) {
+    const src = normalizePhotoItem(f);
+    if (src) {
+      itens.push({
+        tipo: "foto",
+        src,
+        alt: (typeof f === "object" && (f.alt || f.legenda || f.caption)) || "",
+      });
+    }
+  }
+
+  // vídeos explícitos
+  for (const v of videosLists) {
+    const src = normalizeVideoItem(v);
+    if (src) {
+      itens.push({ tipo: "video", src });
+    }
+  }
+
+  // itens já mistos (foto/video)
+  for (const it of itensMistos) {
+    if (!it) continue;
+    const t = (it.tipo || it.type || "").toLowerCase();
+    if (t === "video" || t === "vídeo") {
+      const src = normalizeVideoItem(it);
+      if (src) itens.push({ tipo: "video", src });
+    } else {
+      const src = normalizePhotoItem(it);
+      if (src) itens.push({ tipo: "foto", src, alt: it.alt || it.legenda || it.caption || "" });
+    }
+  }
+
+  return { titulo, descricao, capa, itens };
+}
+
+// detecta vídeo por padrão
+function isVideo(url) {
+  return (url || "").match(/youtube\.com|youtu\.be|vimeo\.com|\.mp4($|\?)/i);
 }
 
 // ===================== app principal =====================
@@ -80,7 +176,7 @@ function cloudAnySrcset(url, widths = [400, 600, 900]) {
 
   // ---------- HEADER ----------
   const logo = document.getElementById("logo-img");
-  if (header.logo) logo.src = header.logo;
+  if (logo && header.logo) logo.src = header.logo;
 
   const logoLink = document.getElementById("logo-link");
   if (logoLink) {
@@ -95,11 +191,11 @@ function cloudAnySrcset(url, widths = [400, 600, 900]) {
   (header.menu || []).forEach((item) => {
     const a = el("a", "text-gray-700 hover:text-blue-700 font-medium", item.text);
     a.href = item.url;
-    nav && nav.appendChild(a);
+    if (nav) nav.appendChild(a);
 
     const am = a.cloneNode(true);
     am.className = "block py-2 text-gray-700 hover:text-blue-700 font-medium";
-    mobileLinks && mobileLinks.appendChild(am);
+    if (mobileLinks) mobileLinks.appendChild(am);
   });
 
   const btn = document.getElementById("mobile-menu-button");
@@ -129,10 +225,11 @@ function cloudAnySrcset(url, widths = [400, 600, 900]) {
         if (!clickInside) closeMenu();
       }
     });
-    mobileLinks &&
+    if (mobileLinks) {
       mobileLinks.addEventListener("click", (e) => {
         if (e.target.tagName === "A") closeMenu();
       });
+    }
   }
 
   // Smooth scroll
@@ -157,7 +254,7 @@ function cloudAnySrcset(url, widths = [400, 600, 900]) {
       <h3 class="text-xl font-bold text-blue-900 mb-1">${t.titulo || ""}</h3>
       <p class="text-gray-600 mb-2">${t.ano || ""}</p>
       <p class="text-gray-700">${t.texto || ""}</p>`;
-    tl && tl.appendChild(box);
+    if (tl) tl.appendChild(box);
   });
 
   // ---------- COORDENAÇÃO ----------
@@ -181,11 +278,11 @@ function cloudAnySrcset(url, widths = [400, 600, 900]) {
         ${p.cargo ? `<span class="inline-block mt-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">${p.cargo}</span>` : ""}
         ${p.descricao ? `<p class="text-sm text-gray-600 mt-2">${p.descricao}</p>` : ""}
       </div>`;
-    coordGrid && coordGrid.appendChild(c);
+    if (coordGrid) coordGrid.appendChild(c);
   });
   if (coordGrid && equipe.length === 0) {
     const sec = document.getElementById("coordenacao");
-    sec && sec.classList.add("hidden");
+    if (sec) sec.classList.add("hidden");
   }
 
   // ---------- MEMBROS ----------
@@ -197,15 +294,17 @@ function cloudAnySrcset(url, widths = [400, 600, 900]) {
     if (f === filtroAtual) b.classList.add("bg-blue-900", "text-white");
     b.addEventListener("click", () => {
       filtroAtual = f;
-      [...naipeFilters.children].forEach(
-        (x) =>
-          (x.className =
-            "px-4 py-2 rounded border bg-white text-gray-700 hover:bg-gray-50")
-      );
+      if (naipeFilters) {
+        [...naipeFilters.children].forEach(
+          (x) =>
+            (x.className =
+              "px-4 py-2 rounded border bg-white text-gray-700 hover:bg-gray-50")
+        );
+      }
       b.className = "px-4 py-2 rounded border bg-blue-900 text-white";
       renderMembros();
     });
-    naipeFilters && naipeFilters.appendChild(b);
+    if (naipeFilters) naipeFilters.appendChild(b);
   });
 
   function renderMembros() {
@@ -251,27 +350,20 @@ function cloudAnySrcset(url, widths = [400, 600, 900]) {
   const albumContentWrapper = document.getElementById("album-modal-content");
   const albumClose = document.getElementById("album-modal-close");
 
-  // normaliza entradas (string ou objeto)
-  function normalizePhotoItem(x) {
-    if (!x) return null;
-    if (typeof x === "string") return x;
-    return x.imagem || x.image || x.url || x.src || null;
+  // tenta encontrar a lista de álbuns dentro do JSON (flexível)
+  const rawAlbuns =
+    pick(galeriaD, ["albuns", "álbuns", "albums", "lista"]) ||
+    pick(galeriaD?.galeria, ["albuns", "álbuns", "albums", "lista"]) ||
+    [];
+
+  if (albumsGrid) {
+    const albuns = asArray(rawAlbuns).map(normalizeAlbum).filter(Boolean);
+    albumsGrid.innerHTML = "";
+    albuns.forEach((a) => albumsGrid.appendChild(albumCard(a)));
   }
 
-  function buildAlbumList(raw) {
-    const itens = Array.isArray(raw.itens) ? [...raw.itens] : [];
-    // anexar fotos_multi
-    if (Array.isArray(raw.fotos_multi)) {
-      raw.fotos_multi.forEach(f => {
-        const src = normalizePhotoItem(f);
-        if (src) itens.push({ tipo: "foto", src });
-      });
-    }
-    return { ...raw, itens };
-  }
-
-  function albumCard(album, idx) {
-    const capa = album.capa || "";
+  function albumCard(album) {
+    const capa = normalizePhotoItem(album.capa) || "";
     const card = el("div", "bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition cursor-pointer group");
     card.innerHTML = `
       <div class="h-48 overflow-hidden">
@@ -282,19 +374,8 @@ function cloudAnySrcset(url, widths = [400, 600, 900]) {
         ${album.descricao ? `<p class="text-gray-600 text-sm">${album.descricao}</p>` : ""}
         <span class="mt-3 inline-block text-sky-600 font-medium">Abrir álbum →</span>
       </div>`;
-    // o card todo abre o álbum
     card.addEventListener("click", () => openAlbumModal(album));
     return card;
-  }
-
-  if (albumsGrid) {
-    const albuns = (galeriaD.albuns || []).map(buildAlbumList);
-    albumsGrid.innerHTML = "";
-    albuns.forEach((a) => albumsGrid.appendChild(albumCard(a)));
-  }
-
-  function isVideo(url) {
-    return (url || "").match(/youtube\.com|youtu\.be|vimeo\.com|\.mp4($|\?)/i);
   }
 
   function openAlbumModal(album) {
@@ -303,14 +384,22 @@ function cloudAnySrcset(url, widths = [400, 600, 900]) {
     albumContentWrapper.innerHTML = `<div id="album-items" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"></div>`;
     const albumItems = document.getElementById("album-items");
 
-    (album.itens || []).forEach(item => {
+    asArray(album.itens).forEach(item => {
+      if (!item) return;
       const wrap = el("div", "rounded overflow-hidden bg-gray-50 relative aspect-square group");
-      // vídeo
-      if (item.tipo === "video" && isVideo(item.src)) {
+
+      // normaliza
+      const src = item.src || normalizePhotoItem(item) || normalizeVideoItem(item);
+
+      if (item.tipo === "video" || isVideo(src)) {
+        // --- vídeo
         let embed = "";
-        const url = item.src || "";
+        const url = src || "";
         if (/youtube\.com|youtu\.be/.test(url)) {
-          const idMatch = url.match(/(?:v=|be\/)([A-Za-z0-9_-]{6,})/);
+          // pega id (watch?v=, youtu.be/, shorts/)
+          const idMatch =
+            url.match(/(?:v=|be\/|shorts\/)([A-Za-z0-9_-]{6,})/) ||
+            url.match(/[?&]v=([A-Za-z0-9_-]{6,})/);
           const vid = idMatch ? idMatch[1] : "";
           embed = `<iframe class="absolute inset-0 w-full h-full" src="https://www.youtube.com/embed/${vid}" frameborder="0" allowfullscreen></iframe>`;
         } else if (/vimeo\.com/.test(url)) {
@@ -319,18 +408,31 @@ function cloudAnySrcset(url, widths = [400, 600, 900]) {
           embed = `<iframe class="absolute inset-0 w-full h-full" src="https://player.vimeo.com/video/${vid}" frameborder="0" allowfullscreen></iframe>`;
         } else if (/\.mp4($|\?)/i.test(url)) {
           embed = `<video class="absolute inset-0 w-full h-full object-cover" controls src="${url}"></video>`;
+        } else {
+          // fallback: trata como imagem
+          const imgEl = el("img", "absolute inset-0 w-full h-full object-cover cursor-pointer");
+          imgEl.src = cloudAny(src, { w: 900 });
+          imgEl.alt = item.alt || album.titulo || "";
+          imgEl.addEventListener("click", () => openLightbox(imgEl.src));
+          wrap.appendChild(imgEl);
         }
-        wrap.innerHTML = embed;
+        if (embed) wrap.innerHTML = embed;
       } else {
-        // foto
+        // --- foto
         const imgEl = el("img", "absolute inset-0 w-full h-full object-cover cursor-pointer");
-        imgEl.src = cloudAny(item.src, { w: 900 });
-        imgEl.alt = item.alt || album.titulo || "";
+        imgEl.src = cloudAny(src, { w: 900 });
+        imgEl.alt = item.alt || item.legenda || item.caption || album.titulo || "";
         imgEl.addEventListener("click", () => openLightbox(imgEl.src));
         wrap.appendChild(imgEl);
       }
-      if (item.alt) {
-        const cap = el("div", "absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity", item.alt);
+
+      const altTxt = item.alt || item.legenda || item.caption;
+      if (altTxt) {
+        const cap = el(
+          "div",
+          "absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity",
+          altTxt
+        );
         wrap.appendChild(cap);
       }
       albumItems.appendChild(wrap);
@@ -338,7 +440,6 @@ function cloudAnySrcset(url, widths = [400, 600, 900]) {
 
     albumModal.classList.remove("hidden");
     document.body.style.overflow = "hidden";
-    // hash para permitir "voltar"
     history.pushState({ albumOpen: true }, "", "#album");
   }
 
@@ -348,7 +449,6 @@ function cloudAnySrcset(url, widths = [400, 600, 900]) {
     document.body.style.overflow = "auto";
     albumTitle.textContent = "";
     albumContentWrapper.innerHTML = "";
-    // limpar hash, sem sair da página
     if (location.hash === "#album") history.replaceState(null, "", " ");
   }
 
@@ -412,7 +512,7 @@ function cloudAnySrcset(url, widths = [400, 600, 900]) {
   (doacoes.links || []).forEach((l) => {
     const li = el("li");
     li.innerHTML = `<a class="text-sky-600 hover:underline" href="${l.url}" target="_blank" rel="noopener">${l.nome}</a>`;
-    doacaoLinks && doacaoLinks.appendChild(li);
+    if (doacaoLinks) doacaoLinks.appendChild(li);
   });
 
   // ---------- CONTATO ----------
@@ -432,6 +532,6 @@ function cloudAnySrcset(url, widths = [400, 600, 900]) {
   (footer.links || []).forEach((l) => {
     const a = el("a", "text-blue-200 hover:text-white transition", l.nome);
     a.href = l.url;
-    fl && fl.appendChild(a);
+    if (fl) fl.appendChild(a);
   });
 })();
