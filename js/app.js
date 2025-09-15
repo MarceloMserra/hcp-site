@@ -37,45 +37,32 @@ function isCloudinary(url) {
   return /^https?:\/\/res\.cloudinary\.com\//.test(url || "");
 }
 
+// Respeita URLs Cloudinary já transformadas
+function cloudPortrait(url, { w = 600 } = {}) {
+  if (!url || !isCloudinary(url)) return url;
+  const parts = url.split("/upload/");
+  if (parts.length > 1) {
+    const firstSeg = (parts[1] || "").split("/")[0];
+    const hasTransforms = /\b(c_|w_|h_|ar_|g_|z_)/.test(firstSeg);
+    if (hasTransforms) return url;
+  }
+  const t = `f_auto,q_auto,dpr_auto,c_fill,g_auto:subject,ar_3:4,w_${w},z_0.9`;
+  return url.replace("/upload/", `/upload/${t}/`);
+}
+
 // Força QUALQUER URL (incluindo /img/uploads/...) a passar pelo Cloudinary via fetch
-function cloudAny(url, { w = 600, h = null, crop = null, gravity = null } = {}) {
+function cloudAny(url, { w = 600 } = {}) {
   if (!url) return url;
-
-  // Se já for cloudinary, preserva e aplica transformações
-  if (isCloudinary(url)) {
-    const parts = url.split("/upload/");
-    if (parts.length > 1) {
-      // Checa se a URL já tem transformações, se sim, não adiciona mais
-      const firstSeg = (parts[1] || "").split("/")[0];
-      const hasTransforms = /\b(c_|w_|h_|ar_|g_|z_)/.test(firstSeg);
-      if (hasTransforms) return url;
-    }
-  }
-
-  const t = [
-    "f_auto",
-    "q_auto",
-    "dpr_auto",
-    crop ? `c_${crop}` : null,
-    gravity ? `g_${gravity}` : null,
-    w ? `w_${w}` : null,
-    h ? `h_${h}` : null,
-  ].filter(Boolean).join(",");
-  
-  if (isCloudinary(url)) {
-    const parts = url.split("/upload/");
-    return `${parts[0]}/upload/${t}/${parts[1]}`;
-  } else {
-    const base = `https://res.cloudinary.com/${CLOUDINARY_CLOUD}/image/fetch/`;
-    const abs = new URL(url, window.location.origin).href;
-    return `${base}${t}/${encodeURIComponent(abs)}`;
-  }
+  if (isCloudinary(url)) return cloudPortrait(url, { w });
+  const abs = new URL(url, window.location.origin).href;
+  const t = `f_auto,q_auto,dpr_auto,w_${w}`;
+  const base = `https://res.cloudinary.com/${CLOUDINARY_CLOUD}/image/fetch/`;
+  return `${base}${t}/${encodeURIComponent(abs)}`;
 }
 
-function cloudSrcset(url, widths = [400, 600, 900], options = {}) {
-  return widths.map(w => `${cloudAny(url, { ...options, w })} ${w}w`).join(", ");
+function cloudAnySrcset(url, widths = [400, 600, 900]) {
+  return widths.map(w => `${cloudAny(url, { w })} ${w}w`).join(", ");
 }
-
 
 // ===================== normalizadores (CMS <-> Front) =====================
 
@@ -275,8 +262,8 @@ function isVideo(url) {
   const coordGrid = document.getElementById("coordenacao-grid");
   const equipe = coord.equipe || coord.lista || [];
   equipe.forEach((p) => {
-    const foto = cloudAny(p.foto, { w: 600, crop: 'fill', gravity: 'face', ar: '3:4' });
-    const srcset = cloudSrcset(p.foto, [300, 600], { crop: 'fill', gravity: 'face', ar: '3:4' });
+    const foto = cloudPortrait(p.foto);
+    const srcset = cloudAnySrcset(p.foto);
     const c = el("div", "bg-white rounded-lg shadow overflow-hidden cursor-pointer group");
     c.innerHTML = `
       <div class="h-56 overflow-hidden">
@@ -330,7 +317,7 @@ function isVideo(url) {
         filtroAtual === "Todos" || (m.naipes || [m.naipe]).includes(filtroAtual);
       if (!match) return;
 
-      const foto = cloudAny(m.foto);
+      const foto = cloudPortrait(m.foto);
       const srcset = cloudAnySrcset(m.foto);
       const card = el("div", "bg-white rounded-lg shadow overflow-hidden");
       card.innerHTML = `
@@ -399,17 +386,12 @@ function isVideo(url) {
   function openAlbumModal(album) {
     if (!albumModal) return;
     albumTitle.textContent = album.titulo || "Álbum";
+
+    // grid responsiva, sem forçar corte: cada foto mantém sua proporção
+    albumContentWrapper.innerHTML = `
+      <div id="album-items"
+           class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"></div>`;
     const albumItems = document.getElementById("album-items");
-
-    albumContentWrapper.classList.remove('p-4');
-    albumContentWrapper.innerHTML = '';
-    
-    const container = el("div", "p-4");
-    const grid = el("div", "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3");
-    
-    container.appendChild(grid);
-    albumContentWrapper.appendChild(container);
-
 
     // prepara itens normalizados p/ lightbox
     LB_ITEMS = asArray(album.itens).map((item) => {
@@ -421,7 +403,7 @@ function isVideo(url) {
 
     // miniaturas (sem corte → object-contain e altura auto)
     LB_ITEMS.forEach((item, i) => {
-      const wrap = el("div", "rounded overflow-hidden bg-white/60 p-1 relative");
+      const wrap = el("div", "rounded bg-white/60 p-1 relative");
       if (item.tipo === "video") {
         // thumb de vídeo (iframe só dentro da lightbox)
         const thumb = el("div", "aspect-video bg-black/10 rounded grid place-items-center cursor-pointer");
@@ -435,7 +417,7 @@ function isVideo(url) {
         imgEl.addEventListener("click", () => openLightboxIndex(i));
         wrap.appendChild(imgEl);
       }
-      grid.appendChild(wrap);
+      albumItems.appendChild(wrap);
     });
 
     albumModal.classList.remove("hidden");
@@ -468,88 +450,113 @@ function isVideo(url) {
 
   // ---------- LIGHTBOX ----------
   const lightboxModal = document.getElementById("lightbox");
-  const lightboxImg = document.getElementById("lightbox-img");
+  const lightboxImg   = document.getElementById("lightbox-img");
 
+  // cria/garante botões de navegação na lightbox
   function ensureLightboxControls() {
     if (!lightboxModal) return;
+    // container de controles
     let ctrls = document.getElementById("lb-ctrls");
     if (!ctrls) {
-      ctrls = el("div", "fixed inset-0 z-50 pointer-events-none");
+      ctrls = el("div", "pointer-events-none");
       ctrls.id = "lb-ctrls";
+      ctrls.style.position = "fixed";
+      ctrls.style.inset = "0";
       lightboxModal.appendChild(ctrls);
     } else {
       ctrls.innerHTML = "";
     }
+
     const mkBtn = (id, text, posClass) => {
-      const b = el("button", `pointer-events-auto bg-black/60 text-white rounded-full w-10 h-10 grid place-items-center hover:bg-black/80 focus:outline-none transition ${posClass}`, text);
+      const b = el(
+        "button",
+        "pointer-events-auto bg-black/60 text-white rounded-full w-10 h-10 grid place-items-center hover:bg-black/80 focus:outline-none",
+        text
+      );
       b.id = id;
+      b.style.position = "fixed";
+      b.classList.add(...posClass.split(" "));
       return b;
     };
+
+    // prev / next / close / back
     const prev = mkBtn("lb-prev", "‹", "left-4 top-1/2 -translate-y-1/2");
     const next = mkBtn("lb-next", "›", "right-4 top-1/2 -translate-y-1/2");
-    const close = mkBtn("lb-close", "✕", "right-4 top-4");
-    
+    const close= mkBtn("lb-close","✕","right-4 top-4");
+    const back = el(
+      "button",
+      "pointer-events-auto bg-white/90 text-gray-900 rounded px-3 py-1 text-sm hover:bg-white fixed left-4 bottom-4",
+      "Voltar ao álbum"
+    );
+
     prev.addEventListener("click", prevLightbox);
     next.addEventListener("click", nextLightbox);
     close.addEventListener("click", closeLightbox);
+    back.addEventListener("click", closeLightbox);
 
     ctrls.appendChild(prev);
     ctrls.appendChild(next);
     ctrls.appendChild(close);
-
-    if (LB_ITEMS.length <= 1) {
-      prev.classList.add('hidden');
-      next.classList.add('hidden');
-    }
+    ctrls.appendChild(back);
   }
 
   function lightboxIsOpen() {
     return lightboxModal && !lightboxModal.classList.contains("hidden");
   }
 
+  // abre lightbox na posição i
   function openLightboxIndex(i) {
     if (!lightboxModal) return;
-    
-    // Garantir que o índice não saia dos limites, mesmo com navegação circular
-    LB_INDEX = (i % LB_ITEMS.length + LB_ITEMS.length) % LB_ITEMS.length;
+    LB_INDEX = (i + LB_ITEMS.length) % LB_ITEMS.length;
 
     const item = LB_ITEMS[LB_INDEX];
-    
+    ensureLightboxControls();
+
+    // imagem “tamanho real” dentro da viewport
     if (item.tipo === "video") {
       const url = item.src || "";
+      // trocar lightbox-img por iframe/video se necessário
+      if (lightboxImg.tagName !== "DIV") {
+        const holder = document.createElement("div");
+        holder.id = "lightbox-img";
+        lightboxImg.replaceWith(holder);
+      }
       const holder = document.getElementById("lightbox-img");
-      const videoHtml = `
-          <div class="w-full h-full rounded shadow-xl flex items-center justify-center">
-            ${
-              /youtube\.com|youtu\.be/.test(url)
-                ? `<iframe class="w-full h-full" src="https://www.youtube.com/embed/${
-                    url.match(/(?:v=|be\/|shorts\/)([A-Za-z0-9_-]{6,})/)
-                      ? url.match(/(?:v=|be\/|shorts\/)([A-Za-z0-9_-]{6,})/)[1]
-                      : ""
-                  }" frameborder="0" allowfullscreen></iframe>`
-                : /vimeo\.com/.test(url)
-                ? `<iframe class="w-full h-full" src="https://player.vimeo.com/video/${
-                    url.match(/vimeo\.com\/(\d+)/)
-                      ? url.match(/vimeo\.com\/(\d+)/)[1]
-                      : ""
-                  }" frameborder="0" allowfullscreen></iframe>`
-                : `<video class="w-full h-full object-contain" controls src="${url}"></video>`
-            }
-          </div>
-      `;
-      holder.innerHTML = videoHtml;
+      holder.className = "w-[90vw] h-[90vh] max-w-[90vw] max-h-[90vh] mx-auto block rounded shadow-xl";
+      if (/youtube\.com|youtu\.be/.test(url)) {
+        const idMatch =
+          url.match(/(?:v=|be\/|shorts\/)([A-Za-z0-9_-]{6,})/) ||
+          url.match(/[?&]v=([A-Za-z0-9_-]{6,})/);
+        const vid = idMatch ? idMatch[1] : "";
+        holder.innerHTML = `<iframe class="w-full h-full" src="https://www.youtube.com/embed/${vid}" frameborder="0" allowfullscreen></iframe>`;
+      } else if (/vimeo\.com/.test(url)) {
+        const idMatch = url.match(/vimeo\.com\/(\d+)/);
+        const vid = idMatch ? idMatch[1] : "";
+        holder.innerHTML = `<iframe class="w-full h-full" src="https://player.vimeo.com/video/${vid}" frameborder="0" allowfullscreen></iframe>`;
+      } else if (/\.mp4($|\?)/i.test(url)) {
+        holder.innerHTML = `<video class="w-full h-full object-contain" controls src="${url}"></video>`;
+      } else {
+        // fallback imagem
+        holder.innerHTML = `<img class="max-w-[90vw] max-h-[90vh] w-auto h-auto object-contain mx-auto block shadow-xl rounded" src="${cloudAny(url, { w: 2000 })}" alt="">`;
+      }
     } else {
+      // garantir que tenhamos <img id="lightbox-img">
+      if (lightboxImg.tagName !== "IMG") {
+        const newImg = document.createElement("img");
+        newImg.id = "lightbox-img";
+        document.getElementById("lightbox-img").replaceWith(newImg);
+      }
       const img = document.getElementById("lightbox-img");
+      img.className = "max-w-[90vw] max-h-[90vh] w-auto h-auto object-contain mx-auto block shadow-xl rounded";
       img.src = cloudAny(item.src, { w: 2000 });
       img.alt = item.alt || "";
     }
 
-    // Garante que o elemento img ou div esteja visível
     lightboxModal.classList.remove("hidden");
     document.body.style.overflow = "hidden";
-    ensureLightboxControls();
   }
 
+  // navegação
   function nextLightbox() {
     if (!LB_ITEMS.length) return;
     openLightboxIndex(LB_INDEX + 1);
@@ -559,17 +566,22 @@ function isVideo(url) {
     openLightboxIndex(LB_INDEX - 1);
   }
 
+  // fechar lightbox
   function closeLightbox() {
     if (!lightboxModal) return;
     lightboxModal.classList.add("hidden");
     document.body.style.overflow = "auto";
-    const lightboxImgElement = document.getElementById("lightbox-img");
-    if (lightboxImgElement) {
-        lightboxImgElement.innerHTML = '';
-        lightboxImgElement.src = '';
+    // restaura elemento imagem simples (se tiver trocado por iframe/video)
+    const holder = document.getElementById("lightbox-img");
+    if (holder && holder.tagName !== "IMG") {
+      const img = document.createElement("img");
+      img.id = "lightbox-img";
+      img.className = "max-w-[90vw] max-h-[90vh] w-auto h-auto object-contain mx-auto block shadow-xl rounded";
+      holder.replaceWith(img);
     }
   }
 
+  // interações do overlay e teclado
   if (lightboxModal) {
     lightboxModal.addEventListener("click", (e) => {
       const isOverlay = e.target.dataset.close === "lightbox" || e.target === lightboxModal;
