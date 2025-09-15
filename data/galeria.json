@@ -29,6 +29,18 @@
           "https://res.cloudinary.com/dqfkwolc8/image/upload/f_auto,q_auto/v1757447401/WhatsApp_Image_2025-08-24_at_15.59.29_1_bsyboq.jpg"
         ]
       ]
+    },
+    {
+      "titulo": "IBCAL (16º Aniversário)",
+      "descricao": "Igreja Batista Central de Aguas Lindas",
+      "capa": "https://res.cloudinary.com/dqfkwolc8/image/upload/f_auto,q_auto/v1757960989/WhatsApp_Image_2025-09-13_at_19.28.39_qt4ygu.jpg",
+      "itens": [
+        {
+          "tipo": "video",
+          "src": "https://www.youtube.com/watch?v=gzrClrp7p0g",
+          "thumb": "https://res.cloudinary.com/dqfkwolc8/image/upload/f_auto,q_auto/v1757961056/hcp_thumb_C_ljdo52.jpg"
+        }
+      ]
     }
   ],
   "fotos": []
