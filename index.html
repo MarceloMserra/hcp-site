@@ -73,14 +73,41 @@
     </div>
   </section>
 
-  <section id="galeria" class="py-16 bg-gray-50">
-    <div class="container mx-auto px-4">
-      <h2 class="text-3xl font-bold text-center mb-8">Galeria</h2>
-      <!-- Grid de Álbuns -->
-      <div id="albums-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-    </div>
-  </section>
+<section id="galeria" class="py-16 bg-gray-50">
+  <div class="container mx-auto px-4">
+    <h2 class="text-3xl font-bold text-center mb-8">Galeria</h2>
+    <!-- Grid de Álbuns -->
+    <div id="albums-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+  </div>
 
+  <!-- Modal do Álbum (mantido aqui caso haja alguma outra lógica que o use, mas não é mais usado para a galeria principal) -->
+  <div id="album-modal" class="hidden fixed inset-0 z-50">
+    <div class="absolute inset-0 bg-black/80" data-close="modal"></div>
+    <div class="relative max-w-6xl mx-auto my-8 bg-white rounded-lg shadow-lg overflow-hidden">
+      <div class="flex items-center justify-between px-4 py-3 border-b">
+        <h3 id="album-modal-title" class="text-xl font-bold">Álbum</h3>
+        <button id="album-modal-close" class="text-gray-500 hover:text-gray-800">
+          <i class="fas fa-times text-2xl"></i>
+        </button>
+      </div>
+      <div id="album-modal-content" class="p-4">
+        <!-- Grade de itens do álbum -->
+        <div id="album-items" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lightbox para imagem única -->
+  <div id="lightbox" class="hidden fixed inset-0 z-50">
+    <div class="absolute inset-0 bg-black/90" data-close="lightbox"></div>
+    <img id="lightbox-img"
+              class="absolute max-h-[90%] max-w-[90%] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded shadow-lg"
+              src="" alt="">
+  </div>
+</section>
+
+
+  
   <section id="agenda" class="py-16 bg-white">
     <div class="container mx-auto px-4">
       <h2 class="text-3xl font-bold text-center mb-8">Agenda</h2>
@@ -93,7 +120,7 @@
     </div>
   </section>
 
-  <section id="doacoes" class="py-16 bg-white">
+<section id="doacoes" class="py-16 bg-white">
     <div class="container mx-auto px-4 max-w-5xl">
       <h2 class="text-3xl font-bold text-center mb-8">Doações</h2>
       <div class="bg-gray-50 p-6 rounded-lg shadow">
@@ -171,18 +198,12 @@
   </footer>
 
   <script src="js/app.js"></script>
-  
-  <!-- Netlify Identity redirect for admin -->
+  <!-- Script para redirecionar convites do Netlify Identity -->
   <script>
-    if (window.netlifyIdentity) {
-      window.netlifyIdentity.on("init", user => {
-        if (!user) {
-          window.netlifyIdentity.on("login", () => {
-            document.location.href = "/admin/";
-          });
-        }
-      });
+    if (window.location.hash.includes("invite_token")) {
+      window.location.href = "/admin/" + window.location.hash;
     }
   </script>
+
 </body>
 </html>
