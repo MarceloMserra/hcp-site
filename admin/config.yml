@@ -1,6 +1,6 @@
 backend:
-name: git-gateway
-branch: main
+  name: git-gateway
+  branch: main
 
 local_backend: true
 
@@ -9,275 +9,203 @@ display_url: https://homens-hcp.netlify.app
 logo_url: https://homens-hcp.netlify.app/img/logo.png
 
 media_library:
-name: cloudinary
-config:
-cloud_name: dqfkwolc8
-api_key: "683915392936961"
-default_transformations:
-- fetch_format: auto
-quality: auto
+  name: cloudinary
+  config:
+    cloud_name: dqfkwolc8
+    api_key: "683915392936961"
+    default_transformations:
+      - - fetch_format: auto
+          quality: auto
 
 publish_mode: editorial_workflow
 locale: pt
 
 collections:
-
-name: "dados"
-label: "Dados do Site"
-files:
-
-name: "site"
-label: "Site (home/flags)"
-file: "data/site.json"
-fields:
-
-{ label: "Slogan", name: "slogan", widget: "string", required: false }
-
-{ label: "Lema", name: "lema", widget: "string", required: false }
-
-label: "Timeline"
-name: "timeline"
-widget: "list"
-collapsed: true
-fields:
-
-{ label: "Título", name: "titulo", widget: "string" }
-
-{ label: "Ano", name: "ano", widget: "string" }
-
-{ label: "Texto", name: "texto", widget: "text" }
-
-label: "Tema"
-name: "tema"
-widget: "object"
-collapsed: true
-fields:
-
-{ label: "Overlay do Hero (0-1)", name: "hero_overlay", widget: "number", value_type: "float", min: 0, max: 1, default: 0.45 }
-
-{ label: "Cor primária", name: "primaria", widget: "string", default: "#1F497D", required: false }
-
-{ label: "CTA", name: "cta", widget: "string", default: "preto", required: false }
-
-{ label: "Mostrar Coordenação", name: "show_coordenacao", widget: "boolean", default: true }
-
-{ label: "Mostrar Membros", name: "show_membros", widget: "boolean", default: true }
-
-{ label: "Mostrar Galeria", name: "show_galeria", widget: "boolean", default: true }
-
-{ label: "Mostrar Doações", name: "show_doacoes", widget: "boolean", default: true }
-
-{ label: "Mostrar Objetivos", name: "show_objetivos", widget: "boolean", default: true }
-
-name: "coordenacao"
-label: "Coordenação"
-file: "data/coordenacao.json"
-fields:
-
-label: "Equipe"
-name: "equipe"
-widget: "list"
-summary: "{{fields.nome}}"
-fields:
-
-{ label: "Nome", name: "nome", widget: "string" }
-
-{ label: "Cargo (opcional)", name: "cargo", widget: "string", required: false }
-
-{ label: "Descrição (opcional)", name: "descricao", widget: "text", required: false }
-
-label: "Foto (Cloudinary)"
-name: "foto"
-widget: "image"
-
-name: "membros"
-label: "Membros"
-file: "data/membros.json"
-fields:
-
-label: "Membros"
-name: "membros"
-widget: "list"
-summary: "{{fields.nome}}"
-fields:
-
-{ label: "Nome", name: "nome", widget: "string" }
-
-label: "Naipe(s)"
-name: "naipes"
-widget: "select"
-multiple: true
-options: ["1º Tenor", "2º Tenor", "Barítono", "Baixo"]
-
-{ label: "Bio (opcional)", name: "bio", widget: "text", required: false }
-
-label: "Foto (Cloudinary)"
-name: "foto"
-widget: "image"
-
-name: "galeria"
-label: "Galeria"
-file: "data/galeria.json"
-fields:
-
-label: "Álbuns"
-name: "albuns"
-widget: "list"
-summary: "{{fields.titulo}}"
-fields:
-
-{ label: "Título", name: "titulo", widget: "string" }
-
-{ label: "Descrição (opcional)", name: "descricao", widget: "text", required: false }
-
-{ label: "Capa do álbum", name: "capa", widget: "image" }
-
-label: "Vídeos (opcional)"
-name: "itens"
-widget: "list"
-collapsed: true
-fields:
-
-{ label: "Tipo", name: "tipo", widget: "select", options: ["video", "foto"], default: "video" }
-
-{ label: "Fonte (URL YouTube/Vimeo/MP4 ou Cloudinary)", name: "src", widget: "string" }
-
-{ label: "Thumb (opcional)", name: "thumb", widget: "image", required: false }
-
-label: "Fotos (múltiplas)"
-name: "fotos_multi"
-widget: "list"
-summary: "{{fields.imagem}}"
-field:
-label: "Imagem"
-name: "imagem"
-widget: "image"
-media_library:
-config:
-multiple: true
-
-name: "objetivos"
-label: "Nossos Objetivos e Metas"
-file: "data/objetivos.json"
-fields:
-
-label: "Objetivos"
-name: "objetivos"
-widget: "list"
-summary: "{{fields.titulo}}"
-fields:
-
-{ label: "Título", name: "titulo", widget: "string" }
-
-{ label: "Ícone (opcional)", name: "icone", widget: "string", required: false }
-
-{ label: "Descrição", name: "descricao", widget: "text" }
-
-label: "Metas Anuais"
-name: "metas"
-widget: "list"
-summary: "{{fields.titulo}}"
-fields:
-
-{ label: "Título", name: "titulo", widget: "string" }
-
-{ label: "Valor Atual (R$)", name: "valor_atual", widget: "number" }
-
-{ label: "Valor Total (R$)", name: "valor_total", widget: "number" }
-
-{ label: "Descrição", name: "descricao", widget: "text" }
-
-name: "agenda"
-label: "Agenda"
-file: "data/agenda.json"
-fields:
-
-label: "Próximos Eventos"
-name: "eventos"
-widget: "list"
-summary: "{{fields.titulo}}"
-fields:
-
-{ label: "Título", name: "titulo", widget: "string" }
-
-{ label: "Tipo do Evento", name: "tipo", widget: "select", options: ["Ensaio", "Culto", "Apresentação", "Turnê"] }
-
-{ label: "Data", name: "data", widget: "datetime" }
-
-{ label: "Local", name: "local", widget: "string" }
-
-{ label: "Descrição (opcional)", name: "descricao", widget: "text", required: false }
-
-name: "doacoes"
-label: "Doações"
-file: "data/doacoes.json"
-fields:
-
-{ label: "Nome da meta", name: "nome_da_meta", widget: "string" }
-
-{ label: "Meta total (R$)", name: "meta_total", widget: "number" }
-
-{ label: "Arrecadado (R$)", name: "arrecadado", widget: "number" }
-
-label: "PIX"
-name: "pix"
-widget: "object"
-fields:
-
-{ label: "Chave", name: "chave", widget: "string" }
-
-{ label: "QR Code (opcional)", name: "qr", widget: "image", required: false }
-
-label: "Links (opcional)"
-name: "links"
-widget: "list"
-fields:
-
-{ label: "Nome", name: "nome", widget: "string" }
-
-{ label: "URL", name: "url", widget: "string" }
-
-name: "contato"
-label: "Contato"
-file: "data/contato.json"
-fields:
-
-{ label: "Email", name: "email", widget: "string" }
-
-{ label: "Telefone (opcional)", name: "telefone", widget: "string", required: false }
-
-{ label: "Endereço (opcional)", name: "endereco", widget: "string", required: false }
-
-name: "header"
-label: "Header"
-file: "data/header.json"
-fields:
-
-{ label: "Logo", name: "logo", widget: "image" }
-
-label: "Menu"
-name: "menu"
-widget: "list"
-fields:
-
-{ label: "Texto", name: "text", widget: "string" }
-
-{ label: "URL", name: "url", widget: "string" }
-
-name: "footer"
-label: "Footer"
-file: "data/footer.json"
-fields:
-
-{ label: "Logo (opcional)", name: "logo", widget: "image", required: false }
-
-{ label: "Texto (opcional)", name: "texto", widget: "string", required: false }
-
-label: "Links"
-name: "links"
-widget: "list"
-fields:
-
-{ label: "Nome", name: "nome", widget: "string" }
-
-{ label: "URL", name: "url", widget: "string" }
+  - name: "dados"
+    label: "Dados do Site"
+    files:
+      - name: "site"
+        label: "Site (home/flags)"
+        file: "data/site.json"
+        fields:
+          - { label: "Slogan", name: "slogan", widget: "string", required: false }
+          - { label: "Lema", name: "lema", widget: "string", required: false }
+          - label: "Timeline"
+            name: "timeline"
+            widget: "list"
+            collapsed: true
+            fields:
+              - { label: "Título", name: "titulo", widget: "string" }
+              - { label: "Ano", name: "ano", widget: "string" }
+              - { label: "Texto", name: "texto", widget: "text" }
+          - label: "Tema"
+            name: "tema"
+            widget: "object"
+            collapsed: true
+            fields:
+              - { label: "Overlay do Hero (0-1)", name: "hero_overlay", widget: "number", value_type: "float", min: 0, max: 1, default: 0.45 }
+              - { label: "Cor primária", name: "primaria", widget: "string", default: "#1F497D", required: false }
+              - { label: "CTA", name: "cta", widget: "string", default: "preto", required: false }
+              - { label: "Mostrar Coordenação", name: "show_coordenacao", widget: "boolean", default: true }
+              - { label: "Mostrar Membros", name: "show_membros", widget: "boolean", default: true }
+              - { label: "Mostrar Galeria", name: "show_galeria", widget: "boolean", default: true }
+              - { label: "Mostrar Doações", name: "show_doacoes", widget: "boolean", default: true }
+              - { label: "Mostrar Objetivos", name: "show_objetivos", widget: "boolean", default: true }
+
+      - name: "coordenacao"
+        label: "Coordenação"
+        file: "data/coordenacao.json"
+        fields:
+          - label: "Equipe"
+            name: "equipe"
+            widget: "list"
+            summary: "{{fields.nome}}"
+            fields:
+              - { label: "Nome", name: "nome", widget: "string" }
+              - { label: "Cargo (opcional)", name: "cargo", widget: "string", required: false }
+              - { label: "Descrição (opcional)", name: "descricao", widget: "text", required: false }
+              - label: "Foto (Cloudinary)"
+                name: "foto"
+                widget: "image"
+
+      - name: "membros"
+        label: "Membros"
+        file: "data/membros.json"
+        fields:
+          - label: "Membros"
+            name: "membros"
+            widget: "list"
+            summary: "{{fields.nome}}"
+            fields:
+              - { label: "Nome", name: "nome", widget: "string" }
+              - label: "Naipe(s)"
+                name: "naipes"
+                widget: "select"
+                multiple: true
+                options: ["1º Tenor", "2º Tenor", "Barítono", "Baixo"]
+              - { label: "Bio (opcional)", name: "bio", widget: "text", required: false }
+              - label: "Foto (Cloudinary)"
+                name: "foto"
+                widget: "image"
+
+      - name: "galeria"
+        label: "Galeria"
+        file: "data/galeria.json"
+        fields:
+          - label: "Álbuns"
+            name: "albuns"
+            widget: "list"
+            summary: "{{fields.titulo}}"
+            fields:
+              - { label: "Título", name: "titulo", widget: "string" }
+              - { label: "Descrição (opcional)", name: "descricao", widget: "text", required: false }
+              - { label: "Capa do álbum", name: "capa", widget: "image" }
+              - label: "Vídeos (opcional)"
+                name: "itens"
+                widget: "list"
+                collapsed: true
+                fields:
+                  - { label: "Tipo", name: "tipo", widget: "select", options: ["video", "foto"], default: "video" }
+                  - { label: "Fonte (URL YouTube/Vimeo/MP4 ou Cloudinary)", name: "src", widget: "string" }
+                  - { label: "Thumb (opcional)", name: "thumb", widget: "image", required: false }
+              - label: "Fotos (múltiplas)"
+                name: "fotos_multi"
+                widget: "list"
+                summary: "{{fields.imagem}}"
+                field:
+                  label: "Imagem"
+                  name: "imagem"
+                  widget: "image"
+                  media_library:
+                    config:
+                      multiple: true
+
+      - name: "objetivos"
+        label: "Nossos Objetivos e Metas"
+        file: "data/objetivos.json"
+        fields:
+          - label: "Objetivos"
+            name: "objetivos"
+            widget: "list"
+            summary: "{{fields.titulo}}"
+            fields:
+              - { label: "Título", name: "titulo", widget: "string" }
+              - { label: "Ícone (opcional)", name: "icone", widget: "string", required: false }
+              - { label: "Descrição", name: "descricao", widget: "text" }
+          - label: "Metas Anuais"
+            name: "metas"
+            widget: "list"
+            summary: "{{fields.titulo}}"
+            fields:
+              - { label: "Título", name: "titulo", widget: "string" }
+              - { label: "Valor Atual (R$)", name: "valor_atual", widget: "number" }
+              - { label: "Valor Total (R$)", name: "valor_total", widget: "number" }
+              - { label: "Descrição", name: "descricao", widget: "text" }
+
+      - name: "agenda"
+        label: "Agenda"
+        file: "data/agenda.json"
+        fields:
+          - label: "Próximos Eventos"
+            name: "eventos"
+            widget: "list"
+            summary: "{{fields.titulo}}"
+            fields:
+              - { label: "Título", name: "titulo", widget: "string" }
+              - { label: "Tipo do Evento", name: "tipo", widget: "select", options: ["Ensaio", "Culto", "Apresentação", "Turnê"] }
+              - { label: "Data", name: "data", widget: "datetime" }
+              - { label: "Local", name: "local", widget: "string" }
+              - { label: "Descrição (opcional)", name: "descricao", widget: "text", required: false }
+
+      - name: "doacoes"
+        label: "Doações"
+        file: "data/doacoes.json"
+        fields:
+          - { label: "Nome da meta", name: "nome_da_meta", widget: "string" }
+          - { label: "Meta total (R$)", name: "meta_total", widget: "number" }
+          - { label: "Arrecadado (R$)", name: "arrecadado", widget: "number" }
+          - label: "PIX"
+            name: "pix"
+            widget: "object"
+            fields:
+              - { label: "Chave", name: "chave", widget: "string" }
+              - { label: "QR Code (opcional)", name: "qr", widget: "image", required: false }
+          - label: "Links (opcional)"
+            name: "links"
+            widget: "list"
+            fields:
+              - { label: "Nome", name: "nome", widget: "string" }
+              - { label: "URL", name: "url", widget: "string" }
+
+      - name: "contato"
+        label: "Contato"
+        file: "data/contato.json"
+        fields:
+          - { label: "Email", name: "email", widget: "string" }
+          - { label: "Telefone (opcional)", name: "telefone", widget: "string", required: false }
+          - { label: "Endereço (opcional)", name: "endereco", widget: "string", required: false }
+
+      - name: "header"
+        label: "Header"
+        file: "data/header.json"
+        fields:
+          - { label: "Logo", name: "logo", widget: "image" }
+          - label: "Menu"
+            name: "menu"
+            widget: "list"
+            fields:
+              - { label: "Texto", name: "text", widget: "string" }
+              - { label: "URL", name: "url", widget: "string" }
+
+      - name: "footer"
+        label: "Footer"
+        file: "data/footer.json"
+        fields:
+          - { label: "Logo (opcional)", name: "logo", widget: "image", required: false }
+          - { label: "Texto (opcional)", name: "texto", widget: "string", required: false }
+          - label: "Links"
+            name: "links"
+            widget: "list"
+            fields:
+              - { label: "Nome", name: "nome", widget: "string" }
+              - { label: "URL", name: "url", widget: "string" }
