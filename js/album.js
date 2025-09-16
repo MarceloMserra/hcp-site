@@ -15,8 +15,13 @@ function el(tag, cls, html) {
   if (html !== undefined) e.innerHTML = html;
   return e;
 }
-
-// helpers genéricos
+function formatCurrency(v) {
+  try {
+    return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  } catch {
+    return "R$ " + v;
+  }
+}
 const asArray = (x) => (Array.isArray(x) ? x : x ? [x] : []);
 const pick = (obj, keys, def = undefined) => {
   if (!obj) return def;
@@ -56,6 +61,10 @@ function cloudAny(url, { w = 600, h = null, crop = null, gravity = null } = {}) 
     const abs = new URL(url, window.location.origin).href;
     return `${base}${t}/${encodeURIComponent(abs)}`;
   }
+}
+
+function cloudSrcset(url, widths = [400, 600, 900], options = {}) {
+  return widths.map(w => `${cloudAny(url, { ...options, w })} ${w}w`).join(", ");
 }
 
 // ===================== normalizadores =====================
@@ -135,9 +144,11 @@ function isVideo(url) {
     const albumContentGrid = document.getElementById("album-content-grid");
     albumContentGrid.innerHTML = "";
     
-    const lightbox = new Lightbox(currentAlbum.itens);
+    // Filtra itens nulos ou vazios
+    const validItems = currentAlbum.itens.filter(item => item && item.src);
+    const lightbox = new Lightbox(validItems);
 
-    currentAlbum.itens.forEach((item, i) => {
+    validItems.forEach((item, i) => {
       const wrap = el("div", "rounded overflow-hidden bg-white/60 relative group cursor-pointer aspect-square");
       
       if (item.tipo === "video") {
@@ -214,12 +225,16 @@ class Lightbox {
 
   updateContent() {
     const item = this.items[this.currentIndex];
+    
+    // Garantimos que o container do vídeo ou imagem está visível
     this.imageElement.src = '';
+    const container = this.imageElement.parentElement;
 
     if (item.tipo === 'video') {
       const url = item.src || '';
-      // Troca o elemento da imagem por um container para o iframe
-      const videoContainer = el('div', 'absolute max-h-[90%] max-w-[90%] w-full h-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center');
+      // Cria um container com proporção 16:9
+      let videoContainer = el('div', 'relative w-full pb-[56.25%] overflow-hidden rounded shadow-xl');
+      videoContainer.style.height = 0;
       videoContainer.id = 'lightbox-img';
       this.imageElement.replaceWith(videoContainer);
       this.imageElement = videoContainer;
@@ -228,13 +243,13 @@ class Lightbox {
       if (/youtube\.com|youtu\.be/.test(url)) {
           const idMatch = url.match(/(?:v=|be\/)([A-Za-z0-9_-]{6,})/);
           const vid = idMatch ? idMatch[1] : '';
-          iframeHtml = `<iframe class="w-full h-full rounded shadow-xl" src="https://www.youtube.com/embed/${vid}" frameborder="0" allowfullscreen></iframe>`;
+          iframeHtml = `<iframe class="absolute inset-0 w-full h-full" src="https://www.youtube.com/embed/${vid}" frameborder="0" allowfullscreen></iframe>`;
       } else if (/vimeo\.com/.test(url)) {
           const idMatch = url.match(/vimeo\.com\/(\d+)/);
           const vid = idMatch ? idMatch[1] : '';
-          iframeHtml = `<iframe class="w-full h-full rounded shadow-xl" src="https://player.vimeo.com/video/${vid}" frameborder="0" allowfullscreen></iframe>`;
+          iframeHtml = `<iframe class="absolute inset-0 w-full h-full" src="https://player.vimeo.com/video/${vid}" frameborder="0" allowfullscreen></iframe>`;
       } else if (/\.mp4($|\?)/i.test(url)) {
-          iframeHtml = `<video class="w-full h-full object-contain rounded shadow-xl" controls src="${url}"></video>`;
+          iframeHtml = `<video class="absolute inset-0 w-full h-full object-contain" controls src="${url}"></video>`;
       }
       this.imageElement.innerHTML = iframeHtml;
     } else {
