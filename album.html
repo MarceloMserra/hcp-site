@@ -10,8 +10,6 @@
   <style>
     body { font-family: 'Nunito', sans-serif; }
     h1, h2, h3, h4 { font-family: 'Cormorant Garamond', serif; }
-    .hero-bg { background-size: cover; background-position: center; position: relative; }
-    .hero-overlay { position:absolute; inset:0; }
   </style>
   <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 </head>
@@ -43,9 +41,9 @@
   <!-- Lightbox para imagem única -->
   <div id="lightbox" class="hidden fixed inset-0 z-[9999]">
     <div class="absolute inset-0 bg-black/90 cursor-pointer" data-close="lightbox"></div>
-    <img id="lightbox-img"
-         class="absolute max-h-[90%] max-w-[90%] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded shadow-lg cursor-pointer"
-         src="" alt="" data-close="lightbox">
+    <div id="lightbox-container" class="absolute max-h-[90%] max-w-[90%] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center p-4">
+        <img id="lightbox-img" class="max-w-full max-h-full rounded shadow-lg" src="" alt="">
+    </div>
     <!-- Controles de navegação da lightbox -->
     <button id="lb-prev" class="hidden absolute left-4 top-1/2 -translate-y-1/2 bg-black/60 text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-black/80 transition focus:outline-none">‹</button>
     <button id="lb-next" class="hidden absolute right-4 top-1/2 -translate-y-1/2 bg-black/60 text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-black/80 transition focus:outline-none">›</button>
