@@ -400,8 +400,9 @@ function isVideo(url) {
     const pct = meta ? Math.min(100, Math.round((arr / meta) * 100)) : 0;
     
     doacoesTitulo.textContent = doacoes.nome_da_meta || "Doações";
-    metaEl.textContent = meta ? formatCurrency(meta) : "-";
-    arrEl.textContent = `${pct}% (${formatCurrency(arr)})`;
+    // >>> Mostrar SOMENTE porcentagem (sem valores):
+    metaEl.textContent = "";            // esvazia o total em R$
+    arrEl.textContent = `${pct}%`;      // exibe apenas o %
     bar.style.width = pct + "%";
   }
 
@@ -436,13 +437,16 @@ function isVideo(url) {
   if (metasGrid) {
     (objetivosD.metas || []).forEach(m => {
       const card = el("div", "bg-white rounded-lg shadow p-6");
-      const pct = (m.valor_atual / m.valor_total) * 100;
+      const atual = Number(m.valor_atual || 0);
+      const total = Number(m.valor_total || 0);
+      const pct = total > 0 ? Math.min(100, Math.round((atual / total) * 100)) : 0;
+
+      // >>> Renderiza APENAS porcentagem (sem valores em R$):
       card.innerHTML = `
         <h3 class="text-xl font-bold mb-2">${m.titulo}</h3>
-        <p class="text-gray-600 mb-4">${m.descricao}</p>
-        <div class="flex justify-between text-sm mb-1">
-          <span>${formatCurrency(m.valor_atual)}</span>
-          <span>${formatCurrency(m.valor_total)}</span>
+        ${m.descricao ? `<p class="text-gray-600 mb-4">${m.descricao}</p>` : ""}
+        <div class="flex justify-between items-center text-sm mb-1">
+          <span class="font-semibold">${pct}%</span>
         </div>
         <div class="h-2 bg-gray-200 rounded-full">
           <div class="h-2 bg-sky-500 rounded-full" style="width:${pct}%"></div>
