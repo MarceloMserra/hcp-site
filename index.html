@@ -13,14 +13,11 @@
     .hero-bg { background-size: cover; background-position: center; position: relative; }
     .hero-overlay { position:absolute; inset:0; }
   </style>
-  <!-- Netlify Identity Widget -->
   <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 </head>
 <body class="bg-gray-50 text-gray-900">
-  <!-- Header -->
-  <header class="sticky top-0 z-50 bg-white shadow-md">
+  <header class="sticky top-0 z-50 bg-white shadow-md" id="main-header">
     <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-      <!-- Only the logo, clickable to #home -->
       <a href="#home" id="logo-link" class="flex items-center" aria-label="Ir para o início">
         <img id="logo-img" src="" alt="Logo HCP" class="h-10 w-auto object-contain" />
       </a>
@@ -29,18 +26,15 @@
 
       <a href="#doacoes" class="hidden md:inline-block bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-full font-medium transition">Doar</a>
 
-      <!-- Mobile hamburger -->
       <button class="md:hidden text-gray-700" id="mobile-menu-button" aria-label="Abrir menu">
         <i id="mobile-menu-icon" class="fas fa-bars text-2xl"></i>
       </button>
     </div>
-    <!-- Mobile Menu -->
     <div class="md:hidden hidden bg-white shadow-lg" id="mobile-menu">
       <div class="container mx-auto px-4 py-3 flex flex-col space-y-3" id="mobile-links"></div>
     </div>
   </header>
 
-  <!-- Hero -->
   <section id="home" class="text-white min-h-[70vh] flex items-center justify-center relative hero-bg">
     <div class="hero-overlay" id="hero-overlay"></div>
     <div class="container mx-auto px-4 text-center relative z-10">
@@ -76,11 +70,9 @@
 <section id="galeria" class="py-16 bg-gray-50">
   <div class="container mx-auto px-4">
     <h2 class="text-3xl font-bold text-center mb-8">Galeria</h2>
-    <!-- Grid de Álbuns -->
     <div id="albums-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
   </div>
 
-  <!-- Modal do Álbum (mantido aqui caso haja alguma outra lógica que o use, mas não é mais usado para a galeria principal) -->
   <div id="album-modal" class="hidden fixed inset-0 z-50">
     <div class="absolute inset-0 bg-black/80" data-close="modal"></div>
     <div class="relative max-w-6xl mx-auto my-8 bg-white rounded-lg shadow-lg overflow-hidden">
@@ -91,13 +83,11 @@
         </button>
       </div>
       <div id="album-modal-content" class="p-4">
-        <!-- Grade de itens do álbum -->
         <div id="album-items" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"></div>
       </div>
     </div>
   </div>
 
-  <!-- Lightbox para imagem única -->
   <div id="lightbox" class="hidden fixed inset-0 z-50">
     <div class="absolute inset-0 bg-black/90" data-close="lightbox"></div>
     <img id="lightbox-img"
@@ -113,8 +103,7 @@
       <h2 class="text-3xl font-bold text-center mb-8">Agenda</h2>
       <div class="flex justify-center mb-8">
         <div class="inline-flex rounded-md shadow-sm" role="group" id="agenda-filtros">
-          <!-- filtros renderizados via JS -->
-        </div>
+          </div>
       </div>
       <div id="agenda-lista" class="max-w-4xl mx-auto space-y-4"></div>
     </div>
@@ -183,7 +172,6 @@
     </div>
   </section>
 
-  <!-- Footer -->
   <footer class="bg-blue-900 text-white py-10">
     <div class="container mx-auto px-4">
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
@@ -198,7 +186,6 @@
   </footer>
 
   <script src="js/app.js"></script>
-  <!-- Script para redirecionar convites do Netlify Identity -->
   <script>
     if (window.location.hash.includes("invite_token")) {
       window.location.href = "/admin/" + window.location.hash;
