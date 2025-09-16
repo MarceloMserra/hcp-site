@@ -1,417 +1,340 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Álbum - HCP</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    body { font-family: 'Nunito', sans-serif; }
-    h1, h2, h3, h4 { font-family: 'Cormorant Garamond', serif; }
-    .lightbox-wrapper {
-      position: fixed;
-      inset: 0;
-      z-index: 9999;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(0, 0, 0, 0.9);
-      padding: 1rem;
-    }
-  </style>
-  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
-</head>
-<body class="bg-gray-50 text-gray-900">
-  <!-- Header -->
-  <header class="sticky top-0 z-50 bg-white shadow-md">
-    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-      <a href="index.html#galeria" class="text-gray-900 font-bold text-lg flex items-center gap-2 transition-transform duration-300 hover:scale-[1.03]">
-        <img id="logo-img-album" src="" alt="Logo HCP" class="h-10 w-auto object-contain" />
-        <span class="sr-only">HCP</span>
-        <span class="text-xl">Álbuns</span>
-      </a>
-      <nav class="hidden md:flex items-center space-x-4">
-        <a href="index.html#galeria" class="text-gray-600 hover:text-sky-600 transition">Voltar à Galeria</a>
-      </nav>
-      <div class="md:hidden">
-        <button id="menu-btn" class="text-gray-600 hover:text-sky-600 focus:outline-none">
-          <i class="fas fa-bars fa-lg"></i>
-        </button>
-      </div>
-    </div>
-  </header>
+// ===================== utilidades =====================
+async function getJSON(path) {
+  try {
+    const r = await fetch(path, { cache: "no-store" });
+    if (!r.ok) throw 0;
+    return await r.json();
+  } catch (err) {
+    console.error("Error fetching JSON:", err);
+    return null;
+  }
+}
+function el(tag, cls, html) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (html !== undefined) e.innerHTML = html;
+  return e;
+}
+function formatCurrency(v) {
+  try {
+    return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  } catch {
+    return "R$ " + v;
+  }
+}
+const asArray = (x) => (Array.isArray(x) ? x : x ? [x] : []);
+const pick = (obj, keys, def = undefined) => {
+  if (!obj) return def;
+  for (const k of keys) if (obj[k] !== undefined) return obj[k];
+  return def;
+};
 
-  <!-- Main Content -->
-  <main class="container mx-auto px-4 py-8">
-    <div class="max-w-4xl mx-auto">
-      <h1 id="album-page-title" class="text-4xl font-bold mb-2 text-center">Álbum</h1>
-      <p id="album-page-description" class="text-lg text-gray-600 mb-8 text-center"></p>
+// ===================== Cloudinary helpers =====================
+const CLOUDINARY_CLOUD = "dqfkwolc8";
+function isCloudinary(url) {
+  return /^https?:\/\/res\.cloudinary\.com\//.test(url || "");
+}
+function cloudAny(url, { w = 600, h = null, crop = null, gravity = null } = {}) {
+  if (!url) return url;
+  if (isCloudinary(url)) {
+    const parts = url.split("/upload/");
+    if (parts.length > 1) {
+      const firstSeg = (parts[1] || "").split("/")[0];
+      const hasTransforms = /\b(c_|w_|h_|ar_|g_|z_)/.test(firstSeg);
+      if (hasTransforms) return url;
+    }
+  }
+  const t = [
+    "f_auto",
+    "q_auto",
+    "dpr_auto",
+    crop ? `c_${crop}` : null,
+    gravity ? `g_${gravity}` : null,
+    w ? `w_${w}` : null,
+    h ? `h_${h}` : null,
+  ].filter(Boolean).join(",");
+  if (isCloudinary(url)) {
+    const parts = url.split("/upload/");
+    return `${parts[0]}/upload/${t}/${parts[1]}`;
+  } else {
+    const base = `https://res.cloudinary.com/${CLOUDINARY_CLOUD}/image/fetch/`;
+    const abs = new URL(url, window.location.origin).href;
+    return `${base}${t}/${encodeURIComponent(abs)}`;
+  }
+}
+
+function cloudSrcset(url, widths = [400, 600, 900], options = {}) {
+  return widths.map(w => `${cloudAny(url, { ...options, w })} ${w}w`).join(", ");
+}
+
+// ===================== normalizadores =====================
+function normalizePhotoItem(x) {
+  if (!x) return null;
+  if (typeof x === "string") return x;
+  return (x.src || x.url || x.imagem || x.image || x.foto || x.path || null);
+}
+function normalizeVideoItem(x) {
+  if (!x) return null;
+  if (typeof x === "string") return x;
+  return x.src || x.url || x.video || null;
+}
+function normalizeAlbum(raw) {
+  if (!raw) return null;
+  const titulo = pick(raw, ["titulo", "title", "nome"], "");
+  const descricao = pick(raw, ["descricao", "descrição", "description"], "");
+  const capa = normalizePhotoItem(pick(raw, ["capa", "cover", "thumb", "thumbnail", "imagem"]));
+  const fotosLists = asArray(pick(raw, ["fotos", "fotos_multi", "fotos_multiplas", "fotos_multipla", "imagens", "images", "photos"], [])).flat();
+  const videosLists = asArray(pick(raw, ["videos", "vídeos", "clips"], [])).flat();
+  const itensMistos = asArray(pick(raw, ["itens", "items"], [])).flat();
+  const itens = [];
+  for (const f of fotosLists) {
+    const src = normalizePhotoItem(f);
+    if (src) {
+      itens.push({
+        tipo: "foto",
+        src,
+        alt: (typeof f === "object" && (f.alt || f.legenda || f.caption)) || "",
+      });
+    }
+  }
+  for (const v of videosLists) {
+    const src = normalizeVideoItem(v);
+    if (src) {
+      itens.push({ tipo: "video", src });
+    }
+  }
+  for (const it of itensMistos) {
+    if (!it) continue;
+    const t = (it.tipo || it.type || "").toLowerCase();
+    if (t === "video" || t === "vídeo") {
+      const src = normalizeVideoItem(it);
+      if (src) itens.push({ tipo: "video", src });
+    } else {
+      const src = normalizePhotoItem(it);
+      if (src) itens.push({ tipo: "foto", src, alt: it.alt || it.legenda || it.caption || "" });
+    }
+  }
+  return { titulo, descricao, capa, itens };
+}
+function isVideo(url) {
+  return (url || "").match(/youtube\.com|youtu\.be|vimeo\.com|\.mp4($|\?)/i);
+}
+
+// ===================== Lógica da página de álbum =====================
+(async () => {
+  const albumId = parseInt(new URLSearchParams(window.location.search).get('id'));
+  const galeriaD = await getJSON("/data/galeria.json") || {};
+  const header = await getJSON("/data/header.json") || {};
+  const footer = await getJSON("/data/footer.json") || {};
+
+  const logoImgAlbum = document.getElementById("logo-img-album");
+  if (logoImgAlbum) logoImgAlbum.src = header.logo || '';
+
+  const footerTextAlbum = document.getElementById("footer-text-album");
+  if (footerTextAlbum) footerTextAlbum.textContent = footer.texto || '';
+
+  const rawAlbuns = pick(galeriaD, ["albuns", "álbuns", "albums", "lista"]) || [];
+  const albuns = asArray(rawAlbuns).map(normalizeAlbum).filter(Boolean);
+  const currentAlbum = albuns[albumId];
+
+  if (currentAlbum && !isNaN(albumId)) {
+    document.getElementById("album-page-title").textContent = currentAlbum.titulo || "Álbum";
+    document.getElementById("album-page-description").textContent = currentAlbum.descricao || "";
+    
+    const albumContentGrid = document.getElementById("album-content-grid");
+    albumContentGrid.innerHTML = "";
+    
+    // Filtra itens nulos ou vazios
+    const validItems = currentAlbum.itens.filter(item => item && item.src);
+    const lightbox = new Lightbox(validItems);
+
+    validItems.forEach((item, i) => {
+      const wrap = el("div", "rounded overflow-hidden bg-white/60 relative group cursor-pointer aspect-square");
       
-      <!-- Grid de conteúdo do álbum -->
-      <div id="album-content-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-        <!-- Fotos e vídeos serão carregados aqui via JavaScript -->
-      </div>
-    </div>
-  </main>
-
-  <!-- Lightbox -->
-  <div id="lightbox" class="hidden fixed inset-0 z-[9999]">
-    <div class="absolute inset-0 bg-black/90 cursor-pointer" data-close="lightbox"></div>
-    <div id="lightbox-container" class="absolute max-h-screen max-w-screen top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center p-4">
-        <!-- O conteúdo será injetado aqui pelo JS -->
-    </div>
-    <!-- Controles de navegação da lightbox -->
-    <button id="lb-prev" class="hidden absolute left-4 top-1/2 -translate-y-1/2 bg-black/60 text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-black/80 transition focus:outline-none">‹</button>
-    <button id="lb-next" class="hidden absolute right-4 top-1/2 -translate-y-1/2 bg-black/60 text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-black/80 transition focus:outline-none">›</button>
-    <button id="lb-close" class="hidden absolute top-4 right-4 bg-black/60 text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-black/80 transition focus:outline-none">
-      <i class="fas fa-times"></i>
-    </button>
-  </div>
-
-  <script type="text/javascript">
-    // ===================== utilidades =====================
-    async function getJSON(path) {
-      try {
-        const r = await fetch(path, { cache: "no-store" });
-        if (!r.ok) throw 0;
-        return await r.json();
-      } catch (err) {
-        console.error("Error fetching JSON:", err);
-        return null;
-      }
-    }
-    function el(tag, cls, html) {
-      const e = document.createElement(tag);
-      if (cls) e.className = cls;
-      if (html !== undefined) e.innerHTML = html;
-      return e;
-    }
-    function formatCurrency(v) {
-      try {
-        return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-      } catch {
-        return "R$ " + v;
-      }
-    }
-    const asArray = (x) => (Array.isArray(x) ? x : x ? [x] : []);
-    const pick = (obj, keys, def = undefined) => {
-      if (!obj) return def;
-      for (const k of keys) if (obj[k] !== undefined) return obj[k];
-      return def;
-    };
-
-    // ===================== Cloudinary helpers =====================
-    const CLOUDINARY_CLOUD = "dqfkwolc8";
-    function isCloudinary(url) {
-      return /^https?:\/\/res\.cloudinary\.com\//.test(url || "");
-    }
-    function cloudAny(url, { w = 600, h = null, crop = null, gravity = null } = {}) {
-      if (!url) return url;
-      if (isCloudinary(url)) {
-        const parts = url.split("/upload/");
-        if (parts.length > 1) {
-          const firstSeg = (parts[1] || "").split("/")[0];
-          const hasTransforms = /\b(c_|w_|h_|ar_|g_|z_)/.test(firstSeg);
-          if (hasTransforms) return url;
+      if (item.tipo === "video") {
+        // Cria um thumbnail melhor para vídeos
+        const thumb = el("div", "w-full h-full bg-gray-200 rounded grid place-items-center relative");
+        
+        // Se for YouTube, tenta pegar o thumbnail
+        const url = item.src || '';
+        if (/youtube\.com|youtu\.be/.test(url)) {
+          const idMatch = url.match(/(?:v=|\/|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+          const videoId = idMatch ? idMatch[1] : '';
+          if (videoId) {
+            const img = el("img", "w-full h-full object-cover");
+            img.src = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+            thumb.appendChild(img);
+          }
         }
-      }
-      const t = [
-        "f_auto",
-        "q_auto",
-        "dpr_auto",
-        crop ? `c_${crop}` : null,
-        gravity ? `g_${gravity}` : null,
-        w ? `w_${w}` : null,
-        h ? `h_${h}` : null,
-      ].filter(Boolean).join(",");
-      if (isCloudinary(url)) {
-        const parts = url.split("/upload/");
-        return `${parts[0]}/upload/${t}/${parts[1]}`;
+        
+        // Adiciona ícone de play
+        const playIcon = el("div", "absolute inset-0 flex items-center justify-center");
+        playIcon.innerHTML = `
+          <div class="bg-black/70 rounded-full w-16 h-16 flex items-center justify-center">
+            <svg class="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M6 4l12 6-12 6z"/>
+            </svg>
+          </div>
+        `;
+        thumb.appendChild(playIcon);
+        
+        thumb.addEventListener("click", () => lightbox.open(i));
+        wrap.appendChild(thumb);
       } else {
-        const base = `https://res.cloudinary.com/${CLOUDINARY_CLOUD}/image/fetch/`;
-        const abs = new URL(url, window.location.origin).href;
-        return `${base}${t}/${encodeURIComponent(abs)}`;
+        const imgEl = el("img", "w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]");
+        imgEl.src = cloudAny(item.src, { w: 400, crop: 'fill' });
+        imgEl.alt = item.alt;
+        imgEl.addEventListener("click", () => lightbox.open(i));
+        wrap.appendChild(imgEl);
       }
-    }
+      albumContentGrid.appendChild(wrap);
+    });
 
-    function cloudSrcset(url, widths = [400, 600, 900], options = {}) {
-      return widths.map(w => `${cloudAny(url, { ...options, w })} ${w}w`).join(", ");
-    }
+  } else {
+    document.getElementById("album-page-title").textContent = "Álbum não encontrado";
+    document.getElementById("album-page-description").textContent = "O álbum que você está procurando não existe ou o endereço está incorreto.";
+  }
+})();
 
-    // ===================== normalizadores =====================
-    function normalizePhotoItem(x) {
-      if (!x) return null;
-      if (typeof x === "string") return x;
-      return (x.src || x.url || x.imagem || x.image || x.foto || x.path || null);
-    }
-    function normalizeVideoItem(x) {
-      if (!x) return null;
-      if (typeof x === "string") return x;
-      return x.src || x.url || x.video || null;
-    }
-    function normalizeAlbum(raw) {
-      if (!raw) return null;
-      const titulo = pick(raw, ["titulo", "title", "nome"], "");
-      const descricao = pick(raw, ["descricao", "descrição", "description"], "");
-      const capa = normalizePhotoItem(pick(raw, ["capa", "cover", "thumb", "thumbnail", "imagem"]));
-      const fotosLists = asArray(pick(raw, ["fotos", "fotos_multi", "fotos_multiplas", "fotos_multipla", "imagens", "images", "photos"], [])).flat();
-      const videosLists = asArray(pick(raw, ["videos", "vídeos", "clips"], [])).flat();
-      const itensMistos = asArray(pick(raw, ["itens", "items"], [])).flat();
-      const itens = [];
-      for (const f of fotosLists) {
-        const src = normalizePhotoItem(f);
-        if (src) {
-          itens.push({
-            tipo: "foto",
-            src,
-            alt: (typeof f === "object" && (f.alt || f.legenda || f.caption)) || "",
-          });
+
+class Lightbox {
+  constructor(items) {
+    this.items = items;
+    this.currentIndex = 0;
+    this.modal = document.getElementById("lightbox");
+    this.lightboxContainer = document.getElementById("lightbox-container");
+    this.prevBtn = document.getElementById("lb-prev");
+    this.nextBtn = document.getElementById("lb-next");
+    this.closeBtn = document.getElementById("lb-close");
+    this.boundHandleKeydown = this.handleKeydown.bind(this);
+    this.boundClose = this.close.bind(this);
+    
+    if (this.prevBtn) this.prevBtn.addEventListener('click', () => this.navigate(-1));
+    if (this.nextBtn) this.nextBtn.addEventListener('click', () => this.navigate(1));
+    if (this.closeBtn) this.closeBtn.addEventListener('click', this.boundClose);
+    if (this.modal) this.modal.addEventListener('click', e => {
+      if (e.target.dataset.close === 'lightbox' || e.target === this.modal) {
+        this.close();
+      }
+    });
+  }
+
+  open(index) {
+    this.currentIndex = index;
+    this.updateContent();
+    this.modal.classList.remove('hidden');
+    // Mostra os controles
+    if (this.prevBtn) this.prevBtn.classList.remove('hidden');
+    if (this.nextBtn) this.nextBtn.classList.remove('hidden');
+    if (this.closeBtn) this.closeBtn.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', this.boundHandleKeydown);
+  }
+
+  close() {
+    this.modal.classList.add('hidden');
+    document.body.style.overflow = 'auto';
+    document.removeEventListener('keydown', this.boundHandleKeydown);
+    // Limpa o conteúdo do container
+    this.lightboxContainer.innerHTML = '';
+  }
+
+  navigate(direction) {
+    this.currentIndex = (this.currentIndex + direction + this.items.length) % this.items.length;
+    this.updateContent();
+  }
+
+  updateContent() {
+    const item = this.items[this.currentIndex];
+    
+    // Limpa o container antes de adicionar o novo elemento
+    this.lightboxContainer.innerHTML = '';
+
+    if (item.tipo === 'video') {
+      const url = item.src || '';
+      
+      // Container para vídeo com aspect ratio 16:9
+      const videoWrapper = document.createElement('div');
+      videoWrapper.className = 'w-full max-w-5xl aspect-video';
+      
+      let videoContent = '';
+      
+      // YouTube
+      if (/youtube\.com|youtu\.be/.test(url)) {
+        const idMatch = url.match(/(?:v=|\/|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+        const videoId = idMatch ? idMatch[1] : '';
+        if (videoId) {
+          videoContent = `
+            <iframe 
+              class="w-full h-full rounded-lg shadow-2xl" 
+              src="https://www.youtube.com/embed/${videoId}?autoplay=1" 
+              frameborder="0" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+              allowfullscreen>
+            </iframe>`;
         }
-      }
-      for (const v of videosLists) {
-        const src = normalizeVideoItem(v);
-        if (src) {
-          itens.push({ tipo: "video", src });
+      } 
+      // Vimeo
+      else if (/vimeo\.com/.test(url)) {
+        const idMatch = url.match(/vimeo\.com\/(\d+)/);
+        const videoId = idMatch ? idMatch[1] : '';
+        if (videoId) {
+          videoContent = `
+            <iframe 
+              class="w-full h-full rounded-lg shadow-2xl" 
+              src="https://player.vimeo.com/video/${videoId}?autoplay=1" 
+              frameborder="0" 
+              allow="autoplay; fullscreen; picture-in-picture" 
+              allowfullscreen>
+            </iframe>`;
         }
+      } 
+      // MP4
+      else if (/\.mp4($|\?)/i.test(url)) {
+        videoContent = `
+          <video 
+            class="w-full h-full rounded-lg shadow-2xl" 
+            controls 
+            autoplay 
+            src="${url}">
+          </video>`;
       }
-      for (const it of itensMistos) {
-        if (!it) continue;
-        const t = (it.tipo || it.type || "").toLowerCase();
-        if (t === "video" || t === "vídeo") {
-          const src = normalizeVideoItem(it);
-          if (src) itens.push({ tipo: "video", src });
-        } else {
-          const src = normalizePhotoItem(it);
-          if (src) itens.push({ tipo: "foto", src, alt: it.alt || it.legenda || it.caption || "" });
-        }
-      }
-      return { titulo, descricao, capa, itens };
-    }
-    function isVideo(url) {
-      return (url || "").match(/youtube\.com|youtu\.be|vimeo\.com|\.mp4($|\?)/i);
-    }
-
-    // ===================== Lógica da página de álbum =====================
-    (async () => {
-      const albumId = parseInt(new URLSearchParams(window.location.search).get('id'));
-      const galeriaD = await getJSON("/data/galeria.json") || {};
-      const header = await getJSON("/data/header.json") || {};
-      const footer = await getJSON("/data/footer.json") || {};
-
-      const logoImgAlbum = document.getElementById("logo-img-album");
-      if (logoImgAlbum) logoImgAlbum.src = header.logo || '';
-
-      const footerTextAlbum = document.getElementById("footer-text-album");
-      if (footerTextAlbum) footerTextAlbum.textContent = footer.texto || '';
-
-      const rawAlbuns = pick(galeriaD, ["albuns", "álbuns", "albums", "lista"]) || [];
-      const albuns = asArray(rawAlbuns).map(normalizeAlbum).filter(Boolean);
-      const currentAlbum = albuns[albumId];
-
-      if (currentAlbum && !isNaN(albumId)) {
-        document.getElementById("album-page-title").textContent = currentAlbum.titulo || "Álbum";
-        document.getElementById("album-page-description").textContent = currentAlbum.descricao || "";
-        
-        const albumContentGrid = document.getElementById("album-content-grid");
-        albumContentGrid.innerHTML = "";
-        
-        // Filtra itens nulos ou vazios
-        const validItems = currentAlbum.itens.filter(item => item && item.src);
-        const lightbox = new Lightbox(validItems);
-
-        validItems.forEach((item, i) => {
-          const wrap = el("div", "rounded overflow-hidden bg-white/60 relative group cursor-pointer aspect-square");
-          
-          if (item.tipo === "video") {
-            // Cria um thumbnail melhor para vídeos
-            const thumb = el("div", "w-full h-full bg-gray-200 rounded grid place-items-center relative");
-            
-            // Se for YouTube, tenta pegar o thumbnail
-            const url = item.src || '';
-            if (/youtube\.com|youtu\.be/.test(url)) {
-              const idMatch = url.match(/(?:v=|\/|youtu\.be\/)([A-Za-z0-9_-]{11})/);
-              const videoId = idMatch ? idMatch[1] : '';
-              if (videoId) {
-                const img = el("img", "w-full h-full object-cover");
-                img.src = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
-                thumb.appendChild(img);
-              }
-            }
-            
-            // Adiciona ícone de play
-            const playIcon = el("div", "absolute inset-0 flex items-center justify-center");
-            playIcon.innerHTML = `
-              <div class="bg-black/70 rounded-full w-16 h-16 flex items-center justify-center">
-                <svg class="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M6 4l12 6-12 6z"/>
-                </svg>
-              </div>
-            `;
-            thumb.appendChild(playIcon);
-            
-            thumb.addEventListener("click", () => lightbox.open(i));
-            wrap.appendChild(thumb);
-          } else {
-            const imgEl = el("img", "w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]");
-            imgEl.src = cloudAny(item.src, { w: 400, crop: 'fill' });
-            imgEl.alt = item.alt;
-            imgEl.addEventListener("click", () => lightbox.open(i));
-            wrap.appendChild(imgEl);
-          }
-          albumContentGrid.appendChild(wrap);
-        });
-
+      
+      if (videoContent) {
+        videoWrapper.innerHTML = videoContent;
+        this.lightboxContainer.appendChild(videoWrapper);
       } else {
-        document.getElementById("album-page-title").textContent = "Álbum não encontrado";
-        document.getElementById("album-page-description").textContent = "O álbum que você está procurando não existe ou o endereço está incorreto.";
+        // Se não conseguir processar o vídeo, mostra uma mensagem
+        const errorMsg = document.createElement('div');
+        errorMsg.className = 'text-white text-center p-8 bg-black/50 rounded-lg';
+        errorMsg.innerHTML = `
+          <p class="text-xl mb-2">Não foi possível carregar o vídeo</p>
+          <p class="text-sm">URL: ${url}</p>
+        `;
+        this.lightboxContainer.appendChild(errorMsg);
       }
-    })();
-
-
-    class Lightbox {
-      constructor(items) {
-        this.items = items;
-        this.currentIndex = 0;
-        this.modal = document.getElementById("lightbox");
-        this.lightboxContainer = document.getElementById("lightbox-container");
-        this.prevBtn = document.getElementById("lb-prev");
-        this.nextBtn = document.getElementById("lb-next");
-        this.closeBtn = document.getElementById("lb-close");
-        this.boundHandleKeydown = this.handleKeydown.bind(this);
-        this.boundClose = this.close.bind(this);
-        
-        if (this.prevBtn) this.prevBtn.addEventListener('click', () => this.navigate(-1));
-        if (this.nextBtn) this.nextBtn.addEventListener('click', () => this.navigate(1));
-        if (this.closeBtn) this.closeBtn.addEventListener('click', this.boundClose);
-        if (this.modal) this.modal.addEventListener('click', e => {
-          if (e.target.dataset.close === 'lightbox' || e.target === this.modal) {
-            this.close();
-          }
-        });
-      }
-
-      open(index) {
-        this.currentIndex = index;
-        this.updateContent();
-        this.modal.classList.remove('hidden');
-        // Mostra os controles
-        if (this.prevBtn) this.prevBtn.classList.remove('hidden');
-        if (this.nextBtn) this.nextBtn.classList.remove('hidden');
-        if (this.closeBtn) this.closeBtn.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-        document.addEventListener('keydown', this.boundHandleKeydown);
-      }
-
-      close() {
-        this.modal.classList.add('hidden');
-        document.body.style.overflow = 'auto';
-        document.removeEventListener('keydown', this.boundHandleKeydown);
-        // Limpa o conteúdo do container
-        this.lightboxContainer.innerHTML = '';
-      }
-
-      navigate(direction) {
-        this.currentIndex = (this.currentIndex + direction + this.items.length) % this.items.length;
-        this.updateContent();
-      }
-
-      updateContent() {
-        const item = this.items[this.currentIndex];
-        
-        // Limpa o container antes de adicionar o novo elemento
-        this.lightboxContainer.innerHTML = '';
-
-        if (item.tipo === 'video') {
-          const url = item.src || '';
-          
-          // Container para vídeo com aspect ratio 16:9
-          const videoWrapper = document.createElement('div');
-          videoWrapper.className = 'w-full max-w-7xl aspect-video';
-          
-          let videoContent = '';
-          
-          // YouTube
-          if (/youtube\.com|youtu\.be/.test(url)) {
-            const idMatch = url.match(/(?:v=|\/|youtu\.be\/)([A-Za-z0-9_-]{11})/);
-            const videoId = idMatch ? idMatch[1] : '';
-            if (videoId) {
-              videoContent = `
-                <iframe 
-                  class="w-full h-full rounded-lg shadow-2xl" 
-                  src="https://www.youtube.com/embed/${videoId}?autoplay=1&playsinline=1" 
-                  frameborder="0" 
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen" 
-                  allowfullscreen>
-                </iframe>`;
-            }
-          } 
-          // Vimeo
-          else if (/vimeo\.com/.test(url)) {
-            const idMatch = url.match(/vimeo\.com\/(\d+)/);
-            const videoId = idMatch ? idMatch[1] : '';
-            if (videoId) {
-              videoContent = `
-                <iframe 
-                  class="w-full h-full rounded-lg shadow-2xl" 
-                  src="https://player.vimeo.com/video/${videoId}?autoplay=1" 
-                  frameborder="0" 
-                  allow="autoplay; fullscreen; picture-in-picture" 
-                  allowfullscreen>
-                </iframe>`;
-            }
-          } 
-          // MP4
-          else if (/\.mp4($|\?)/i.test(url)) {
-            videoContent = `
-              <video 
-                class="w-full h-full rounded-lg shadow-2xl" 
-                controls 
-                autoplay 
-                src="${url}"
-                playsinline>
-              </video>`;
-          }
-          
-          if (videoContent) {
-            videoWrapper.innerHTML = videoContent;
-            this.lightboxContainer.appendChild(videoWrapper);
-          } else {
-            // Se não conseguir processar o vídeo, mostra uma mensagem
-            const errorMsg = document.createElement('div');
-            errorMsg.className = 'text-white text-center p-8 bg-black/50 rounded-lg';
-            errorMsg.innerHTML = `
-              <p class="text-xl mb-2">Não foi possível carregar o vídeo</p>
-              <p class="text-sm">URL: ${url}</p>
-            `;
-            this.lightboxContainer.appendChild(errorMsg);
-          }
-        } else {
-          // Para imagens
-          const img = document.createElement('img');
-          img.className = 'max-w-full max-h-full rounded-lg shadow-2xl';
-          img.src = cloudAny(item.src, { w: 2000, crop: 'fit' });
-          img.alt = item.alt || '';
-          this.lightboxContainer.appendChild(img);
-        }
-        
-        // Lógica para esconder os botões se houver apenas um item
-        if (this.items.length <= 1) {
-          if (this.prevBtn) this.prevBtn.classList.add('hidden');
-          if (this.nextBtn) this.nextBtn.classList.add('hidden');
-        } else {
-          if (this.prevBtn) this.prevBtn.classList.remove('hidden');
-          if (this.nextBtn) this.nextBtn.classList.remove('hidden');
-        }
-      }
-
-      handleKeydown(e) {
-        if (e.key === "Escape") this.close();
-        if (e.key === "ArrowRight") this.navigate(1);
-        if (e.key === "ArrowLeft") this.navigate(-1);
-      }
+    } else {
+      // Para imagens
+      const img = document.createElement('img');
+      img.className = 'max-w-full max-h-full rounded-lg shadow-2xl';
+      img.src = cloudAny(item.src, { w: 2000, crop: 'fit' });
+      img.alt = item.alt || '';
+      this.lightboxContainer.appendChild(img);
     }
-  </script>
-</body>
-</html>
+    
+    // Lógica para esconder os botões se houver apenas um item
+    if (this.items.length <= 1) {
+      if (this.prevBtn) this.prevBtn.classList.add('hidden');
+      if (this.nextBtn) this.nextBtn.classList.add('hidden');
+    } else {
+      if (this.prevBtn) this.prevBtn.classList.remove('hidden');
+      if (this.nextBtn) this.nextBtn.classList.remove('hidden');
+    }
+  }
+
+  handleKeydown(e) {
+    if (e.key === "Escape") this.close();
+    if (e.key === "ArrowRight") this.navigate(1);
+    if (e.key === "ArrowLeft") this.navigate(-1);
+  }
+}
