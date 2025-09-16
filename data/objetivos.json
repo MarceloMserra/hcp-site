@@ -1,0 +1,23 @@
+{
+  "objetivos": [
+    {
+      "titulo": "Levar a Palavra de Deus com a música cantada",
+      "descricao": "Somos um coral missionário que anuncia o Evangelho por meio do canto. Queremos alcançar pessoas com mensagens bíblicas, edificar a igreja e glorificar a Deus através de apresentações, projetos sociais e conteúdos musicais que apontem para Cristo.",
+      "icone": "music"
+    }
+  ],
+  "metas": [
+    {
+      "titulo": "Ônibus Missionário do HCP",
+      "valor_atual": 15000,
+      "valor_total": 500000,
+      "descricao": "Aquisição de um ônibus adaptado para transportar o coral em ações missionárias, com compartimento para partituras e som básico. Viabiliza viagens a igrejas, hospitais e comunidades para anunciar o Evangelho por meio da música."
+    },
+    {
+      "titulo": "12 Apresentações Missionárias no Ano",
+      "valor_atual": 0,
+      "valor_total": 36000,
+      "descricao": "Realizar 12 apresentações presenciais ao longo do ano (média de 1 por mês), cobrindo custos de logística, sonorização simples, materiais e alimentação, para levar a Palavra de Deus cantada onde formos chamados."
+    }
+  ]
+}
