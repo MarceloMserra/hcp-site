@@ -17,7 +17,7 @@
   <!-- Header -->
   <header class="sticky top-0 z-50 bg-white shadow-md">
     <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-      <a href="index.html#galeria" class="text-gray-900 font-bold text-lg flex items-center gap-2 transition-transform duration-300 hover:scale-[1.03]">
+      <a href="index.html" class="text-gray-900 font-bold text-lg flex items-center gap-2 transition-transform duration-300 hover:scale-[1.03]">
         <img id="logo-img-album" src="" alt="Logo HCP" class="h-10 w-auto object-contain" />
         <span class="sr-only">HCP</span>
       </a>
@@ -186,6 +186,40 @@
     }
     function isVideo(url) {
       return (url || "").match(/youtube\.com|youtu\.be|vimeo\.com|\.mp4($|\?)/i);
+    }
+
+    // ===================== Menu Hamburger =====================
+    const mobileMenuButton = document.getElementById("mobile-menu-button");
+    const mobileMenu = document.getElementById("mobile-menu");
+    const mobileMenuIcon = document.getElementById("mobile-menu-icon");
+    
+    if (mobileMenuButton && mobileMenu && mobileMenuIcon) {
+      mobileMenuButton.addEventListener("click", (e) => {
+        e.stopPropagation();
+        mobileMenu.classList.toggle("hidden");
+        mobileMenuIcon.className = mobileMenu.classList.contains("hidden") 
+          ? "fas fa-bars text-2xl" 
+          : "fas fa-times text-2xl";
+      });
+
+      // Fechar menu ao clicar fora
+      document.addEventListener("click", (e) => {
+        if (!mobileMenu.classList.contains("hidden")) {
+          const clickInside = mobileMenu.contains(e.target) || mobileMenuButton.contains(e.target);
+          if (!clickInside) {
+            mobileMenu.classList.add("hidden");
+            mobileMenuIcon.className = "fas fa-bars text-2xl";
+          }
+        }
+      });
+
+      // Fechar menu ao scrollar
+      window.addEventListener("scroll", () => {
+        if (!mobileMenu.classList.contains("hidden")) {
+          mobileMenu.classList.add("hidden");
+          mobileMenuIcon.className = "fas fa-bars text-2xl";
+        }
+      }, { passive: true });
     }
 
     // ===================== Lógica da página de álbum =====================

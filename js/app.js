@@ -162,6 +162,8 @@ function isVideo(url) {
   const membros   = await getJSON("data/membros.json")      || {};
   const galeriaD  = await getJSON("data/galeria.json")      || {};
   const doacoes   = await getJSON("data/doacoes.json")      || {};
+  const objetivosD = await getJSON("data/objetivos.json")   || {};
+  const agendaD   = await getJSON("data/agenda.json")       || {};
   const contato   = await getJSON("data/contato.json")      || {};
 
   // ---------- HERO ----------
@@ -233,7 +235,7 @@ function isVideo(url) {
     }
   }
 
-  // Smooth scroll
+  // Smooth scroll com offset para o header
   document.querySelectorAll('a[href^="#"]').forEach((a) => {
     a.addEventListener("click", (e) => {
       const id = a.getAttribute("href");
@@ -241,7 +243,10 @@ function isVideo(url) {
         const elTarget = document.querySelector(id);
         if (elTarget) {
           e.preventDefault();
-          window.scrollTo({ top: elTarget.offsetTop - 80, behavior: "smooth" });
+          const headerHeight = document.getElementById('main-header').offsetHeight;
+          window.scrollTo({ top: elTarget.offsetTop - headerHeight, behavior: "smooth" });
+          // Fecha o menu móvel após clicar
+          closeMenu();
         }
       }
     });
@@ -387,32 +392,131 @@ function isVideo(url) {
   const metaEl = document.getElementById("meta-total");
   const arrEl = document.getElementById("valor-arrecadado");
   const bar = document.getElementById("progress");
-  if (metaEl && arrEl && bar) {
+  const doacoesTitulo = document.getElementById("doacoes-titulo");
+  
+  if (metaEl && arrEl && bar && doacoesTitulo) {
     const meta = Number(doacoes.meta_total || 0);
     const arr = Number(doacoes.arrecadado || 0);
-    metaEl.textContent = meta ? formatCurrency(meta) : "-";
-    arrEl.textContent = formatCurrency(arr);
     const pct = meta ? Math.min(100, Math.round((arr / meta) * 100)) : 0;
+    
+    doacoesTitulo.textContent = doacoes.nome_da_meta || "Doações";
+    metaEl.textContent = meta ? formatCurrency(meta) : "-";
+    arrEl.textContent = `${pct}% (${formatCurrency(arr)})`;
     bar.style.width = pct + "%";
   }
+
   const pixChave = document.getElementById("pix-chave");
   const pixQr = document.getElementById("pix-qr");
   if (pixChave) pixChave.textContent = doacoes.pix_chave || doacoes.pix?.chave || "";
   if (pixQr && doacoes.pix_qr) pixQr.src = doacoes.pix_qr;
+
   const doacaoLinks = document.getElementById("doacao-links");
   (doacoes.links || []).forEach((l) => {
     const li = el("li");
     li.innerHTML = `<a class="text-sky-600 hover:underline" href="${l.url}" target="_blank" rel="noopener">${l.nome}</a>`;
     if (doacaoLinks) doacaoLinks.appendChild(li);
   });
+  
+  // ---------- OBJETIVOS e METAS ----------
+  const objetivosGrid = document.getElementById("objetivos-grid");
+  const metasGrid = document.getElementById("metas-grid");
+  
+  if (objetivosGrid) {
+    (objetivosD.objetivos || []).forEach(o => {
+      const card = el("div", "bg-white rounded-lg shadow p-6 text-center");
+      card.innerHTML = `
+        ${o.icone ? `<i class="${o.icone} text-4xl text-blue-900 mb-4"></i>` : ''}
+        <h3 class="text-xl font-bold mb-2">${o.titulo}</h3>
+        <p class="text-gray-600">${o.descricao}</p>
+      `;
+      objetivosGrid.appendChild(card);
+    });
+  }
+
+  if (metasGrid) {
+    (objetivosD.metas || []).forEach(m => {
+      const card = el("div", "bg-white rounded-lg shadow p-6");
+      const pct = (m.valor_atual / m.valor_total) * 100;
+      card.innerHTML = `
+        <h3 class="text-xl font-bold mb-2">${m.titulo}</h3>
+        <p class="text-gray-600 mb-4">${m.descricao}</p>
+        <div class="flex justify-between text-sm mb-1">
+          <span>${formatCurrency(m.valor_atual)}</span>
+          <span>${formatCurrency(m.valor_total)}</span>
+        </div>
+        <div class="h-2 bg-gray-200 rounded-full">
+          <div class="h-2 bg-sky-500 rounded-full" style="width:${pct}%"></div>
+        </div>
+      `;
+      metasGrid.appendChild(card);
+    });
+  }
+
+  // ---------- AGENDA ----------
+  const agendaLista = document.getElementById("agenda-lista");
+  if (agendaLista) {
+    const eventos = agendaD.eventos || [];
+    eventos.sort((a, b) => new Date(a.data) - new Date(b.data)); // Ordena por data
+
+    const tipos = ["Todos", ...new Set(eventos.map(e => e.tipo))];
+    const agendaFiltros = document.getElementById("agenda-filtros");
+    let filtroAgenda = "Todos";
+
+    const renderEventos = () => {
+        agendaLista.innerHTML = "";
+        eventos.filter(e => filtroAgenda === "Todos" || e.tipo === filtroAgenda)
+        .forEach(e => {
+            const data = new Date(e.data);
+            const dataFormatada = data.toLocaleDateString("pt-BR", { day: '2-digit', month: 'long' });
+            const horaFormatada = data.toLocaleTimeString("pt-BR", { hour: '2-digit', minute: '2-digit' });
+            
+            let corBadge = 'bg-gray-200 text-gray-800';
+            if (e.tipo === 'Ensaio') corBadge = 'bg-blue-100 text-blue-800';
+            if (e.tipo === 'Culto') corBadge = 'bg-yellow-100 text-yellow-800';
+            if (e.tipo === 'Apresentação') corBadge = 'bg-green-100 text-green-800';
+            if (e.tipo === 'Turnê') corBadge = 'bg-purple-100 text-purple-800';
+
+            const eventoEl = el("div", "flex flex-col sm:flex-row bg-white rounded-lg shadow-md p-4 space-y-4 sm:space-y-0 sm:space-x-4 items-center");
+            eventoEl.innerHTML = `
+                <div class="flex-shrink-0 text-center">
+                    <span class="block text-2xl font-bold text-blue-900">${dataFormatada.split(' ')[0]}</span>
+                    <span class="block text-sm text-gray-500 uppercase">${dataFormatada.split(' ')[1].slice(0, 3)}</span>
+                </div>
+                <div class="flex-grow">
+                    <span class="inline-block text-xs font-medium ${corBadge} rounded-full px-2 py-1 mb-2">${e.tipo}</span>
+                    <h3 class="text-xl font-bold text-blue-900 mb-1">${e.titulo}</h3>
+                    <p class="text-gray-600 mb-2">${e.descricao || ''}</p>
+                    <div class="flex items-center text-gray-500 text-sm">
+                        <i class="fas fa-clock mr-2"></i><span>${horaFormatada}</span>
+                        <i class="fas fa-map-marker-alt ml-4 mr-2"></i><span>${e.local}</span>
+                    </div>
+                </div>
+            `;
+            agendaLista.appendChild(eventoEl);
+        });
+    };
+
+    tipos.forEach(t => {
+      const b = el("button", "px-4 py-2 rounded-full border border-gray-300 transition", t);
+      if (t === filtroAgenda) b.classList.add("bg-blue-900", "text-white");
+      b.addEventListener("click", () => {
+        filtroAgenda = t;
+        [...agendaFiltros.children].forEach(x => x.className = "px-4 py-2 rounded-full border border-gray-300 transition bg-white text-gray-700 hover:bg-gray-100");
+        b.className = "px-4 py-2 rounded-full border border-blue-900 bg-blue-900 text-white transition";
+        renderEventos();
+      });
+      agendaFiltros.appendChild(b);
+    });
+    renderEventos();
+  }
 
   // ---------- CONTATO ----------
   const contatoEmail = document.getElementById("contato-email");
-  const contatoTel = document.getElementById("contato-telefone");
-  const contatoEnd = document.getElementById("contato-endereco");
+  const contatoTel   = document.getElementById("contato-telefone");
+  const contatoEnd   = document.getElementById("contato-endereco");
   if (contatoEmail) contatoEmail.textContent = contato.email || "";
-  if (contatoTel) contatoTel.textContent = contato.telefone || "";
-  if (contatoEnd) contatoEnd.textContent = contato.endereco || "";
+  if (contatoTel)   contatoTel.textContent   = contato.telefone || "";
+  if (contatoEnd)   contatoEnd.textContent   = contato.endereco || "";
 
   // ---------- FOOTER ----------
   const footerLogo = document.getElementById("footer-logo");
