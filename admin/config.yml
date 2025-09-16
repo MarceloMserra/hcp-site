@@ -14,7 +14,7 @@ config:
 cloud_name: dqfkwolc8
 api_key: "683915392936961"
 default_transformations:
-- - fetch_format: auto
+- fetch_format: auto
 quality: auto
 
 publish_mode: editorial_workflow
