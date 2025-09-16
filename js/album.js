@@ -178,6 +178,7 @@ class Lightbox {
     this.items = items;
     this.currentIndex = 0;
     this.modal = document.getElementById("lightbox");
+    this.lightboxContainer = document.getElementById("lightbox-container"); // Novo container para o vídeo
     this.imageElement = document.getElementById("lightbox-img");
     this.prevBtn = document.getElementById("lb-prev");
     this.nextBtn = document.getElementById("lb-next");
@@ -207,15 +208,9 @@ class Lightbox {
     this.modal.classList.add('hidden');
     document.body.style.overflow = 'auto';
     document.removeEventListener('keydown', this.boundHandleKeydown);
-    // Remove o conteúdo do iframe se for um vídeo
-    if (this.imageElement.tagName !== 'IMG') {
-        const img = document.createElement('img');
-        img.id = 'lightbox-img';
-        img.className = 'absolute max-h-[90%] max-w-[90%] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded shadow-lg cursor-pointer';
-        this.imageElement.replaceWith(img);
-        this.imageElement = img;
-    }
-    this.imageElement.src = '';
+    // Limpa o conteúdo do container
+    this.lightboxContainer.innerHTML = `<img id="lightbox-img" class="max-w-full max-h-full rounded shadow-lg" src="" alt="">`;
+    this.imageElement = document.getElementById("lightbox-img"); // Recarrega a referência
   }
 
   navigate(direction) {
@@ -226,19 +221,12 @@ class Lightbox {
   updateContent() {
     const item = this.items[this.currentIndex];
     
-    // Garantimos que o container do vídeo ou imagem está visível
-    this.imageElement.src = '';
-    const container = this.imageElement.parentElement;
+    // Limpa o container antes de adicionar o novo elemento
+    this.lightboxContainer.innerHTML = '';
 
     if (item.tipo === 'video') {
       const url = item.src || '';
-      // Cria um container com proporção 16:9
-      let videoContainer = el('div', 'relative w-full pb-[56.25%] overflow-hidden rounded shadow-xl');
-      videoContainer.style.height = 0;
-      videoContainer.id = 'lightbox-img';
-      this.imageElement.replaceWith(videoContainer);
-      this.imageElement = videoContainer;
-
+      const videoWrapper = el('div', 'relative w-full h-full rounded shadow-xl');
       let iframeHtml = '';
       if (/youtube\.com|youtu\.be/.test(url)) {
           const idMatch = url.match(/(?:v=|be\/)([A-Za-z0-9_-]{6,})/);
@@ -251,20 +239,16 @@ class Lightbox {
       } else if (/\.mp4($|\?)/i.test(url)) {
           iframeHtml = `<video class="absolute inset-0 w-full h-full object-contain" controls src="${url}"></video>`;
       }
-      this.imageElement.innerHTML = iframeHtml;
+      videoWrapper.innerHTML = iframeHtml;
+      this.lightboxContainer.appendChild(videoWrapper);
     } else {
-      // Garante que o elemento é uma imagem
-      if (this.imageElement.tagName !== 'IMG') {
-        const img = document.createElement('img');
-        img.id = 'lightbox-img';
-        img.className = 'absolute max-h-[90%] max-w-[90%] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded shadow-lg cursor-pointer';
-        this.imageElement.replaceWith(img);
-        this.imageElement = img;
-      }
-      this.imageElement.src = cloudAny(item.src, { w: 2000, crop: 'fit' });
-      this.imageElement.alt = item.alt;
+      const img = el('img', 'max-w-full max-h-full rounded shadow-lg');
+      img.id = 'lightbox-img';
+      img.src = cloudAny(item.src, { w: 2000, crop: 'fit' });
+      img.alt = item.alt;
+      this.lightboxContainer.appendChild(img);
     }
-
+    
     // Lógica para esconder os botões se houver apenas uma foto
     if (this.items.length <= 1) {
       if (this.prevBtn) this.prevBtn.classList.add('hidden');
