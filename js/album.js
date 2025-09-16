@@ -4,7 +4,8 @@ async function getJSON(path) {
     const r = await fetch(path, { cache: "no-store" });
     if (!r.ok) throw 0;
     return await r.json();
-  } catch {
+  } catch (err) {
+    console.error("Error fetching JSON:", err);
     return null;
   }
 }
@@ -14,13 +15,8 @@ function el(tag, cls, html) {
   if (html !== undefined) e.innerHTML = html;
   return e;
 }
-function formatCurrency(v) {
-  try {
-    return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-  } catch {
-    return "R$ " + v;
-  }
-}
+
+// helpers genéricos
 const asArray = (x) => (Array.isArray(x) ? x : x ? [x] : []);
 const pick = (obj, keys, def = undefined) => {
   if (!obj) return def;
@@ -60,10 +56,6 @@ function cloudAny(url, { w = 600, h = null, crop = null, gravity = null } = {}) 
     const abs = new URL(url, window.location.origin).href;
     return `${base}${t}/${encodeURIComponent(abs)}`;
   }
-}
-
-function cloudSrcset(url, widths = [400, 600, 900], options = {}) {
-  return widths.map(w => `${cloudAny(url, { ...options, w })} ${w}w`).join(", ");
 }
 
 // ===================== normalizadores =====================
