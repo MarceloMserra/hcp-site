@@ -10,16 +10,6 @@
   <style>
     body { font-family: 'Nunito', sans-serif; }
     h1, h2, h3, h4 { font-family: 'Cormorant Garamond', serif; }
-    .lightbox-wrapper {
-      position: fixed;
-      inset: 0;
-      z-index: 9999;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(0, 0, 0, 0.9);
-      padding: 1rem;
-    }
   </style>
   <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 </head>
@@ -30,16 +20,18 @@
       <a href="index.html#galeria" class="text-gray-900 font-bold text-lg flex items-center gap-2 transition-transform duration-300 hover:scale-[1.03]">
         <img id="logo-img-album" src="" alt="Logo HCP" class="h-10 w-auto object-contain" />
         <span class="sr-only">HCP</span>
-        <span class="text-xl">Álbuns</span>
       </a>
-      <nav class="hidden md:flex items-center space-x-4">
-        <a href="index.html#galeria" class="text-gray-600 hover:text-sky-600 transition">Voltar à Galeria</a>
-      </nav>
-      <div class="md:hidden">
-        <button id="menu-btn" class="text-gray-600 hover:text-sky-600 focus:outline-none">
-          <i class="fas fa-bars fa-lg"></i>
+      <div class="flex items-center gap-4">
+        <a href="index.html#galeria" class="hidden md:block text-gray-600 hover:text-sky-600 font-medium transition">Voltar para Galeria</a>
+        <!-- Mobile hamburger -->
+        <button class="md:hidden text-gray-700" id="mobile-menu-button" aria-label="Abrir menu">
+          <i id="mobile-menu-icon" class="fas fa-bars text-2xl"></i>
         </button>
       </div>
+    </div>
+    <!-- Mobile Menu -->
+    <div class="md:hidden hidden bg-white shadow-lg" id="mobile-menu">
+        <a href="index.html#galeria" class="block px-4 py-2 text-gray-700 hover:text-blue-700 font-medium">Voltar para Galeria</a>
     </div>
   </header>
 
@@ -228,10 +220,7 @@
           const wrap = el("div", "rounded overflow-hidden bg-white/60 relative group cursor-pointer aspect-square");
           
           if (item.tipo === "video") {
-            // Cria um thumbnail melhor para vídeos
             const thumb = el("div", "w-full h-full bg-gray-200 rounded grid place-items-center relative");
-            
-            // Se for YouTube, tenta pegar o thumbnail
             const url = item.src || '';
             if (/youtube\.com|youtu\.be/.test(url)) {
               const idMatch = url.match(/(?:v=|\/|youtu\.be\/)([A-Za-z0-9_-]{11})/);
@@ -243,7 +232,6 @@
               }
             }
             
-            // Adiciona ícone de play
             const playIcon = el("div", "absolute inset-0 flex items-center justify-center");
             playIcon.innerHTML = `
               <div class="bg-black/70 rounded-full w-16 h-16 flex items-center justify-center">
@@ -253,7 +241,6 @@
               </div>
             `;
             thumb.appendChild(playIcon);
-            
             thumb.addEventListener("click", () => lightbox.open(i));
             wrap.appendChild(thumb);
           } else {
@@ -265,13 +252,11 @@
           }
           albumContentGrid.appendChild(wrap);
         });
-
       } else {
         document.getElementById("album-page-title").textContent = "Álbum não encontrado";
         document.getElementById("album-page-description").textContent = "O álbum que você está procurando não existe ou o endereço está incorreto.";
       }
     })();
-
 
     class Lightbox {
       constructor(items) {
@@ -329,9 +314,8 @@
         if (item.tipo === 'video') {
           const url = item.src || '';
           
-          // Container para vídeo com aspect ratio 16:9
           const videoWrapper = document.createElement('div');
-          videoWrapper.className = 'w-full max-w-7xl aspect-video';
+          videoWrapper.className = 'relative w-full max-w-7xl aspect-video rounded-lg shadow-2xl';
           
           let videoContent = '';
           
@@ -342,7 +326,7 @@
             if (videoId) {
               videoContent = `
                 <iframe 
-                  class="w-full h-full rounded-lg shadow-2xl" 
+                  class="w-full h-full" 
                   src="https://www.youtube.com/embed/${videoId}?autoplay=1&playsinline=1" 
                   frameborder="0" 
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen" 
@@ -357,7 +341,7 @@
             if (videoId) {
               videoContent = `
                 <iframe 
-                  class="w-full h-full rounded-lg shadow-2xl" 
+                  class="w-full h-full" 
                   src="https://player.vimeo.com/video/${videoId}?autoplay=1" 
                   frameborder="0" 
                   allow="autoplay; fullscreen; picture-in-picture" 
@@ -369,7 +353,7 @@
           else if (/\.mp4($|\?)/i.test(url)) {
             videoContent = `
               <video 
-                class="w-full h-full rounded-lg shadow-2xl" 
+                class="w-full h-full object-contain" 
                 controls 
                 autoplay 
                 src="${url}"
@@ -381,7 +365,6 @@
             videoWrapper.innerHTML = videoContent;
             this.lightboxContainer.appendChild(videoWrapper);
           } else {
-            // Se não conseguir processar o vídeo, mostra uma mensagem
             const errorMsg = document.createElement('div');
             errorMsg.className = 'text-white text-center p-8 bg-black/50 rounded-lg';
             errorMsg.innerHTML = `
@@ -391,7 +374,6 @@
             this.lightboxContainer.appendChild(errorMsg);
           }
         } else {
-          // Para imagens
           const img = document.createElement('img');
           img.className = 'max-w-full max-h-full rounded-lg shadow-2xl';
           img.src = cloudAny(item.src, { w: 2000, crop: 'fit' });
@@ -399,7 +381,6 @@
           this.lightboxContainer.appendChild(img);
         }
         
-        // Lógica para esconder os botões se houver apenas um item
         if (this.items.length <= 1) {
           if (this.prevBtn) this.prevBtn.classList.add('hidden');
           if (this.nextBtn) this.nextBtn.classList.add('hidden');
