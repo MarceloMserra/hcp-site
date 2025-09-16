@@ -98,7 +98,7 @@ function normalizeAlbum(raw) {
     }
   }
   for (const v of videosLists) {
-    const src = v.src || v.url || v.video;
+    const src = normalizeVideoItem(v);
     if (src) {
       itens.push({ tipo: "video", src });
     }
@@ -152,13 +152,37 @@ function isVideo(url) {
       const wrap = el("div", "rounded overflow-hidden bg-white/60 relative group cursor-pointer aspect-square");
       
       if (item.tipo === "video") {
-        const thumb = el("div", "aspect-video h-full bg-black/10 rounded grid place-items-center");
-        thumb.innerHTML = `<span class="text-white text-xs">▶ Vídeo</span>`;
+        // Cria um thumbnail melhor para vídeos
+        const thumb = el("div", "w-full h-full bg-gray-200 rounded grid place-items-center relative");
+        
+        // Se for YouTube, tenta pegar o thumbnail
+        const url = item.src || '';
+        if (/youtube\.com|youtu\.be/.test(url)) {
+          const idMatch = url.match(/(?:v=|\/|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+          const videoId = idMatch ? idMatch[1] : '';
+          if (videoId) {
+            const img = el("img", "w-full h-full object-cover");
+            img.src = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+            thumb.appendChild(img);
+          }
+        }
+        
+        // Adiciona ícone de play
+        const playIcon = el("div", "absolute inset-0 flex items-center justify-center");
+        playIcon.innerHTML = `
+          <div class="bg-black/70 rounded-full w-16 h-16 flex items-center justify-center">
+            <svg class="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M6 4l12 6-12 6z"/>
+            </svg>
+          </div>
+        `;
+        thumb.appendChild(playIcon);
+        
         thumb.addEventListener("click", () => lightbox.open(i));
         wrap.appendChild(thumb);
       } else {
-        const imgEl = el("img", "w-full h-full object-contain transition-transform duration-300 group-hover:scale-[1.02]");
-        imgEl.src = cloudAny(item.src, { w: 400, crop: 'fit' });
+        const imgEl = el("img", "w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]");
+        imgEl.src = cloudAny(item.src, { w: 400, crop: 'fill' });
         imgEl.alt = item.alt;
         imgEl.addEventListener("click", () => lightbox.open(i));
         wrap.appendChild(imgEl);
@@ -178,8 +202,7 @@ class Lightbox {
     this.items = items;
     this.currentIndex = 0;
     this.modal = document.getElementById("lightbox");
-    this.lightboxContainer = document.getElementById("lightbox-container"); // Novo container para o vídeo
-    this.imageElement = document.getElementById("lightbox-img");
+    this.lightboxContainer = document.getElementById("lightbox-container");
     this.prevBtn = document.getElementById("lb-prev");
     this.nextBtn = document.getElementById("lb-next");
     this.closeBtn = document.getElementById("lb-close");
@@ -200,6 +223,10 @@ class Lightbox {
     this.currentIndex = index;
     this.updateContent();
     this.modal.classList.remove('hidden');
+    // Mostra os controles
+    if (this.prevBtn) this.prevBtn.classList.remove('hidden');
+    if (this.nextBtn) this.nextBtn.classList.remove('hidden');
+    if (this.closeBtn) this.closeBtn.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
     document.addEventListener('keydown', this.boundHandleKeydown);
   }
@@ -209,8 +236,7 @@ class Lightbox {
     document.body.style.overflow = 'auto';
     document.removeEventListener('keydown', this.boundHandleKeydown);
     // Limpa o conteúdo do container
-    this.lightboxContainer.innerHTML = `<img id="lightbox-img" class="max-w-full max-h-full rounded shadow-lg" src="" alt="">`;
-    this.imageElement = document.getElementById("lightbox-img"); // Recarrega a referência
+    this.lightboxContainer.innerHTML = '';
   }
 
   navigate(direction) {
@@ -226,30 +252,77 @@ class Lightbox {
 
     if (item.tipo === 'video') {
       const url = item.src || '';
-      const videoWrapper = el('div', 'relative w-full h-full rounded shadow-xl');
-      let iframeHtml = '';
+      
+      // Container para vídeo com aspect ratio 16:9
+      const videoWrapper = document.createElement('div');
+      videoWrapper.className = 'w-full max-w-5xl aspect-video';
+      
+      let videoContent = '';
+      
+      // YouTube
       if (/youtube\.com|youtu\.be/.test(url)) {
-          const idMatch = url.match(/(?:v=|be\/)([A-Za-z0-9_-]{6,})/);
-          const vid = idMatch ? idMatch[1] : '';
-          iframeHtml = `<iframe class="absolute inset-0 w-full h-full" src="https://www.youtube.com/embed/${vid}" frameborder="0" allowfullscreen></iframe>`;
-      } else if (/vimeo\.com/.test(url)) {
-          const idMatch = url.match(/vimeo\.com\/(\d+)/);
-          const vid = idMatch ? idMatch[1] : '';
-          iframeHtml = `<iframe class="absolute inset-0 w-full h-full" src="https://player.vimeo.com/video/${vid}" frameborder="0" allowfullscreen></iframe>`;
-      } else if (/\.mp4($|\?)/i.test(url)) {
-          iframeHtml = `<video class="absolute inset-0 w-full h-full object-contain" controls src="${url}"></video>`;
+        const idMatch = url.match(/(?:v=|\/|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+        const videoId = idMatch ? idMatch[1] : '';
+        if (videoId) {
+          videoContent = `
+            <iframe 
+              class="w-full h-full rounded-lg shadow-2xl" 
+              src="https://www.youtube.com/embed/${videoId}?autoplay=1" 
+              frameborder="0" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+              allowfullscreen>
+            </iframe>`;
+        }
+      } 
+      // Vimeo
+      else if (/vimeo\.com/.test(url)) {
+        const idMatch = url.match(/vimeo\.com\/(\d+)/);
+        const videoId = idMatch ? idMatch[1] : '';
+        if (videoId) {
+          videoContent = `
+            <iframe 
+              class="w-full h-full rounded-lg shadow-2xl" 
+              src="https://player.vimeo.com/video/${videoId}?autoplay=1" 
+              frameborder="0" 
+              allow="autoplay; fullscreen; picture-in-picture" 
+              allowfullscreen>
+            </iframe>`;
+        }
+      } 
+      // MP4
+      else if (/\.mp4($|\?)/i.test(url)) {
+        videoContent = `
+          <video 
+            class="w-full h-full rounded-lg shadow-2xl" 
+            controls 
+            autoplay 
+            src="${url}">
+          </video>`;
       }
-      videoWrapper.innerHTML = iframeHtml;
-      this.lightboxContainer.appendChild(videoWrapper);
+      
+      if (videoContent) {
+        videoWrapper.innerHTML = videoContent;
+        this.lightboxContainer.appendChild(videoWrapper);
+      } else {
+        // Se não conseguir processar o vídeo, mostra uma mensagem
+        const errorMsg = document.createElement('div');
+        errorMsg.className = 'text-white text-center p-8 bg-black/50 rounded-lg';
+        errorMsg.innerHTML = `
+          <p class="text-xl mb-2">Não foi possível carregar o vídeo</p>
+          <p class="text-sm">URL: ${url}</p>
+        `;
+        this.lightboxContainer.appendChild(errorMsg);
+      }
     } else {
-      const img = el('img', 'max-w-full max-h-full rounded shadow-lg');
-      img.id = 'lightbox-img';
+      // Para imagens
+      const img = document.createElement('img');
+      img.className = 'max-w-full max-h-full rounded-lg shadow-2xl';
       img.src = cloudAny(item.src, { w: 2000, crop: 'fit' });
-      img.alt = item.alt;
+      img.alt = item.alt || '';
       this.lightboxContainer.appendChild(img);
     }
     
-    // Lógica para esconder os botões se houver apenas uma foto
+    // Lógica para esconder os botões se houver apenas um item
     if (this.items.length <= 1) {
       if (this.prevBtn) this.prevBtn.classList.add('hidden');
       if (this.nextBtn) this.nextBtn.classList.add('hidden');
