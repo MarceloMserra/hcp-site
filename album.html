@@ -6,68 +6,180 @@
   <title>Álbum - HCP</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Nunito', sans-serif; }
-    h1, h2, h3, h4 { font-family: 'Cormorant Garamond', serif; }
+    :root {
+      --navy:       #0f172a;
+      --gold:       #c9a84c;
+      --gold-light: #f0d080;
+    }
+    body { font-family: 'Nunito', sans-serif; background: var(--navy); color: #e2e8f0; }
+    h1, h2, h3 { font-family: 'Cormorant Garamond', serif; }
+
+    .header-glass {
+      background: rgba(15, 23, 42, 0.97);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .btn-gold {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, var(--gold) 0%, #a8793a 100%);
+      color: #fff;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 16px rgba(201,168,76,0.35);
+    }
+    .btn-gold:hover {
+      background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 100%);
+      box-shadow: 0 6px 24px rgba(201,168,76,0.55);
+      transform: translateY(-1px);
+    }
+
+    .gold-divider {
+      width: 56px;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      margin: 0 auto;
+    }
+
+    /* Grid item */
+    .grid-item {
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      background: rgba(255,255,255,0.04);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .grid-item:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    }
+    .grid-item-overlay {
+      position: absolute; inset: 0;
+      background: rgba(15,23,42,0.35);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .grid-item:hover .grid-item-overlay { opacity: 1; }
+
+    /* Lightbox nav buttons */
+    .lb-btn {
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      border: 1.5px solid rgba(255,255,255,0.15);
+      border-radius: 50%;
+      width: 48px; height: 48px;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      font-size: 1.25rem;
+    }
+    .lb-btn:hover {
+      background: rgba(201,168,76,0.8);
+      border-color: var(--gold);
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: none; }
+    }
+    .fade-up { animation: fadeUp 0.6s ease-out forwards; }
+    .fade-up-d1 { animation-delay: 0.1s; opacity: 0; animation-fill-mode: forwards; }
+    .fade-up-d2 { animation-delay: 0.25s; opacity: 0; animation-fill-mode: forwards; }
+    .fade-up-d3 { animation-delay: 0.4s; opacity: 0; animation-fill-mode: forwards; }
   </style>
   <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 </head>
-<body class="bg-gray-50 text-gray-900">
-  <!-- Header -->
-  <header class="sticky top-0 z-50 bg-white shadow-md">
-    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-      <a href="index.html" class="text-gray-900 font-bold text-lg flex items-center gap-2 transition-transform duration-300 hover:scale-[1.03]">
+
+<body>
+
+  <!-- ═══ HEADER ═══ -->
+  <header class="fixed top-0 inset-x-0 z-50 header-glass">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex justify-between items-center">
+
+      <a href="index.html" class="flex items-center gap-2 group">
         <img id="logo-img-album" src="" alt="Logo HCP" class="h-10 w-auto object-contain" />
-        <span class="sr-only">HCP</span>
       </a>
+
       <div class="flex items-center gap-4">
-        <a href="index.html#galeria" class="hidden md:block text-gray-600 hover:text-sky-600 font-medium transition">Voltar para Galeria</a>
-        <!-- Mobile hamburger -->
-        <button class="md:hidden text-gray-700" id="mobile-menu-button" aria-label="Abrir menu">
-          <i id="mobile-menu-icon" class="fas fa-bars text-2xl"></i>
+        <a href="index.html#galeria"
+           class="hidden md:inline-flex items-center gap-2 text-gray-400 hover:text-yellow-400 font-medium text-sm transition">
+          <i class="fas fa-arrow-left text-xs"></i> Voltar para Galeria
+        </a>
+        <button class="md:hidden text-gray-400 hover:text-white" id="mobile-menu-button" aria-label="Menu">
+          <i id="mobile-menu-icon" class="fas fa-bars text-xl"></i>
         </button>
       </div>
     </div>
-    <!-- Mobile Menu -->
-    <div class="md:hidden hidden bg-white shadow-lg" id="mobile-menu">
-        <a href="index.html#galeria" class="block px-4 py-2 text-gray-700 hover:text-blue-700 font-medium">Voltar para Galeria</a>
+
+    <div class="md:hidden hidden border-t border-white/8" id="mobile-menu">
+      <div class="max-w-7xl mx-auto px-4 py-3">
+        <a href="index.html#galeria" class="flex items-center gap-2 text-gray-300 hover:text-yellow-400 py-2 text-sm font-medium transition">
+          <i class="fas fa-arrow-left text-xs"></i> Voltar para Galeria
+        </a>
+      </div>
     </div>
   </header>
 
-  <!-- Main Content -->
-  <main class="container mx-auto px-4 py-8">
-    <div class="max-w-4xl mx-auto">
-      <h1 id="album-page-title" class="text-4xl font-bold mb-2 text-center">Álbum</h1>
-      <p id="album-page-description" class="text-lg text-gray-600 mb-8 text-center"></p>
-      
-      <!-- Grid de conteúdo do álbum -->
-      <div id="album-content-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-        <!-- Fotos e vídeos serão carregados aqui via JavaScript -->
-      </div>
+
+  <!-- ═══ HERO / HEADER AREA ═══ -->
+  <div class="pt-28 pb-12 px-4 text-center border-b border-white/8" style="background: linear-gradient(180deg, #080e1a 0%, #0f172a 100%)">
+    <div class="max-w-3xl mx-auto">
+      <p class="text-xs tracking-[0.35em] uppercase text-yellow-500/70 font-bold mb-4 fade-up fade-up-d1">
+        <i class="fas fa-images mr-2"></i>Galeria
+      </p>
+      <h1 id="album-page-title"
+          class="text-5xl md:text-6xl font-bold text-white mb-4 leading-tight fade-up fade-up-d2">
+        Álbum
+      </h1>
+      <div class="gold-divider mb-5 fade-up fade-up-d2"></div>
+      <p id="album-page-description"
+         class="text-base text-gray-400 leading-relaxed fade-up fade-up-d3"></p>
+    </div>
+  </div>
+
+
+  <!-- ═══ GRID ═══ -->
+  <main class="max-w-7xl mx-auto px-4 py-14">
+    <div id="album-content-grid"
+         class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
     </div>
   </main>
 
-  <!-- Lightbox -->
+
+  <!-- ═══ LIGHTBOX ═══ -->
   <div id="lightbox" class="hidden fixed inset-0 z-[9999]">
-    <div class="absolute inset-0 bg-black/90 cursor-pointer" data-close="lightbox"></div>
-    <div id="lightbox-container" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center w-full h-full p-4">
-        <!-- O conteúdo será injetado aqui pelo JS -->
+    <div class="absolute inset-0 bg-black/95 cursor-pointer" data-close="lightbox"></div>
+    <div id="lightbox-container"
+         class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center w-full h-full p-8 pointer-events-none">
     </div>
-    <!-- Controles de navegação da lightbox -->
-    <button id="lb-prev" class="hidden absolute left-4 top-1/2 -translate-y-1/2 bg-black/60 text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-black/80 transition focus:outline-none">‹</button>
-    <button id="lb-next" class="hidden absolute right-4 top-1/2 -translate-y-1/2 bg-black/60 text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-black/80 transition focus:outline-none">›</button>
-    <button id="lb-close" class="hidden absolute top-4 right-4 bg-black/60 text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-black/80 transition focus:outline-none">
+    <!-- Nav -->
+    <button id="lb-prev" class="hidden lb-btn absolute left-4 top-1/2 -translate-y-1/2">
+      <i class="fas fa-chevron-left"></i>
+    </button>
+    <button id="lb-next" class="hidden lb-btn absolute right-4 top-1/2 -translate-y-1/2">
+      <i class="fas fa-chevron-right"></i>
+    </button>
+    <button id="lb-close" class="hidden lb-btn absolute top-4 right-4">
       <i class="fas fa-times"></i>
     </button>
   </div>
-  
-  <!-- Footer -->
-  <footer class="bg-blue-900 text-white py-10">
-    <div class="container mx-auto px-4 text-center">
-      <p id="footer-text-album"></p>
+
+
+  <!-- ═══ FOOTER ═══ -->
+  <footer class="bg-[#080e1a] text-white py-10 border-t border-white/5 mt-8">
+    <div class="max-w-7xl mx-auto px-4 text-center">
+      <p id="footer-text-album" class="text-gray-600 text-xs"></p>
     </div>
   </footer>
+
 
   <script type="text/javascript">
     // ===================== utilidades =====================
@@ -86,13 +198,6 @@
       if (cls) e.className = cls;
       if (html !== undefined) e.innerHTML = html;
       return e;
-    }
-    function formatCurrency(v) {
-      try {
-        return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-      } catch {
-        return "R$ " + v;
-      }
     }
     const asArray = (x) => (Array.isArray(x) ? x : x ? [x] : []);
     const pick = (obj, keys, def = undefined) => {
@@ -116,14 +221,11 @@
           if (hasTransforms) return url;
         }
       }
-      const t = [
-        "f_auto",
-        "q_auto",
-        "dpr_auto",
-        crop ? `c_${crop}` : null,
+      const t = ["f_auto","q_auto","dpr_auto",
+        crop    ? `c_${crop}`    : null,
         gravity ? `g_${gravity}` : null,
-        w ? `w_${w}` : null,
-        h ? `h_${h}` : null,
+        w       ? `w_${w}`       : null,
+        h       ? `h_${h}`       : null,
       ].filter(Boolean).join(",");
       if (isCloudinary(url)) {
         const parts = url.split("/upload/");
@@ -148,86 +250,68 @@
     }
     function normalizeAlbum(raw) {
       if (!raw) return null;
-      const titulo = pick(raw, ["titulo", "title", "nome"], "");
-      const descricao = pick(raw, ["descricao", "descrição", "description"], "");
-      const capa = normalizePhotoItem(pick(raw, ["capa", "cover", "thumb", "thumbnail", "imagem"]));
-      const fotosLists = asArray(pick(raw, ["fotos", "fotos_multi", "fotos_multiplas", "fotos_multipla", "imagens", "images", "photos"], [])).flat();
-      const videosLists = asArray(pick(raw, ["videos", "vídeos", "clips"], [])).flat();
-      const itensMistos = asArray(pick(raw, ["itens", "items"], [])).flat();
+      const titulo    = pick(raw, ["titulo","title","nome"], "");
+      const descricao = pick(raw, ["descricao","descrição","description"], "");
+      const capa      = normalizePhotoItem(pick(raw, ["capa","cover","thumb","thumbnail","imagem"]));
+      const fotosLists  = asArray(pick(raw, ["fotos","fotos_multi","fotos_multiplas","fotos_multipla","imagens","images","photos"], [])).flat();
+      const videosLists = asArray(pick(raw, ["videos","vídeos","clips"], [])).flat();
+      const itensMistos = asArray(pick(raw, ["itens","items"], [])).flat();
       const itens = [];
       for (const f of fotosLists) {
         const src = normalizePhotoItem(f);
-        if (src) {
-          itens.push({
-            tipo: "foto",
-            src,
-            alt: (typeof f === "object" && (f.alt || f.legenda || f.caption)) || "",
-          });
-        }
+        if (src) itens.push({ tipo:"foto", src, alt:(typeof f==="object" && (f.alt||f.legenda||f.caption))||"" });
       }
       for (const v of videosLists) {
         const src = normalizeVideoItem(v);
-        if (src) {
-          itens.push({ tipo: "video", src });
-        }
+        if (src) itens.push({ tipo:"video", src });
       }
       for (const it of itensMistos) {
         if (!it) continue;
-        const t = (it.tipo || it.type || "").toLowerCase();
-        if (t === "video" || t === "vídeo") {
+        const t = (it.tipo||it.type||"").toLowerCase();
+        if (t==="video"||t==="vídeo") {
           const src = normalizeVideoItem(it);
-          if (src) itens.push({ tipo: "video", src });
+          if (src) itens.push({ tipo:"video", src });
         } else {
           const src = normalizePhotoItem(it);
-          if (src) itens.push({ tipo: "foto", src, alt: it.alt || it.legenda || it.caption || "" });
+          if (src) itens.push({ tipo:"foto", src, alt:it.alt||it.legenda||it.caption||"" });
         }
       }
       return { titulo, descricao, capa, itens };
     }
-    function isVideo(url) {
-      return (url || "").match(/youtube\.com|youtu\.be|vimeo\.com|\.mp4($|\?)/i);
-    }
 
-    // ===================== Menu Hamburger =====================
+    // ===================== Mobile menu =====================
     const mobileMenuButton = document.getElementById("mobile-menu-button");
-    const mobileMenu = document.getElementById("mobile-menu");
-    const mobileMenuIcon = document.getElementById("mobile-menu-icon");
-    
+    const mobileMenu       = document.getElementById("mobile-menu");
+    const mobileMenuIcon   = document.getElementById("mobile-menu-icon");
     if (mobileMenuButton && mobileMenu && mobileMenuIcon) {
       mobileMenuButton.addEventListener("click", (e) => {
         e.stopPropagation();
         mobileMenu.classList.toggle("hidden");
-        mobileMenuIcon.className = mobileMenu.classList.contains("hidden") 
-          ? "fas fa-bars text-2xl" 
-          : "fas fa-times text-2xl";
+        mobileMenuIcon.className = mobileMenu.classList.contains("hidden")
+          ? "fas fa-bars text-xl" : "fas fa-times text-xl";
       });
-
-      // Fechar menu ao clicar fora
       document.addEventListener("click", (e) => {
         if (!mobileMenu.classList.contains("hidden")) {
-          const clickInside = mobileMenu.contains(e.target) || mobileMenuButton.contains(e.target);
-          if (!clickInside) {
+          if (!mobileMenu.contains(e.target) && !mobileMenuButton.contains(e.target)) {
             mobileMenu.classList.add("hidden");
-            mobileMenuIcon.className = "fas fa-bars text-2xl";
+            mobileMenuIcon.className = "fas fa-bars text-xl";
           }
         }
       });
-
-      // Fechar menu ao scrollar
       window.addEventListener("scroll", () => {
         if (!mobileMenu.classList.contains("hidden")) {
           mobileMenu.classList.add("hidden");
-          mobileMenuIcon.className = "fas fa-bars text-2xl";
+          mobileMenuIcon.className = "fas fa-bars text-xl";
         }
       }, { passive: true });
     }
 
     // ===================== Lógica da página de álbum =====================
     (async () => {
-      const albumId = parseInt(new URLSearchParams(window.location.search).get('id'));
+      const albumId  = parseInt(new URLSearchParams(window.location.search).get('id'));
       const galeriaD = await getJSON("/data/galeria.json") || {};
-      const header = await getJSON("/data/header.json") || {};
-      const footer = await getJSON("/data/footer.json") || {};
+      const header   = await getJSON("/data/header.json")  || {};
+      const footer   = await getJSON("/data/footer.json")  || {};
 
       const logoImgAlbum = document.getElementById("logo-img-album");
       if (logoImgAlbum) logoImgAlbum.src = header.logo || '';
@@ -235,199 +319,152 @@
       const footerTextAlbum = document.getElementById("footer-text-album");
       if (footerTextAlbum) footerTextAlbum.textContent = footer.texto || '';
 
-      const rawAlbuns = pick(galeriaD, ["albuns", "álbuns", "albums", "lista"]) || [];
-      const albuns = asArray(rawAlbuns).map(normalizeAlbum).filter(Boolean);
-      const currentAlbum = albuns[albumId];
+      const rawAlbuns = pick(galeriaD, ["albuns","álbuns","albums","lista"]) || [];
+      const albuns    = asArray(rawAlbuns).map(normalizeAlbum).filter(Boolean);
+      const current   = albuns[albumId];
 
-      if (currentAlbum && !isNaN(albumId)) {
-        document.getElementById("album-page-title").textContent = currentAlbum.titulo || "Álbum";
-        document.getElementById("album-page-description").textContent = currentAlbum.descricao || "";
-        
-        const albumContentGrid = document.getElementById("album-content-grid");
-        albumContentGrid.innerHTML = "";
-        
-        // Filtra itens nulos ou vazios
-        const validItems = currentAlbum.itens.filter(item => item && item.src);
-        const lightbox = new Lightbox(validItems);
+      if (current && !isNaN(albumId)) {
+        document.getElementById("album-page-title").textContent       = current.titulo    || "Álbum";
+        document.getElementById("album-page-description").textContent = current.descricao || "";
+        document.title = `${current.titulo || "Álbum"} — HCP`;
+
+        const grid       = document.getElementById("album-content-grid");
+        grid.innerHTML   = "";
+        const validItems = current.itens.filter(item => item && item.src);
+        const lb         = new Lightbox(validItems);
 
         validItems.forEach((item, i) => {
-          const wrap = el("div", "rounded overflow-hidden bg-white/60 relative group cursor-pointer aspect-square");
-          
+          const wrap = el("div", "grid-item aspect-square");
+          // Small stagger
+          wrap.style.opacity = "0";
+          wrap.style.transform = "translateY(20px)";
+          wrap.style.transition = `opacity .4s ease ${Math.min(i*30,400)}ms, transform .4s ease ${Math.min(i*30,400)}ms`;
+          requestAnimationFrame(() => requestAnimationFrame(() => {
+            wrap.style.opacity = "1";
+            wrap.style.transform = "none";
+          }));
+
           if (item.tipo === "video") {
-            const thumb = el("div", "w-full h-full bg-gray-200 rounded grid place-items-center relative");
-            const url = item.src || '';
+            const thumb = el("div", "w-full h-full bg-[#1e293b] flex items-center justify-center relative");
+            const url   = item.src || '';
             if (/youtube\.com|youtu\.be/.test(url)) {
               const idMatch = url.match(/(?:v=|\/|youtu\.be\/)([A-Za-z0-9_-]{11})/);
               const videoId = idMatch ? idMatch[1] : '';
               if (videoId) {
-                const img = el("img", "w-full h-full object-cover");
+                const img = el("img", "w-full h-full object-cover absolute inset-0");
                 img.src = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
                 thumb.appendChild(img);
               }
             }
-            
-            const playIcon = el("div", "absolute inset-0 flex items-center justify-center");
-            playIcon.innerHTML = `
-              <div class="bg-black/70 rounded-full w-16 h-16 flex items-center justify-center">
-                <svg class="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 20 20">
+            const overlay = el("div", "grid-item-overlay");
+            overlay.innerHTML = `
+              <div class="w-16 h-16 rounded-full bg-black/60 border-2 border-yellow-400/60 flex items-center justify-center shadow-xl">
+                <svg class="w-7 h-7 text-yellow-400 ml-1" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M6 4l12 6-12 6z"/>
                 </svg>
-              </div>
-            `;
-            thumb.appendChild(playIcon);
-            thumb.addEventListener("click", () => lightbox.open(i));
+              </div>`;
+            thumb.appendChild(overlay);
+            thumb.addEventListener("click", () => lb.open(i));
             wrap.appendChild(thumb);
           } else {
-            const imgEl = el("img", "w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]");
-            imgEl.src = cloudAny(item.src, { w: 400, crop: 'fill' });
-            imgEl.alt = item.alt;
-            imgEl.addEventListener("click", () => lightbox.open(i));
+            const imgEl = el("img", "w-full h-full object-cover");
+            imgEl.src   = cloudAny(item.src, { w: 400, crop: 'fill' });
+            imgEl.alt   = item.alt || '';
+            imgEl.loading = "lazy";
+            const overlay = el("div", "grid-item-overlay");
+            overlay.innerHTML = `
+              <div class="w-12 h-12 rounded-full bg-black/50 border border-white/20 flex items-center justify-center">
+                <i class="fas fa-expand text-white text-sm"></i>
+              </div>`;
+            imgEl.addEventListener("click", () => lb.open(i));
             wrap.appendChild(imgEl);
+            wrap.appendChild(overlay);
+            wrap.querySelector(".grid-item-overlay").addEventListener("click", () => lb.open(i));
           }
-          albumContentGrid.appendChild(wrap);
+          grid.appendChild(wrap);
         });
+
       } else {
-        document.getElementById("album-page-title").textContent = "Álbum não encontrado";
+        document.getElementById("album-page-title").textContent       = "Álbum não encontrado";
         document.getElementById("album-page-description").textContent = "O álbum que você está procurando não existe ou o endereço está incorreto.";
       }
     })();
 
+    // ===================== Lightbox =====================
     class Lightbox {
       constructor(items) {
-        this.items = items;
-        this.currentIndex = 0;
-        this.modal = document.getElementById("lightbox");
-        this.lightboxContainer = document.getElementById("lightbox-container");
-        this.prevBtn = document.getElementById("lb-prev");
-        this.nextBtn = document.getElementById("lb-next");
-        this.closeBtn = document.getElementById("lb-close");
-        this.boundHandleKeydown = this.handleKeydown.bind(this);
-        this.boundClose = this.close.bind(this);
-        
-        if (this.prevBtn) this.prevBtn.addEventListener('click', () => this.navigate(-1));
-        if (this.nextBtn) this.nextBtn.addEventListener('click', () => this.navigate(1));
+        this.items          = items;
+        this.currentIndex   = 0;
+        this.modal          = document.getElementById("lightbox");
+        this.container      = document.getElementById("lightbox-container");
+        this.prevBtn        = document.getElementById("lb-prev");
+        this.nextBtn        = document.getElementById("lb-next");
+        this.closeBtn       = document.getElementById("lb-close");
+        this.boundKeydown   = this.handleKeydown.bind(this);
+        this.boundClose     = this.close.bind(this);
+        if (this.prevBtn)  this.prevBtn.addEventListener('click', () => this.navigate(-1));
+        if (this.nextBtn)  this.nextBtn.addEventListener('click', () => this.navigate(1));
         if (this.closeBtn) this.closeBtn.addEventListener('click', this.boundClose);
-        if (this.modal) this.modal.addEventListener('click', e => {
-          if (e.target.dataset.close === 'lightbox' || e.target === this.modal) {
-            this.close();
-          }
+        if (this.modal)    this.modal.addEventListener('click', e => {
+          if (e.target.dataset.close === 'lightbox' || e.target === this.modal) this.close();
         });
       }
-
       open(index) {
         this.currentIndex = index;
         this.updateContent();
         this.modal.classList.remove('hidden');
-        // Mostra os controles
-        if (this.prevBtn) this.prevBtn.classList.remove('hidden');
-        if (this.nextBtn) this.nextBtn.classList.remove('hidden');
+        if (this.prevBtn)  this.prevBtn.classList.remove('hidden');
+        if (this.nextBtn)  this.nextBtn.classList.remove('hidden');
         if (this.closeBtn) this.closeBtn.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
-        document.addEventListener('keydown', this.boundHandleKeydown);
+        document.addEventListener('keydown', this.boundKeydown);
       }
-
       close() {
         this.modal.classList.add('hidden');
         document.body.style.overflow = 'auto';
-        document.removeEventListener('keydown', this.boundHandleKeydown);
-        // Limpa o conteúdo do container
-        this.lightboxContainer.innerHTML = '';
+        document.removeEventListener('keydown', this.boundKeydown);
+        this.container.innerHTML = '';
       }
-
-      navigate(direction) {
-        this.currentIndex = (this.currentIndex + direction + this.items.length) % this.items.length;
+      navigate(dir) {
+        this.currentIndex = (this.currentIndex + dir + this.items.length) % this.items.length;
         this.updateContent();
       }
-
       updateContent() {
         const item = this.items[this.currentIndex];
-        
-        // Limpa o container antes de adicionar o novo elemento
-        this.lightboxContainer.innerHTML = '';
-
+        this.container.innerHTML = '';
         if (item.tipo === 'video') {
           const url = item.src || '';
-          
-          const videoWrapper = document.createElement('div');
-          videoWrapper.className = 'relative w-full max-w-7xl aspect-video rounded-lg shadow-2xl';
-          
-          let videoContent = '';
-          
-          // YouTube
+          const wrapper = document.createElement('div');
+          wrapper.className = 'relative w-full max-w-5xl aspect-video rounded-xl shadow-2xl pointer-events-auto';
+          let content = '';
           if (/youtube\.com|youtu\.be/.test(url)) {
-            const idMatch = url.match(/(?:v=|\/|youtu\.be\/)([A-Za-z0-9_-]{11})/);
-            const videoId = idMatch ? idMatch[1] : '';
-            if (videoId) {
-              videoContent = `
-                <iframe 
-                  class="w-full h-full" 
-                  src="https://www.youtube.com/embed/${videoId}?autoplay=1&playsinline=1" 
-                  frameborder="0" 
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen" 
-                  allowfullscreen>
-                </iframe>`;
-            }
-          } 
-          // Vimeo
-          else if (/vimeo\.com/.test(url)) {
-            const idMatch = url.match(/vimeo\.com\/(\d+)/);
-            const videoId = idMatch ? idMatch[1] : '';
-            if (videoId) {
-              videoContent = `
-                <iframe 
-                  class="w-full h-full" 
-                  src="https://player.vimeo.com/video/${videoId}?autoplay=1" 
-                  frameborder="0" 
-                  allow="autoplay; fullscreen; picture-in-picture" 
-                  allowfullscreen>
-                </iframe>`;
-            }
-          } 
-          // MP4
-          else if (/\.mp4($|\?)/i.test(url)) {
-            videoContent = `
-              <video 
-                class="w-full h-full object-contain" 
-                controls 
-                autoplay 
-                src="${url}"
-                playsinline>
-              </video>`;
+            const m = url.match(/(?:v=|\/|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+            if (m) content = `<iframe class="w-full h-full rounded-xl" src="https://www.youtube.com/embed/${m[1]}?autoplay=1&playsinline=1" frameborder="0" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture;web-share;fullscreen" allowfullscreen></iframe>`;
+          } else if (/vimeo\.com/.test(url)) {
+            const m = url.match(/vimeo\.com\/(\d+)/);
+            if (m) content = `<iframe class="w-full h-full rounded-xl" src="https://player.vimeo.com/video/${m[1]}?autoplay=1" frameborder="0" allow="autoplay;fullscreen;picture-in-picture" allowfullscreen></iframe>`;
+          } else if (/\.mp4($|\?)/i.test(url)) {
+            content = `<video class="w-full h-full rounded-xl" controls autoplay playsinline src="${url}"></video>`;
           }
-          
-          if (videoContent) {
-            videoWrapper.innerHTML = videoContent;
-            this.lightboxContainer.appendChild(videoWrapper);
-          } else {
-            const errorMsg = document.createElement('div');
-            errorMsg.className = 'text-white text-center p-8 bg-black/50 rounded-lg';
-            errorMsg.innerHTML = `
-              <p class="text-xl mb-2">Não foi possível carregar o vídeo</p>
-              <p class="text-sm">URL: ${url}</p>
-            `;
-            this.lightboxContainer.appendChild(errorMsg);
+          if (content) {
+            wrapper.innerHTML = content;
+            this.container.appendChild(wrapper);
           }
         } else {
           const img = document.createElement('img');
-          img.className = 'max-w-full max-h-full rounded-lg shadow-2xl';
+          img.className = 'max-w-full max-h-full rounded-xl shadow-2xl pointer-events-auto';
           img.src = cloudAny(item.src, { w: 2000, crop: 'fit' });
           img.alt = item.alt || '';
-          this.lightboxContainer.appendChild(img);
+          this.container.appendChild(img);
         }
-        
-        if (this.items.length <= 1) {
-          if (this.prevBtn) this.prevBtn.classList.add('hidden');
-          if (this.nextBtn) this.nextBtn.classList.add('hidden');
-        } else {
-          if (this.prevBtn) this.prevBtn.classList.remove('hidden');
-          if (this.nextBtn) this.nextBtn.classList.remove('hidden');
-        }
+        const hide = this.items.length <= 1;
+        if (this.prevBtn)  this.prevBtn.classList.toggle('hidden', hide);
+        if (this.nextBtn)  this.nextBtn.classList.toggle('hidden', hide);
       }
-
       handleKeydown(e) {
-        if (e.key === "Escape") this.close();
+        if (e.key === "Escape")     this.close();
         if (e.key === "ArrowRight") this.navigate(1);
-        if (e.key === "ArrowLeft") this.navigate(-1);
+        if (e.key === "ArrowLeft")  this.navigate(-1);
       }
     }
   </script>

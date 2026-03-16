@@ -6,190 +6,558 @@
   <title>HCP - Homens Cantores do Planalto</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Nunito', sans-serif; }
+    :root {
+      --navy:        #0f172a;
+      --navy-mid:    #1e293b;
+      --gold:        #c9a84c;
+      --gold-light:  #f0d080;
+      --cream:       #faf8f3;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body { font-family: 'Nunito', sans-serif; color: #1a1a2e; }
     h1, h2, h3, h4 { font-family: 'Cormorant Garamond', serif; }
-    .hero-bg { background-size: cover; background-position: center; position: relative; }
-    .hero-overlay { position:absolute; inset:0; }
+
+    /* ---- Header glass ---- */
+    .header-glass {
+      background: rgba(15, 23, 42, 0.96);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+    .header-scrolled {
+      box-shadow: 0 4px 40px rgba(0,0,0,0.4);
+    }
+
+    /* ---- Hero ---- */
+    .hero-bg {
+      background-size: cover;
+      background-position: center;
+    }
+    @media (min-width: 768px) {
+      .hero-bg { background-attachment: fixed; }
+    }
+    .hero-overlay { position: absolute; inset: 0; }
+
+    @keyframes heroUp {
+      from { opacity: 0; transform: translateY(40px); }
+      to   { opacity: 1; transform: translateY(0);    }
+    }
+    .hero-anim {
+      opacity: 0;
+      animation: heroUp 1s ease-out forwards;
+    }
+    .delay-1 { animation-delay: 0.15s; }
+    .delay-2 { animation-delay: 0.4s;  }
+    .delay-3 { animation-delay: 0.65s; }
+    .delay-4 { animation-delay: 0.9s;  }
+    .delay-5 { animation-delay: 1.15s; }
+
+    /* ---- Gold divider ---- */
+    .gold-divider {
+      width: 64px;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      margin: 0 auto;
+    }
+
+    /* ---- Scroll reveal ---- */
+    .reveal, .reveal-l, .reveal-r {
+      opacity: 0;
+      transition: opacity 0.75s ease, transform 0.75s ease;
+    }
+    .reveal   { transform: translateY(36px); }
+    .reveal-l { transform: translateX(-36px); }
+    .reveal-r { transform: translateX(36px);  }
+    .reveal.vis, .reveal-l.vis, .reveal-r.vis {
+      opacity: 1;
+      transform: none;
+    }
+
+    /* ---- Dark section ---- */
+    .s-dark {
+      background: var(--navy);
+      color: #cbd5e1;
+    }
+    .s-dark h2, .s-dark h3 { color: #f8fafc; }
+
+    /* ---- Nav link ---- */
+    .nav-link {
+      position: relative;
+      color: #cbd5e1;
+      transition: color 0.2s;
+      font-weight: 500;
+      letter-spacing: 0.03em;
+      font-size: 0.875rem;
+    }
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: -4px; left: 0;
+      width: 0; height: 2px;
+      background: var(--gold);
+      transition: width 0.3s ease;
+    }
+    .nav-link:hover { color: #fff; }
+    .nav-link:hover::after { width: 100%; }
+
+    /* ---- Gold button ---- */
+    .btn-gold {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--gold) 0%, #a8793a 100%);
+      color: #fff;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 20px rgba(201,168,76,0.45);
+    }
+    .btn-gold:hover {
+      background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 100%);
+      box-shadow: 0 8px 30px rgba(201,168,76,0.65);
+      transform: translateY(-2px);
+    }
+
+    /* ---- Card hover ---- */
+    .card-lift {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .card-lift:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 24px 60px rgba(0,0,0,0.18);
+    }
+
+    /* ---- Member portrait overlay ---- */
+    .portrait-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(15,23,42,0.92) 0%, rgba(15,23,42,0.1) 55%, transparent 100%);
+      opacity: 0;
+      transition: opacity 0.35s ease;
+    }
+    .portrait-card:hover .portrait-overlay { opacity: 1; }
+    .portrait-info {
+      transform: translateY(8px);
+      transition: transform 0.35s ease;
+    }
+    .portrait-card:hover .portrait-info { transform: none; }
+
+    /* ---- Filter button ---- */
+    .f-btn {
+      border: 1.5px solid #d1d5db;
+      color: #6b7280;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      padding: 6px 18px;
+      border-radius: 999px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      background: #fff;
+    }
+    .f-btn:hover { border-color: var(--gold); color: var(--navy); }
+    .f-btn.active {
+      background: var(--gold);
+      border-color: var(--gold);
+      color: var(--navy);
+    }
+
+    /* ---- Album card overlay ---- */
+    .album-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(15,23,42,0.88) 0%, rgba(15,23,42,0.15) 55%, transparent 100%);
+    }
+
+    /* ---- Progress bar ---- */
+    .pbar-track {
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.12);
+      overflow: hidden;
+    }
+    .pbar-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--gold) 0%, var(--gold-light) 100%);
+      transition: width 1.6s cubic-bezier(.4,0,.2,1);
+      width: 0%;
+    }
+
+    /* ---- Agenda badges ---- */
+    .badge { display: inline-block; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 999px; }
+    .badge-ensaio       { background: #dbeafe; color: #1e3a8a; }
+    .badge-culto        { background: #fef3c7; color: #78350f; }
+    .badge-apresentacao { background: #dcfce7; color: #14532d; }
+    .badge-turne        { background: #f3e8ff; color: #581c87; }
+    .badge-default      { background: #f1f5f9; color: #475569; }
+
+    /* ---- Section scroll offset (fixed header) ---- */
+    [id] { scroll-margin-top: 72px; }
+
+    /* ---- Scroll indicator bounce ---- */
+    @keyframes bounce2 {
+      0%,100% { transform: translateX(-50%) translateY(0); }
+      50%      { transform: translateX(-50%) translateY(8px); }
+    }
+    .bounce { animation: bounce2 1.8s ease-in-out infinite; }
   </style>
   <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 </head>
-<body class="bg-gray-50 text-gray-900">
-  <header class="sticky top-0 z-50 bg-white shadow-md" id="main-header">
-    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+<body class="bg-white text-gray-900">
+
+  <!-- ═══════════════════════════ HEADER ═══════════════════════════ -->
+  <header class="fixed top-0 inset-x-0 z-50 header-glass transition-all duration-300" id="main-header">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex justify-between items-center">
+
       <a href="#home" id="logo-link" class="flex items-center" aria-label="Ir para o início">
         <img id="logo-img" src="" alt="Logo HCP" class="h-10 w-auto object-contain" />
       </a>
 
       <nav class="hidden md:flex items-center gap-8" id="nav-links"></nav>
 
-      <a href="#doacoes" class="hidden md:inline-block bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-full font-medium transition">Doar</a>
+      <a href="#doacoes" class="hidden md:inline-flex items-center gap-2 btn-gold px-5 py-2 rounded-full text-sm">
+        <i class="fas fa-heart text-xs"></i> Apoiar
+      </a>
 
-      <button class="md:hidden text-gray-700" id="mobile-menu-button" aria-label="Abrir menu">
+      <button class="md:hidden text-gray-300 hover:text-white" id="mobile-menu-button" aria-label="Abrir menu">
         <i id="mobile-menu-icon" class="fas fa-bars text-2xl"></i>
       </button>
     </div>
-    <div class="md:hidden hidden bg-white shadow-lg" id="mobile-menu">
-      <div class="container mx-auto px-4 py-3 flex flex-col space-y-3" id="mobile-links"></div>
+
+    <div class="md:hidden hidden border-t border-white/10" id="mobile-menu">
+      <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col space-y-1" id="mobile-links"></div>
     </div>
   </header>
 
-  <section id="home" class="text-white min-h-[70vh] flex items-center justify-center relative hero-bg">
+
+  <!-- ═══════════════════════════ HERO ═══════════════════════════ -->
+  <section id="home" class="text-white min-h-screen flex items-center justify-center relative hero-bg">
     <div class="hero-overlay" id="hero-overlay"></div>
-    <div class="container mx-auto px-4 text-center relative z-10">
-      <h1 class="text-4xl md:text-5xl font-bold mb-6">HCP - Homens Cantores do Planalto</h1>
-      <p id="slogan" class="text-xl md:text-2xl mb-4"></p>
-      <p id="lema" class="text-lg italic mb-8"></p>
-      <a href="#historia" class="bg-sky-500 hover:bg-sky-600 text-white px-8 py-3 rounded-full font-medium text-lg transition duration-300">Conheça nossa história</a>
+
+    <!-- Bottom fade -->
+    <div class="absolute bottom-0 inset-x-0 h-40 bg-gradient-to-t from-black/30 to-transparent pointer-events-none"></div>
+
+    <div class="max-w-4xl mx-auto px-4 text-center relative z-10 py-32">
+
+      <div class="hero-anim delay-1">
+        <span class="inline-flex items-center gap-2 text-xs tracking-[0.35em] uppercase text-yellow-300/80 font-semibold mb-6">
+          <span class="w-8 h-px bg-yellow-300/50"></span>
+          Desde 1995
+          <span class="w-8 h-px bg-yellow-300/50"></span>
+        </span>
+      </div>
+
+      <h1 class="hero-anim delay-2 font-bold leading-none mb-4">
+        <span class="block text-8xl md:text-9xl tracking-tight text-white drop-shadow-2xl">HCP</span>
+        <span class="block text-2xl md:text-3xl font-normal italic text-yellow-200/90 mt-2">
+          Homens Cantores do Planalto
+        </span>
+      </h1>
+
+      <div class="hero-anim delay-3">
+        <div class="gold-divider my-7"></div>
+      </div>
+
+      <p id="slogan" class="hero-anim delay-3 text-xl md:text-2xl text-white/90 mb-3 font-light"></p>
+      <p id="lema"   class="hero-anim delay-4 text-base md:text-lg italic text-yellow-100/65 mb-12"></p>
+
+      <div class="hero-anim delay-5">
+        <a href="#historia" class="btn-gold px-10 py-4 rounded-full text-sm tracking-widest uppercase">
+          Conheça nossa história
+        </a>
+      </div>
+    </div>
+
+    <div class="bounce absolute bottom-8 left-1/2 text-white/40">
+      <i class="fas fa-chevron-down text-lg"></i>
     </div>
   </section>
 
-  <section id="historia" class="py-16 bg-white">
-    <div class="container mx-auto px-4">
-      <h2 class="text-3xl font-bold text-center mb-12">Nossa História</h2>
-      <div id="timeline" class="relative pl-6 space-y-8 max-w-3xl mx-auto"></div>
+
+  <!-- ═══════════════════════════ HISTÓRIA ═══════════════════════════ -->
+  <section id="historia" class="py-28 bg-white">
+    <div class="max-w-5xl mx-auto px-4">
+
+      <div class="text-center mb-20 reveal">
+        <p class="text-xs tracking-[0.35em] uppercase text-yellow-600 font-bold mb-3">Nossa Trajetória</p>
+        <h2 class="text-5xl md:text-6xl font-bold text-[#0f172a] mb-5">Nossa História</h2>
+        <div class="gold-divider"></div>
+      </div>
+
+      <!-- Timeline container: border-l is the vertical line -->
+      <div id="timeline" class="relative border-l-2 border-yellow-200 ml-4 md:ml-8 pl-8 md:pl-12 space-y-12"></div>
+
     </div>
   </section>
 
-  <section id="coordenacao" class="py-16 bg-gray-50">
-    <div class="container mx-auto px-4">
-      <h2 class="text-3xl font-bold text-center mb-8">Coordenação</h2>
+
+  <!-- ═══════════════════════════ COORDENAÇÃO ═══════════════════════════ -->
+  <section id="coordenacao" class="py-28 s-dark">
+    <div class="max-w-7xl mx-auto px-4">
+
+      <div class="text-center mb-20 reveal">
+        <p class="text-xs tracking-[0.35em] uppercase text-yellow-400/70 font-bold mb-3">Liderança</p>
+        <h2 class="text-5xl md:text-6xl font-bold mb-5">Coordenação</h2>
+        <div class="gold-divider"></div>
+      </div>
+
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8" id="coordenacao-grid"></div>
     </div>
   </section>
 
-  <section id="membros" class="py-16 bg-white">
-    <div class="container mx-auto px-4">
-      <h2 class="text-3xl font-bold text-center mb-8">Nossos Membros</h2>
-      <div class="flex justify-center mb-8 flex-wrap gap-2" id="naipe-filters"></div>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8" id="members-grid"></div>
+
+  <!-- ═══════════════════════════ MEMBROS ═══════════════════════════ -->
+  <section id="membros" class="py-28 bg-[#faf8f3]">
+    <div class="max-w-7xl mx-auto px-4">
+
+      <div class="text-center mb-14 reveal">
+        <p class="text-xs tracking-[0.35em] uppercase text-yellow-600 font-bold mb-3">O Coral</p>
+        <h2 class="text-5xl md:text-6xl font-bold text-[#0f172a] mb-5">Nossos Membros</h2>
+        <div class="gold-divider"></div>
+      </div>
+
+      <div class="flex justify-center mb-10 flex-wrap gap-2 reveal" id="naipe-filters"></div>
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5" id="members-grid"></div>
     </div>
   </section>
 
-<section id="galeria" class="py-16 bg-gray-50">
-  <div class="container mx-auto px-4">
-    <h2 class="text-3xl font-bold text-center mb-8">Galeria</h2>
-    <div id="albums-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-  </div>
 
-  <div id="album-modal" class="hidden fixed inset-0 z-50">
-    <div class="absolute inset-0 bg-black/80" data-close="modal"></div>
-    <div class="relative max-w-6xl mx-auto my-8 bg-white rounded-lg shadow-lg overflow-hidden">
-      <div class="flex items-center justify-between px-4 py-3 border-b">
-        <h3 id="album-modal-title" class="text-xl font-bold">Álbum</h3>
-        <button id="album-modal-close" class="text-gray-500 hover:text-gray-800">
-          <i class="fas fa-times text-2xl"></i>
-        </button>
+  <!-- ═══════════════════════════ GALERIA ═══════════════════════════ -->
+  <section id="galeria" class="py-28 s-dark">
+    <div class="max-w-7xl mx-auto px-4">
+
+      <div class="text-center mb-20 reveal">
+        <p class="text-xs tracking-[0.35em] uppercase text-yellow-400/70 font-bold mb-3">Momentos</p>
+        <h2 class="text-5xl md:text-6xl font-bold mb-5">Galeria</h2>
+        <div class="gold-divider"></div>
       </div>
-      <div id="album-modal-content" class="p-4">
-        <div id="album-items" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"></div>
+
+      <div id="albums-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+    </div>
+
+    <!-- Album modal -->
+    <div id="album-modal" class="hidden fixed inset-0 z-50">
+      <div class="absolute inset-0 bg-black/80" data-close="modal"></div>
+      <div class="relative max-w-6xl mx-auto my-8 bg-white rounded-2xl shadow-2xl overflow-hidden">
+        <div class="flex items-center justify-between px-6 py-4 border-b bg-gray-50">
+          <h3 id="album-modal-title" class="text-xl font-bold text-gray-900">Álbum</h3>
+          <button id="album-modal-close" class="text-gray-400 hover:text-gray-700 transition">
+            <i class="fas fa-times text-2xl"></i>
+          </button>
+        </div>
+        <div id="album-modal-content" class="p-4 overflow-y-auto max-h-[75vh]">
+          <div id="album-items" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"></div>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div id="lightbox" class="hidden fixed inset-0 z-50">
-    <div class="absolute inset-0 bg-black/90" data-close="lightbox"></div>
-    <img id="lightbox-img"
-              class="absolute max-h-[90%] max-w-[90%] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded shadow-lg"
-              src="" alt="">
-  </div>
-</section>
-
-
-  
-  <section id="agenda" class="py-16 bg-white">
-    <div class="container mx-auto px-4">
-      <h2 class="text-3xl font-bold text-center mb-8">Agenda</h2>
-      <div class="flex justify-center mb-8">
-        <div class="inline-flex rounded-md shadow-sm" role="group" id="agenda-filtros">
-          </div>
-      </div>
-      <div id="agenda-lista" class="max-w-4xl mx-auto space-y-4"></div>
+    <!-- Lightbox -->
+    <div id="lightbox" class="hidden fixed inset-0 z-50">
+      <div class="absolute inset-0 bg-black/95" data-close="lightbox"></div>
+      <img id="lightbox-img"
+           class="absolute max-h-[90%] max-w-[90%] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-xl shadow-2xl"
+           src="" alt="">
     </div>
   </section>
 
-<section id="doacoes" class="py-16 bg-white">
-    <div class="container mx-auto px-4 max-w-5xl">
-      <h2 class="text-3xl font-bold text-center mb-8">Doações</h2>
-      <div class="bg-gray-50 p-6 rounded-lg shadow">
-        <div class="mb-6">
-          <div class="flex justify-between mb-2">
-            <span class="font-medium">Meta:</span><span class="font-medium" id="meta-total"></span>
+
+  <!-- ═══════════════════════════ AGENDA ═══════════════════════════ -->
+  <section id="agenda" class="py-28 bg-white">
+    <div class="max-w-4xl mx-auto px-4">
+
+      <div class="text-center mb-14 reveal">
+        <p class="text-xs tracking-[0.35em] uppercase text-yellow-600 font-bold mb-3">Próximos Eventos</p>
+        <h2 class="text-5xl md:text-6xl font-bold text-[#0f172a] mb-5">Agenda</h2>
+        <div class="gold-divider"></div>
+      </div>
+
+      <div class="flex justify-center mb-10 flex-wrap gap-2 reveal">
+        <div class="inline-flex flex-wrap gap-2 justify-center" id="agenda-filtros"></div>
+      </div>
+
+      <div id="agenda-lista" class="space-y-4"></div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════ DOAÇÕES ═══════════════════════════ -->
+  <section id="doacoes" class="py-28 s-dark">
+    <div class="max-w-4xl mx-auto px-4">
+
+      <div class="text-center mb-16 reveal">
+        <p class="text-xs tracking-[0.35em] uppercase text-yellow-400/70 font-bold mb-3">Apoie o HCP</p>
+        <h2 id="doacoes-titulo" class="text-5xl md:text-6xl font-bold mb-5">Doações</h2>
+        <div class="gold-divider"></div>
+      </div>
+
+      <div class="reveal">
+        <!-- Progress -->
+        <div class="mb-10">
+          <div class="flex justify-between text-sm mb-2">
+            <span class="text-gray-400 font-medium">Meta</span>
+            <span id="meta-total" class="text-yellow-400 font-bold"></span>
           </div>
-          <div class="flex justify-between mb-2">
-            <span class="font-medium">Arrecadado:</span><span class="font-medium" id="valor-arrecadado"></span>
+          <div class="flex justify-between text-sm mb-3">
+            <span class="text-gray-400 font-medium">Arrecadado</span>
+            <span id="valor-arrecadado" class="text-yellow-300 font-bold text-2xl leading-none"></span>
           </div>
-          <div class="h-3 bg-gray-200 rounded-full">
-            <div id="progress" class="h-3 bg-sky-500 rounded-full" style="width:0%"></div>
+          <div class="pbar-track">
+            <div id="progress" class="pbar-fill"></div>
           </div>
         </div>
+
+        <!-- Cards -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div class="bg-white p-4 rounded border">
-            <h4 class="text-lg font-bold mb-2">PIX</h4>
-            <p id="pix-chave" class="mb-3"></p>
-            <img id="pix-qr" class="w-32 h-32 object-contain" alt="QR Code PIX" />
+          <div class="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-sm">
+            <h4 class="text-base font-bold mb-4 text-yellow-400 flex items-center gap-2">
+              <i class="fas fa-qrcode"></i> PIX
+            </h4>
+            <p id="pix-chave" class="text-gray-300 text-sm font-mono bg-white/5 px-3 py-2 rounded-lg mb-4 break-all"></p>
+            <img id="pix-qr" class="w-36 h-36 object-contain rounded-xl bg-white p-2 shadow" alt="QR Code PIX" />
           </div>
-          <div class="bg-white p-4 rounded border">
-            <h4 class="text-lg font-bold mb-2">Outras formas</h4>
-            <ul id="doacao-links" class="space-y-2"></ul>
+          <div class="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-sm">
+            <h4 class="text-base font-bold mb-4 text-yellow-400 flex items-center gap-2">
+              <i class="fas fa-hand-holding-heart"></i> Outras formas
+            </h4>
+            <ul id="doacao-links" class="space-y-3"></ul>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <section id="objetivos" class="py-16 bg-gray-50">
-    <div class="container mx-auto px-4">
-      <h2 class="text-3xl font-bold text-center mb-8">Nossos Objetivos e Metas</h2>
-      <div id="objetivos-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12"></div>
-      <h3 class="text-2xl font-bold text-center mb-6">Metas Anuais</h3>
+
+  <!-- ═══════════════════════════ OBJETIVOS ═══════════════════════════ -->
+  <section id="objetivos" class="py-28 bg-white">
+    <div class="max-w-7xl mx-auto px-4">
+
+      <div class="text-center mb-16 reveal">
+        <p class="text-xs tracking-[0.35em] uppercase text-yellow-600 font-bold mb-3">Visão &amp; Propósito</p>
+        <h2 class="text-5xl md:text-6xl font-bold text-[#0f172a] mb-5">Nossos Objetivos</h2>
+        <div class="gold-divider"></div>
+      </div>
+
+      <div id="objetivos-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20"></div>
+
+      <div class="text-center mb-12 reveal">
+        <h3 class="text-4xl font-bold text-[#0f172a] mb-4">Metas Anuais</h3>
+        <div class="gold-divider"></div>
+      </div>
+
       <div id="metas-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
     </div>
   </section>
 
-  <section id="contato" class="py-16 bg-white">
-    <div class="container mx-auto px-4 max-w-5xl">
-      <h2 class="text-3xl font-bold text-center mb-8">Contato</h2>
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div>
-          <h3 class="text-xl font-bold mb-4">Informações</h3>
-          <p class="mb-2"><i class="fas fa-envelope mr-2 text-blue-900"></i><span id="contato-email"></span></p>
-          <p class="mb-2"><i class="fas fa-phone mr-2 text-blue-900"></i><span id="contato-telefone"></span></p>
-          <p class="mb-2"><i class="fas fa-map-marker-alt mr-2 text-blue-900"></i><span id="contato-endereco"></span></p>
+
+  <!-- ═══════════════════════════ CONTATO ═══════════════════════════ -->
+  <section id="contato" class="py-28 s-dark">
+    <div class="max-w-5xl mx-auto px-4">
+
+      <div class="text-center mb-16 reveal">
+        <p class="text-xs tracking-[0.35em] uppercase text-yellow-400/70 font-bold mb-3">Fale Conosco</p>
+        <h2 class="text-5xl md:text-6xl font-bold mb-5">Contato</h2>
+        <div class="gold-divider"></div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-14">
+
+        <div class="reveal-l">
+          <h3 class="text-2xl font-bold text-yellow-400 mb-8">Informações</h3>
+          <div class="space-y-5">
+            <div class="flex items-center gap-4">
+              <div class="w-11 h-11 rounded-full bg-yellow-500/15 border border-yellow-500/20 flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-envelope text-yellow-400"></i>
+              </div>
+              <span id="contato-email" class="text-gray-300"></span>
+            </div>
+            <div class="flex items-center gap-4">
+              <div class="w-11 h-11 rounded-full bg-yellow-500/15 border border-yellow-500/20 flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-phone text-yellow-400"></i>
+              </div>
+              <span id="contato-telefone" class="text-gray-300"></span>
+            </div>
+            <div class="flex items-center gap-4">
+              <div class="w-11 h-11 rounded-full bg-yellow-500/15 border border-yellow-500/20 flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-map-marker-alt text-yellow-400"></i>
+              </div>
+              <span id="contato-endereco" class="text-gray-300"></span>
+            </div>
+          </div>
         </div>
-        <div class="bg-gray-50 p-6 rounded-lg shadow">
-          <h3 class="text-xl font-bold mb-4">Formulário (Netlify)</h3>
-          <form name="contato" method="POST" data-netlify="true">
+
+        <div class="reveal-r">
+          <h3 class="text-2xl font-bold text-yellow-400 mb-8">Envie uma mensagem</h3>
+          <form name="contato" method="POST" data-netlify="true" class="space-y-4">
             <input type="hidden" name="form-name" value="contato">
-            <div class="mb-3"><input name="nome" class="w-full border rounded px-3 py-2" placeholder="Nome*" required></div>
-            <div class="mb-3"><input name="email" type="email" class="w-full border rounded px-3 py-2" placeholder="E-mail*" required></div>
-            <div class="mb-3"><textarea name="mensagem" rows="4" class="w-full border rounded px-3 py-2" placeholder="Mensagem*"></textarea></div>
-            <button class="bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded">Enviar</button>
+            <input  name="nome"
+                    class="w-full bg-white/8 border border-white/15 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-yellow-400 focus:bg-white/12 transition text-sm"
+                    placeholder="Nome *" required>
+            <input  name="email" type="email"
+                    class="w-full bg-white/8 border border-white/15 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-yellow-400 focus:bg-white/12 transition text-sm"
+                    placeholder="E-mail *" required>
+            <textarea name="mensagem" rows="4"
+                    class="w-full bg-white/8 border border-white/15 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-yellow-400 focus:bg-white/12 transition text-sm resize-none"
+                    placeholder="Mensagem *"></textarea>
+            <button type="submit" class="btn-gold w-full py-3 rounded-xl text-sm tracking-widest uppercase">
+              <i class="fas fa-paper-plane mr-2"></i>Enviar
+            </button>
           </form>
         </div>
+
       </div>
     </div>
   </section>
 
-  <footer class="bg-blue-900 text-white py-10">
-    <div class="container mx-auto px-4">
-      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-        <div class="flex items-center gap-3">
-          <img id="footer-logo" src="" alt="Logo HCP" class="h-12 w-auto object-contain" />
-          <span class="sr-only">HCP</span>
-        </div>
-        <p id="footer-text" class="text-blue-200 text-center md:text-left"></p>
-        <div id="footer-links" class="flex gap-4 flex-wrap"></div>
+
+  <!-- ═══════════════════════════ FOOTER ═══════════════════════════ -->
+  <footer class="bg-[#080e1a] text-white py-14 border-t border-white/5">
+    <div class="max-w-7xl mx-auto px-4">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-8">
+        <img id="footer-logo" src="" alt="Logo HCP" class="h-14 w-auto object-contain" />
+        <p id="footer-text" class="text-gray-500 text-sm text-center max-w-xs leading-relaxed"></p>
+        <div id="footer-links" class="flex gap-5 flex-wrap"></div>
+      </div>
+      <div class="mt-10 pt-8 border-t border-white/5 text-center text-gray-700 text-xs tracking-wide">
+        © 2025 HCP — Homens Cantores do Planalto &nbsp;·&nbsp; Todos os direitos reservados
       </div>
     </div>
   </footer>
 
+
   <script src="js/app.js"></script>
   <script>
+    // Netlify Identity redirect
     if (window.location.hash.includes("invite_token")) {
       window.location.href = "/admin/" + window.location.hash;
     }
+
+    // ── Scroll reveal ────────────────────────────────────────────
+    const revObs = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('vis');
+          revObs.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.08 });
+
+    // Observe existing elements
+    function observeAll() {
+      document.querySelectorAll('.reveal:not(.obs), .reveal-l:not(.obs), .reveal-r:not(.obs)').forEach(el => {
+        el.classList.add('obs');
+        revObs.observe(el);
+      });
+    }
+    observeAll();
+
+    // Also catch dynamically added elements
+    new MutationObserver(observeAll).observe(document.body, { childList: true, subtree: true });
+
+    // ── Header scroll effect ─────────────────────────────────────
+    const hdr = document.getElementById('main-header');
+    window.addEventListener('scroll', () => {
+      hdr.classList.toggle('header-scrolled', window.scrollY > 20);
+    }, { passive: true });
   </script>
 
 </body>
