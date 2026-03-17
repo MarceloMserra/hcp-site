@@ -8,89 +8,201 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
+    /* ═══════════════════════════════════════════════════════════
+       DESIGN TOKENS
+    ═══════════════════════════════════════════════════════════ */
     :root {
-      --navy:        #0f172a;
-      --navy-mid:    #1e293b;
-      --gold:        #c9a84c;
-      --gold-light:  #f0d080;
-      --cream:       #faf8f3;
+      --navy:       #0b1120;
+      --navy-2:     #0f172a;
+      --navy-3:     #1e293b;
+      --gold:       #c9a84c;
+      --gold-2:     #e2bf6e;
+      --gold-light: #f0d080;
+      --cream:      #faf8f3;
+      --white:      #ffffff;
     }
 
     *, *::before, *::after { box-sizing: border-box; }
 
-    body { font-family: 'Nunito', sans-serif; color: #1a1a2e; }
+    /* ─── Base ─── */
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Nunito', sans-serif; color: #1a1a2e; background: var(--white); }
     h1, h2, h3, h4 { font-family: 'Cormorant Garamond', serif; }
 
-    /* ---- Header glass ---- */
-    .header-glass {
-      background: rgba(15, 23, 42, 0.96);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-    }
-    .header-scrolled {
-      box-shadow: 0 4px 40px rgba(0,0,0,0.4);
-    }
+    /* ─── Custom scrollbar ─── */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--navy); }
+    ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, var(--gold), var(--gold-light)); border-radius: 4px; }
 
-    /* ---- Hero ---- */
+    /* ─── Selection ─── */
+    ::selection { background: var(--gold); color: var(--navy); }
+
+    /* ═══════════════════════════════════════════════════════════
+       HEADER
+    ═══════════════════════════════════════════════════════════ */
+    .header-glass {
+      background: rgba(11, 17, 32, 0.92);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(201,168,76,0.08);
+    }
+    .header-scrolled { box-shadow: 0 4px 40px rgba(0,0,0,0.5); }
+
+    /* ═══════════════════════════════════════════════════════════
+       HERO
+    ═══════════════════════════════════════════════════════════ */
     .hero-bg {
       background-size: cover;
       background-position: center;
     }
-    @media (min-width: 768px) {
-      .hero-bg { background-attachment: fixed; }
-    }
+    @media (min-width: 768px) { .hero-bg { background-attachment: fixed; } }
     .hero-overlay { position: absolute; inset: 0; }
 
+    /* Hero entrance animations */
     @keyframes heroUp {
-      from { opacity: 0; transform: translateY(40px); }
-      to   { opacity: 1; transform: translateY(0);    }
+      from { opacity: 0; transform: translateY(50px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
-    .hero-anim {
-      opacity: 0;
-      animation: heroUp 1s ease-out forwards;
-    }
-    .delay-1 { animation-delay: 0.15s; }
-    .delay-2 { animation-delay: 0.4s;  }
-    .delay-3 { animation-delay: 0.65s; }
-    .delay-4 { animation-delay: 0.9s;  }
-    .delay-5 { animation-delay: 1.15s; }
+    .hero-anim { opacity: 0; animation: heroUp 1.1s cubic-bezier(.22,1,.36,1) forwards; }
+    .d1 { animation-delay: .1s; }  .d2 { animation-delay: .35s; }
+    .d3 { animation-delay: .6s; }  .d4 { animation-delay: .85s; }
+    .d5 { animation-delay: 1.1s; } .d6 { animation-delay: 1.35s; }
 
-    /* ---- Gold divider ---- */
-    .gold-divider {
-      width: 64px;
-      height: 3px;
-      background: linear-gradient(90deg, transparent, var(--gold), transparent);
-      margin: 0 auto;
+    /* Floating music notes */
+    @keyframes floatNote {
+      0%   { transform: translateY(0) rotate(-20deg) scale(1);   opacity: 0; }
+      8%   { opacity: .55; }
+      88%  { opacity: .45; }
+      100% { transform: translateY(-105vh) rotate(20deg) scale(.5); opacity: 0; }
     }
-
-    /* ---- Scroll reveal ---- */
-    .reveal, .reveal-l, .reveal-r {
-      opacity: 0;
-      transition: opacity 0.75s ease, transform 0.75s ease;
-    }
-    .reveal   { transform: translateY(36px); }
-    .reveal-l { transform: translateX(-36px); }
-    .reveal-r { transform: translateX(36px);  }
-    .reveal.vis, .reveal-l.vis, .reveal-r.vis {
-      opacity: 1;
-      transform: none;
+    .note {
+      position: absolute;
+      pointer-events: none;
+      color: rgba(201,168,76,.35);
+      font-size: var(--fs, 1.6rem);
+      animation: floatNote var(--dur,14s) var(--delay,0s) ease-in-out infinite;
+      left: var(--x, 50%);
+      bottom: 5%;
+      line-height: 1;
+      user-select: none;
     }
 
-    /* ---- Dark section ---- */
+    /* Sound-wave decoration bars */
+    @keyframes barPulse {
+      0%,100% { transform: scaleY(1); }
+      50%     { transform: scaleY(var(--peak, 2.5)); }
+    }
+    .sound-bar {
+      width: 3px;
+      border-radius: 3px;
+      background: linear-gradient(180deg, var(--gold-light), var(--gold));
+      height: var(--h, 12px);
+      animation: barPulse var(--spd, 1.2s) var(--sdelay, 0s) ease-in-out infinite;
+      opacity: .55;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       WAVE DIVIDERS
+    ═══════════════════════════════════════════════════════════ */
+    .wave {
+      position: absolute;
+      bottom: -1px;
+      left: 0; right: 0;
+      line-height: 0;
+      pointer-events: none;
+      z-index: 2;
+    }
+    .wave svg { display: block; width: 100%; }
+
+    /* ═══════════════════════════════════════════════════════════
+       SECTIONS
+    ═══════════════════════════════════════════════════════════ */
     .s-dark {
-      background: var(--navy);
+      background: var(--navy-2);
       color: #cbd5e1;
     }
     .s-dark h2, .s-dark h3 { color: #f8fafc; }
 
-    /* ---- Nav link ---- */
+    /* Grain overlay on dark sections */
+    .s-dark::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+    .s-dark > * { position: relative; z-index: 1; }
+
+    /* ═══════════════════════════════════════════════════════════
+       GOLD DIVIDER & LABELS
+    ═══════════════════════════════════════════════════════════ */
+    .gold-divider {
+      width: 64px; height: 3px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      margin: 0 auto;
+    }
+
+    /* Animated gradient text */
+    @keyframes goldShine {
+      0%   { background-position: 0%   center; }
+      100% { background-position: 200% center; }
+    }
+    .label-shine {
+      background: linear-gradient(90deg, var(--gold) 0%, var(--gold-light) 40%, var(--gold) 80%);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: goldShine 3.5s linear infinite;
+      font-size: .7rem;
+      font-weight: 800;
+      letter-spacing: .35em;
+      text-transform: uppercase;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       BUTTONS
+    ═══════════════════════════════════════════════════════════ */
+    .btn-gold {
+      position: relative;
+      overflow: hidden;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, var(--gold) 0%, #9a6f2b 100%);
+      color: #fff;
+      font-weight: 700;
+      letter-spacing: .07em;
+      transition: all .35s ease;
+      box-shadow: 0 4px 24px rgba(201,168,76,.45);
+    }
+    /* Shimmer sweep */
+    .btn-gold::before {
+      content: '';
+      position: absolute;
+      top: 0; left: -80%;
+      width: 55%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.3), transparent);
+      transform: skewX(-20deg);
+    }
+    .btn-gold:hover::before { animation: shimmerBtn .7s ease forwards; }
+    @keyframes shimmerBtn { to { left: 130%; } }
+    .btn-gold:hover {
+      background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 100%);
+      box-shadow: 0 8px 36px rgba(201,168,76,.65);
+      transform: translateY(-2px);
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       NAV LINKS
+    ═══════════════════════════════════════════════════════════ */
     .nav-link {
       position: relative;
-      color: #cbd5e1;
-      transition: color 0.2s;
+      color: #94a3b8;
       font-weight: 500;
-      letter-spacing: 0.03em;
-      font-size: 0.875rem;
+      font-size: .85rem;
+      letter-spacing: .04em;
+      transition: color .2s;
     }
     .nav-link::after {
       content: '';
@@ -98,467 +210,670 @@
       bottom: -4px; left: 0;
       width: 0; height: 2px;
       background: var(--gold);
-      transition: width 0.3s ease;
+      transition: width .3s ease;
     }
     .nav-link:hover { color: #fff; }
     .nav-link:hover::after { width: 100%; }
 
-    /* ---- Gold button ---- */
-    .btn-gold {
-      display: inline-block;
-      background: linear-gradient(135deg, var(--gold) 0%, #a8793a 100%);
-      color: #fff;
-      font-weight: 700;
-      letter-spacing: 0.06em;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 20px rgba(201,168,76,0.45);
-    }
-    .btn-gold:hover {
-      background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 100%);
-      box-shadow: 0 8px 30px rgba(201,168,76,0.65);
-      transform: translateY(-2px);
-    }
-
-    /* ---- Card hover ---- */
-    .card-lift {
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-    .card-lift:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 24px 60px rgba(0,0,0,0.18);
-    }
-
-    /* ---- Member portrait overlay ---- */
-    .portrait-overlay {
-      position: absolute; inset: 0;
-      background: linear-gradient(to top, rgba(15,23,42,0.92) 0%, rgba(15,23,42,0.1) 55%, transparent 100%);
-      opacity: 0;
-      transition: opacity 0.35s ease;
-    }
-    .portrait-card:hover .portrait-overlay { opacity: 1; }
-    .portrait-info {
-      transform: translateY(8px);
-      transition: transform 0.35s ease;
-    }
-    .portrait-card:hover .portrait-info { transform: none; }
-
-    /* ---- Filter button ---- */
+    /* ═══════════════════════════════════════════════════════════
+       FILTER BUTTONS
+    ═══════════════════════════════════════════════════════════ */
     .f-btn {
       border: 1.5px solid #d1d5db;
       color: #6b7280;
-      font-size: 0.8rem;
-      font-weight: 600;
-      letter-spacing: 0.04em;
-      padding: 6px 18px;
+      font-size: .78rem;
+      font-weight: 700;
+      letter-spacing: .05em;
+      padding: 6px 20px;
       border-radius: 999px;
-      transition: all 0.2s ease;
+      transition: all .2s ease;
       cursor: pointer;
       background: #fff;
     }
-    .f-btn:hover { border-color: var(--gold); color: var(--navy); }
-    .f-btn.active {
-      background: var(--gold);
-      border-color: var(--gold);
-      color: var(--navy);
-    }
+    .f-btn:hover { border-color: var(--gold); color: var(--navy-2); }
+    .f-btn.active { background: var(--gold); border-color: var(--gold); color: var(--navy-2); }
 
-    /* ---- Album card overlay ---- */
+    /* ═══════════════════════════════════════════════════════════
+       CARDS
+    ═══════════════════════════════════════════════════════════ */
+    /* 3D tilt — base state for smooth return */
+    .tilt { transition: transform .4s ease, box-shadow .4s ease; will-change: transform; }
+
+    /* Member portrait */
+    .portrait-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(11,17,32,.95) 0%, rgba(11,17,32,.05) 55%, transparent 100%);
+      opacity: 0;
+      transition: opacity .35s ease;
+    }
+    .portrait-card:hover .portrait-overlay { opacity: 1; }
+
+    /* Album overlay */
     .album-overlay {
       position: absolute; inset: 0;
-      background: linear-gradient(to top, rgba(15,23,42,0.88) 0%, rgba(15,23,42,0.15) 55%, transparent 100%);
+      background: linear-gradient(to top, rgba(11,17,32,.92) 0%, rgba(11,17,32,.1) 60%, transparent 100%);
     }
 
-    /* ---- Progress bar ---- */
+    /* ═══════════════════════════════════════════════════════════
+       PROGRESS BARS
+    ═══════════════════════════════════════════════════════════ */
     .pbar-track {
-      height: 10px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.12);
-      overflow: hidden;
+      height: 10px; border-radius: 999px;
+      background: rgba(255,255,255,.1); overflow: hidden;
     }
     .pbar-fill {
-      height: 100%;
-      border-radius: 999px;
-      background: linear-gradient(90deg, var(--gold) 0%, var(--gold-light) 100%);
-      transition: width 1.6s cubic-bezier(.4,0,.2,1);
+      height: 100%; border-radius: 999px;
+      background: linear-gradient(90deg, var(--gold), var(--gold-light));
+      box-shadow: 0 0 12px rgba(201,168,76,.5);
       width: 0%;
+      transition: width 1.8s cubic-bezier(.4,0,.2,1);
     }
+    /* Glow pulse on fill */
+    @keyframes barGlow {
+      0%,100% { box-shadow: 0 0 8px rgba(201,168,76,.4); }
+      50%      { box-shadow: 0 0 20px rgba(201,168,76,.8); }
+    }
+    .pbar-fill.glowing { animation: barGlow 2s ease-in-out infinite; }
 
-    /* ---- Agenda badges ---- */
-    .badge { display: inline-block; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 999px; }
-    .badge-ensaio       { background: #dbeafe; color: #1e3a8a; }
-    .badge-culto        { background: #fef3c7; color: #78350f; }
-    .badge-apresentacao { background: #dcfce7; color: #14532d; }
-    .badge-turne        { background: #f3e8ff; color: #581c87; }
-    .badge-default      { background: #f1f5f9; color: #475569; }
+    /* ═══════════════════════════════════════════════════════════
+       AGENDA BADGES
+    ═══════════════════════════════════════════════════════════ */
+    .badge { display:inline-block; font-size:.68rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; padding:3px 10px; border-radius:999px; }
+    .badge-ensaio       { background:#dbeafe; color:#1e3a8a; }
+    .badge-culto        { background:#fef3c7; color:#78350f; }
+    .badge-apresentacao { background:#dcfce7; color:#14532d; }
+    .badge-turne        { background:#f3e8ff; color:#581c87; }
+    .badge-default      { background:#f1f5f9; color:#475569; }
 
-    /* ---- Section scroll offset (fixed header) ---- */
+    /* ═══════════════════════════════════════════════════════════
+       SCROLL REVEAL
+    ═══════════════════════════════════════════════════════════ */
+    .reveal, .reveal-l, .reveal-r {
+      opacity: 0;
+      transition: opacity .8s ease, transform .8s cubic-bezier(.22,1,.36,1);
+    }
+    .reveal   { transform: translateY(40px); }
+    .reveal-l { transform: translateX(-40px); }
+    .reveal-r { transform: translateX(40px);  }
+    .reveal.vis, .reveal-l.vis, .reveal-r.vis { opacity: 1; transform: none; }
+
+    /* ═══════════════════════════════════════════════════════════
+       BACK TO TOP
+    ═══════════════════════════════════════════════════════════ */
+    #btt {
+      position: fixed;
+      bottom: 2rem; right: 2rem;
+      width: 46px; height: 46px;
+      background: linear-gradient(135deg, var(--gold), #9a6f2b);
+      color: #fff;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 20px rgba(201,168,76,.55);
+      opacity: 0; transform: translateY(20px);
+      transition: all .35s ease;
+      z-index: 40; cursor: pointer;
+      border: none; outline: none;
+    }
+    #btt.show { opacity: 1; transform: none; }
+    #btt:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(201,168,76,.7); }
+
+    /* ─── Scroll margin for fixed header ─── */
     [id] { scroll-margin-top: 72px; }
 
-    /* ---- Scroll indicator bounce ---- */
-    @keyframes bounce2 {
+    /* ─── Bounce animation ─── */
+    @keyframes bounceY {
       0%,100% { transform: translateX(-50%) translateY(0); }
-      50%      { transform: translateX(-50%) translateY(8px); }
+      50%      { transform: translateX(-50%) translateY(9px); }
     }
-    .bounce { animation: bounce2 1.8s ease-in-out infinite; }
+    .hero-bounce { animation: bounceY 2s ease-in-out infinite; }
+
+    /* ─── Blockquote ornament ─── */
+    .quote-mark {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 7rem;
+      line-height: .7;
+      color: rgba(201,168,76,.18);
+      pointer-events: none;
+      user-select: none;
+    }
   </style>
   <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 </head>
-<body class="bg-white text-gray-900">
+<body>
 
-  <!-- ═══════════════════════════ HEADER ═══════════════════════════ -->
-  <header class="fixed top-0 inset-x-0 z-50 header-glass transition-all duration-300" id="main-header">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex justify-between items-center">
+<!-- ══════════════════════════════════════════════════════════════
+     HEADER
+══════════════════════════════════════════════════════════════ -->
+<header class="fixed top-0 inset-x-0 z-50 header-glass transition-all duration-300" id="main-header">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex justify-between items-center">
 
-      <a href="#home" id="logo-link" class="flex items-center" aria-label="Ir para o início">
-        <img id="logo-img" src="" alt="Logo HCP" class="h-10 w-auto object-contain" />
-      </a>
+    <a href="#home" id="logo-link" class="flex items-center" aria-label="Ir para o início">
+      <img id="logo-img" src="" alt="Logo HCP" class="h-10 w-auto object-contain" />
+    </a>
 
-      <nav class="hidden md:flex items-center gap-8" id="nav-links"></nav>
+    <nav class="hidden md:flex items-center gap-8" id="nav-links"></nav>
 
-      <a href="#doacoes" class="hidden md:inline-flex items-center gap-2 btn-gold px-5 py-2 rounded-full text-sm">
-        <i class="fas fa-heart text-xs"></i> Apoiar
-      </a>
+    <a href="#doacoes" class="hidden md:inline-flex items-center gap-2 btn-gold px-5 py-2.5 rounded-full text-xs">
+      <i class="fas fa-heart text-[10px]"></i> Apoiar o HCP
+    </a>
 
-      <button class="md:hidden text-gray-300 hover:text-white" id="mobile-menu-button" aria-label="Abrir menu">
-        <i id="mobile-menu-icon" class="fas fa-bars text-2xl"></i>
-      </button>
+    <button class="md:hidden text-gray-400 hover:text-white" id="mobile-menu-button" aria-label="Menu">
+      <i id="mobile-menu-icon" class="fas fa-bars text-xl"></i>
+    </button>
+  </div>
+
+  <div class="md:hidden hidden border-t border-white/8" id="mobile-menu">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col space-y-1" id="mobile-links"></div>
+  </div>
+</header>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     HERO
+══════════════════════════════════════════════════════════════ -->
+<section id="home" class="relative text-white min-h-screen flex items-center justify-center overflow-hidden hero-bg">
+
+  <!-- Overlay -->
+  <div class="hero-overlay" id="hero-overlay"></div>
+
+  <!-- Gradient vignette -->
+  <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60 pointer-events-none"></div>
+
+  <!-- Floating music notes -->
+  <div class="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+    <span class="note" style="--x:4%;  --dur:16s; --delay:0s;   --fs:1.8rem">♩</span>
+    <span class="note" style="--x:12%; --dur:21s; --delay:2.5s; --fs:1.3rem">♪</span>
+    <span class="note" style="--x:22%; --dur:13s; --delay:5s;   --fs:2.2rem">♫</span>
+    <span class="note" style="--x:33%; --dur:18s; --delay:1s;   --fs:1.1rem">♬</span>
+    <span class="note" style="--x:46%; --dur:24s; --delay:7s;   --fs:1.7rem">♩</span>
+    <span class="note" style="--x:58%; --dur:14s; --delay:3s;   --fs:2rem">♪</span>
+    <span class="note" style="--x:68%; --dur:19s; --delay:6s;   --fs:1.4rem">♫</span>
+    <span class="note" style="--x:78%; --dur:11s; --delay:2s;   --fs:2.4rem">♬</span>
+    <span class="note" style="--x:88%; --dur:17s; --delay:4.5s; --fs:1.6rem">♩</span>
+    <span class="note" style="--x:96%; --dur:22s; --delay:1.5s; --fs:1.2rem">♪</span>
+  </div>
+
+  <!-- Content -->
+  <div class="relative z-10 max-w-4xl mx-auto px-4 text-center py-36">
+
+    <div class="hero-anim d1">
+      <span class="label-shine mb-5 inline-block">
+        <i class="fas fa-music mr-2 opacity-70"></i>Desde 1995<i class="fas fa-music ml-2 opacity-70"></i>
+      </span>
     </div>
 
-    <div class="md:hidden hidden border-t border-white/10" id="mobile-menu">
-      <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col space-y-1" id="mobile-links"></div>
+    <h1 class="hero-anim d2 font-bold leading-none mb-5">
+      <span class="block text-[6rem] md:text-[9rem] leading-none tracking-tighter drop-shadow-2xl"
+            style="background:linear-gradient(180deg,#fff 0%,rgba(255,255,255,.8) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">
+        HCP
+      </span>
+      <span class="block text-2xl md:text-4xl font-light italic text-yellow-200/80 mt-1 tracking-wide">
+        Homens Cantores do Planalto
+      </span>
+    </h1>
+
+    <div class="hero-anim d3">
+      <div class="gold-divider my-7"></div>
     </div>
-  </header>
+
+    <p id="slogan" class="hero-anim d3 text-xl md:text-2xl text-white/85 mb-4 font-light"></p>
+
+    <!-- Lema with ornamental quotes -->
+    <div class="hero-anim d4 relative inline-block max-w-2xl px-6 mb-12">
+      <span class="quote-mark absolute -top-4 -left-2 select-none">"</span>
+      <p id="lema" class="text-base md:text-lg italic text-yellow-100/65 leading-relaxed"></p>
+      <span class="quote-mark absolute -bottom-12 -right-2 select-none">"</span>
+    </div>
+
+    <div class="hero-anim d5 mt-4">
+      <a href="#historia" class="btn-gold px-10 py-4 rounded-full text-sm tracking-widest uppercase">
+        Conheça nossa história
+      </a>
+    </div>
+
+    <!-- Sound-wave bars decoration -->
+    <div class="hero-anim d6 flex items-end justify-center gap-1 mt-16" aria-hidden="true">
+      <div class="sound-bar" style="--h:8px;  --peak:3;   --spd:1.1s; --sdelay:0s"></div>
+      <div class="sound-bar" style="--h:16px; --peak:2.5; --spd:.9s;  --sdelay:.1s"></div>
+      <div class="sound-bar" style="--h:24px; --peak:2;   --spd:1.3s; --sdelay:.2s"></div>
+      <div class="sound-bar" style="--h:32px; --peak:3;   --spd:1.0s; --sdelay:.05s"></div>
+      <div class="sound-bar" style="--h:20px; --peak:2.8; --spd:.85s; --sdelay:.15s"></div>
+      <div class="sound-bar" style="--h:36px; --peak:2.2; --spd:1.4s; --sdelay:.3s"></div>
+      <div class="sound-bar" style="--h:28px; --peak:3.2; --spd:1.1s; --sdelay:.08s"></div>
+      <div class="sound-bar" style="--h:40px; --peak:2;   --spd:.95s; --sdelay:.22s"></div>
+      <div class="sound-bar" style="--h:28px; --peak:2.6; --spd:1.2s; --sdelay:.12s"></div>
+      <div class="sound-bar" style="--h:36px; --peak:3;   --spd:1.0s; --sdelay:.18s"></div>
+      <div class="sound-bar" style="--h:20px; --peak:2.3; --spd:.88s; --sdelay:.28s"></div>
+      <div class="sound-bar" style="--h:32px; --peak:2.8; --spd:1.35s;--sdelay:.06s"></div>
+      <div class="sound-bar" style="--h:24px; --peak:3.1; --spd:1.15s;--sdelay:.24s"></div>
+      <div class="sound-bar" style="--h:16px; --peak:2.4; --spd:.92s; --sdelay:.16s"></div>
+      <div class="sound-bar" style="--h:8px;  --peak:2.9; --spd:1.25s;--sdelay:.32s"></div>
+    </div>
+  </div>
+
+  <!-- Scroll indicator -->
+  <div class="hero-bounce absolute bottom-8 left-1/2 text-white/35">
+    <i class="fas fa-chevron-down text-base"></i>
+  </div>
+
+  <!-- Wave → Historia (white) -->
+  <div class="wave" aria-hidden="true">
+    <svg viewBox="0 0 1440 70" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" style="height:70px">
+      <path d="M0,35 C400,70 1040,0 1440,35 L1440,70 L0,70 Z" fill="#ffffff"/>
+    </svg>
+  </div>
+</section>
 
 
-  <!-- ═══════════════════════════ HERO ═══════════════════════════ -->
-  <section id="home" class="text-white min-h-screen flex items-center justify-center relative hero-bg">
-    <div class="hero-overlay" id="hero-overlay"></div>
+<!-- ══════════════════════════════════════════════════════════════
+     HISTÓRIA
+══════════════════════════════════════════════════════════════ -->
+<section id="historia" class="relative py-28 pb-36 bg-white overflow-hidden">
+  <div class="max-w-5xl mx-auto px-4">
 
-    <!-- Bottom fade -->
-    <div class="absolute bottom-0 inset-x-0 h-40 bg-gradient-to-t from-black/30 to-transparent pointer-events-none"></div>
+    <div class="text-center mb-20 reveal">
+      <span class="label-shine mb-4 inline-block">Nossa Trajetória</span>
+      <h2 class="text-5xl md:text-6xl font-bold text-[#0b1120] mb-5">Nossa História</h2>
+      <div class="gold-divider"></div>
+    </div>
 
-    <div class="max-w-4xl mx-auto px-4 text-center relative z-10 py-32">
+    <div id="timeline" class="relative border-l-2 border-yellow-200 ml-4 md:ml-10 pl-8 md:pl-14 space-y-14"></div>
+  </div>
 
-      <div class="hero-anim delay-1">
-        <span class="inline-flex items-center gap-2 text-xs tracking-[0.35em] uppercase text-yellow-300/80 font-semibold mb-6">
-          <span class="w-8 h-px bg-yellow-300/50"></span>
-          Desde 1995
-          <span class="w-8 h-px bg-yellow-300/50"></span>
-        </span>
+  <!-- Wave → Coordenação (dark) -->
+  <div class="wave" aria-hidden="true">
+    <svg viewBox="0 0 1440 70" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" style="height:70px">
+      <path d="M0,70 C300,10 800,70 1440,20 L1440,70 L0,70 Z" fill="#0f172a"/>
+    </svg>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     COORDENAÇÃO
+══════════════════════════════════════════════════════════════ -->
+<section id="coordenacao" class="relative s-dark py-28 pb-36 overflow-hidden">
+  <div class="max-w-7xl mx-auto px-4">
+
+    <div class="text-center mb-20 reveal">
+      <span class="label-shine mb-4 inline-block">Liderança</span>
+      <h2 class="text-5xl md:text-6xl font-bold mb-5">Coordenação</h2>
+      <div class="gold-divider"></div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8" id="coordenacao-grid"></div>
+  </div>
+
+  <!-- Wave → Membros (cream) -->
+  <div class="wave" aria-hidden="true">
+    <svg viewBox="0 0 1440 70" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" style="height:70px">
+      <path d="M0,20 C500,70 900,10 1440,50 L1440,70 L0,70 Z" fill="#faf8f3"/>
+    </svg>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     MEMBROS
+══════════════════════════════════════════════════════════════ -->
+<section id="membros" class="relative py-28 pb-36 bg-[#faf8f3] overflow-hidden">
+  <div class="max-w-7xl mx-auto px-4">
+
+    <div class="text-center mb-14 reveal">
+      <span class="label-shine mb-4 inline-block">O Coral</span>
+      <h2 class="text-5xl md:text-6xl font-bold text-[#0b1120] mb-5">Nossos Membros</h2>
+      <div class="gold-divider"></div>
+    </div>
+
+    <div class="flex justify-center mb-10 flex-wrap gap-2 reveal" id="naipe-filters"></div>
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5" id="members-grid"></div>
+  </div>
+
+  <!-- Wave → Galeria (dark) -->
+  <div class="wave" aria-hidden="true">
+    <svg viewBox="0 0 1440 70" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" style="height:70px">
+      <path d="M0,50 C250,10 600,70 1440,25 L1440,70 L0,70 Z" fill="#0f172a"/>
+    </svg>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     GALERIA
+══════════════════════════════════════════════════════════════ -->
+<section id="galeria" class="relative s-dark py-28 pb-36 overflow-hidden">
+  <div class="max-w-7xl mx-auto px-4">
+
+    <div class="text-center mb-20 reveal">
+      <span class="label-shine mb-4 inline-block">Momentos</span>
+      <h2 class="text-5xl md:text-6xl font-bold mb-5">Galeria</h2>
+      <div class="gold-divider"></div>
+    </div>
+
+    <div id="albums-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+  </div>
+
+  <!-- Album modal -->
+  <div id="album-modal" class="hidden fixed inset-0 z-50">
+    <div class="absolute inset-0 bg-black/85" data-close="modal"></div>
+    <div class="relative max-w-6xl mx-auto my-8 bg-white rounded-2xl shadow-2xl overflow-hidden">
+      <div class="flex items-center justify-between px-6 py-4 border-b bg-gray-50">
+        <h3 id="album-modal-title" class="text-xl font-bold text-gray-900">Álbum</h3>
+        <button id="album-modal-close" class="text-gray-400 hover:text-gray-700 transition">
+          <i class="fas fa-times text-2xl"></i>
+        </button>
+      </div>
+      <div id="album-modal-content" class="p-4 overflow-y-auto max-h-[75vh]">
+        <div id="album-items" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lightbox -->
+  <div id="lightbox" class="hidden fixed inset-0 z-50">
+    <div class="absolute inset-0 bg-black/95" data-close="lightbox"></div>
+    <img id="lightbox-img"
+         class="absolute max-h-[90%] max-w-[90%] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-xl shadow-2xl"
+         src="" alt="">
+  </div>
+
+  <!-- Wave → Agenda (white) -->
+  <div class="wave" aria-hidden="true">
+    <svg viewBox="0 0 1440 70" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" style="height:70px">
+      <path d="M0,30 C200,70 700,0 1100,55 C1250,80 1380,25 1440,40 L1440,70 L0,70 Z" fill="#ffffff"/>
+    </svg>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     AGENDA
+══════════════════════════════════════════════════════════════ -->
+<section id="agenda" class="relative py-28 pb-36 bg-white overflow-hidden">
+  <div class="max-w-4xl mx-auto px-4">
+
+    <div class="text-center mb-14 reveal">
+      <span class="label-shine mb-4 inline-block">Próximos Eventos</span>
+      <h2 class="text-5xl md:text-6xl font-bold text-[#0b1120] mb-5">Agenda</h2>
+      <div class="gold-divider"></div>
+    </div>
+
+    <div class="flex justify-center mb-10 flex-wrap gap-2 reveal">
+      <div class="inline-flex flex-wrap gap-2 justify-center" id="agenda-filtros"></div>
+    </div>
+
+    <div id="agenda-lista" class="space-y-4"></div>
+  </div>
+
+  <!-- Wave → Doações (dark) -->
+  <div class="wave" aria-hidden="true">
+    <svg viewBox="0 0 1440 70" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" style="height:70px">
+      <path d="M0,0 C400,70 900,10 1440,55 L1440,70 L0,70 Z" fill="#0f172a"/>
+    </svg>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     DOAÇÕES
+══════════════════════════════════════════════════════════════ -->
+<section id="doacoes" class="relative s-dark py-28 pb-36 overflow-hidden">
+  <div class="max-w-4xl mx-auto px-4">
+
+    <div class="text-center mb-16 reveal">
+      <span class="label-shine mb-4 inline-block">Apoie o HCP</span>
+      <h2 id="doacoes-titulo" class="text-5xl md:text-6xl font-bold mb-5">Doações</h2>
+      <div class="gold-divider"></div>
+    </div>
+
+    <div class="reveal">
+      <!-- Progress block -->
+      <div class="mb-10 bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-sm">
+        <div class="flex justify-between text-sm mb-2">
+          <span class="text-gray-400 font-medium">Meta</span>
+          <span id="meta-total" class="text-yellow-400 font-bold"></span>
+        </div>
+        <div class="flex justify-between items-baseline mb-4">
+          <span class="text-gray-400 font-medium text-sm">Arrecadado</span>
+          <span id="valor-arrecadado" class="text-yellow-300 font-bold text-4xl tabular-nums">0%</span>
+        </div>
+        <div class="pbar-track">
+          <div id="progress" class="pbar-fill"></div>
+        </div>
       </div>
 
-      <h1 class="hero-anim delay-2 font-bold leading-none mb-4">
-        <span class="block text-8xl md:text-9xl tracking-tight text-white drop-shadow-2xl">HCP</span>
-        <span class="block text-2xl md:text-3xl font-normal italic text-yellow-200/90 mt-2">
-          Homens Cantores do Planalto
-        </span>
-      </h1>
+      <!-- PIX + Links -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-sm">
+          <h4 class="text-base font-bold mb-4 text-yellow-400 flex items-center gap-2">
+            <i class="fas fa-qrcode"></i> PIX
+          </h4>
+          <p id="pix-chave" class="text-gray-300 text-sm font-mono bg-white/5 px-3 py-2 rounded-lg mb-4 break-all"></p>
+          <img id="pix-qr" class="w-36 h-36 object-contain rounded-xl bg-white p-2 shadow" alt="QR Code PIX" />
+        </div>
+        <div class="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-sm">
+          <h4 class="text-base font-bold mb-4 text-yellow-400 flex items-center gap-2">
+            <i class="fas fa-hand-holding-heart"></i> Outras formas
+          </h4>
+          <ul id="doacao-links" class="space-y-3"></ul>
+        </div>
+      </div>
+    </div>
+  </div>
 
-      <div class="hero-anim delay-3">
-        <div class="gold-divider my-7"></div>
+  <!-- Wave → Objetivos (white) -->
+  <div class="wave" aria-hidden="true">
+    <svg viewBox="0 0 1440 70" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" style="height:70px">
+      <path d="M0,55 C350,10 800,70 1440,30 L1440,70 L0,70 Z" fill="#ffffff"/>
+    </svg>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     OBJETIVOS
+══════════════════════════════════════════════════════════════ -->
+<section id="objetivos" class="relative py-28 pb-36 bg-white overflow-hidden">
+  <div class="max-w-7xl mx-auto px-4">
+
+    <div class="text-center mb-16 reveal">
+      <span class="label-shine mb-4 inline-block">Visão &amp; Propósito</span>
+      <h2 class="text-5xl md:text-6xl font-bold text-[#0b1120] mb-5">Nossos Objetivos</h2>
+      <div class="gold-divider"></div>
+    </div>
+
+    <div id="objetivos-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20"></div>
+
+    <div class="text-center mb-12 reveal">
+      <span class="label-shine mb-4 inline-block">Progresso</span>
+      <h3 class="text-4xl font-bold text-[#0b1120] mb-4">Metas Anuais</h3>
+      <div class="gold-divider"></div>
+    </div>
+
+    <div id="metas-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+  </div>
+
+  <!-- Wave → Contato (dark) -->
+  <div class="wave" aria-hidden="true">
+    <svg viewBox="0 0 1440 70" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" style="height:70px">
+      <path d="M0,40 C180,70 500,0 800,45 C1050,80 1300,15 1440,40 L1440,70 L0,70 Z" fill="#0f172a"/>
+    </svg>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     CONTATO
+══════════════════════════════════════════════════════════════ -->
+<section id="contato" class="relative s-dark py-28 pb-36 overflow-hidden">
+  <div class="max-w-5xl mx-auto px-4">
+
+    <div class="text-center mb-16 reveal">
+      <span class="label-shine mb-4 inline-block">Fale Conosco</span>
+      <h2 class="text-5xl md:text-6xl font-bold mb-5">Contato</h2>
+      <div class="gold-divider"></div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-14">
+
+      <div class="reveal-l">
+        <h3 class="text-2xl font-bold text-yellow-400 mb-8">Informações</h3>
+        <div class="space-y-5">
+          <div class="flex items-center gap-4">
+            <div class="w-11 h-11 rounded-full bg-yellow-500/12 border border-yellow-500/20 flex items-center justify-center flex-shrink-0">
+              <i class="fas fa-envelope text-yellow-400 text-sm"></i>
+            </div>
+            <span id="contato-email" class="text-gray-300 text-sm"></span>
+          </div>
+          <div class="flex items-center gap-4">
+            <div class="w-11 h-11 rounded-full bg-yellow-500/12 border border-yellow-500/20 flex items-center justify-center flex-shrink-0">
+              <i class="fas fa-phone text-yellow-400 text-sm"></i>
+            </div>
+            <span id="contato-telefone" class="text-gray-300 text-sm"></span>
+          </div>
+          <div class="flex items-center gap-4">
+            <div class="w-11 h-11 rounded-full bg-yellow-500/12 border border-yellow-500/20 flex items-center justify-center flex-shrink-0">
+              <i class="fas fa-map-marker-alt text-yellow-400 text-sm"></i>
+            </div>
+            <span id="contato-endereco" class="text-gray-300 text-sm"></span>
+          </div>
+        </div>
       </div>
 
-      <p id="slogan" class="hero-anim delay-3 text-xl md:text-2xl text-white/90 mb-3 font-light"></p>
-      <p id="lema"   class="hero-anim delay-4 text-base md:text-lg italic text-yellow-100/65 mb-12"></p>
+      <div class="reveal-r">
+        <h3 class="text-2xl font-bold text-yellow-400 mb-8">Envie uma mensagem</h3>
+        <form name="contato" method="POST" data-netlify="true" class="space-y-4">
+          <input type="hidden" name="form-name" value="contato">
+          <input  name="nome"
+                  class="w-full bg-white/6 border border-white/12 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-yellow-400/60 transition text-sm"
+                  placeholder="Nome *" required>
+          <input  name="email" type="email"
+                  class="w-full bg-white/6 border border-white/12 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-yellow-400/60 transition text-sm"
+                  placeholder="E-mail *" required>
+          <textarea name="mensagem" rows="4"
+                  class="w-full bg-white/6 border border-white/12 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-yellow-400/60 transition text-sm resize-none"
+                  placeholder="Mensagem *"></textarea>
+          <button type="submit" class="btn-gold w-full py-3.5 rounded-xl text-xs tracking-widest uppercase">
+            <i class="fas fa-paper-plane"></i> Enviar Mensagem
+          </button>
+        </form>
+      </div>
 
-      <div class="hero-anim delay-5">
-        <a href="#historia" class="btn-gold px-10 py-4 rounded-full text-sm tracking-widest uppercase">
-          Conheça nossa história
+    </div>
+  </div>
+
+  <!-- Wave → Footer -->
+  <div class="wave" aria-hidden="true">
+    <svg viewBox="0 0 1440 70" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" style="height:70px">
+      <path d="M0,25 C500,70 900,0 1440,45 L1440,70 L0,70 Z" fill="#080e1a"/>
+    </svg>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     FOOTER
+══════════════════════════════════════════════════════════════ -->
+<footer class="bg-[#080e1a] text-white pt-16 pb-10">
+  <div class="max-w-7xl mx-auto px-4">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-10 mb-10">
+
+      <div>
+        <img id="footer-logo" src="" alt="Logo HCP" class="h-14 w-auto object-contain mb-4" />
+        <p id="footer-text" class="text-gray-500 text-sm leading-relaxed"></p>
+      </div>
+
+      <div class="flex flex-col items-start md:items-center">
+        <p class="text-xs tracking-widest uppercase text-gray-600 mb-4 font-semibold">Links</p>
+        <div id="footer-links" class="flex flex-col gap-2"></div>
+      </div>
+
+      <div class="flex flex-col items-start md:items-end">
+        <p class="text-xs tracking-widest uppercase text-gray-600 mb-4 font-semibold">Apoie</p>
+        <a href="#doacoes"
+           class="btn-gold px-6 py-3 rounded-full text-xs tracking-widest uppercase">
+          <i class="fas fa-heart text-[10px]"></i> Fazer Doação
         </a>
       </div>
     </div>
 
-    <div class="bounce absolute bottom-8 left-1/2 text-white/40">
-      <i class="fas fa-chevron-down text-lg"></i>
-    </div>
-  </section>
-
-
-  <!-- ═══════════════════════════ HISTÓRIA ═══════════════════════════ -->
-  <section id="historia" class="py-28 bg-white">
-    <div class="max-w-5xl mx-auto px-4">
-
-      <div class="text-center mb-20 reveal">
-        <p class="text-xs tracking-[0.35em] uppercase text-yellow-600 font-bold mb-3">Nossa Trajetória</p>
-        <h2 class="text-5xl md:text-6xl font-bold text-[#0f172a] mb-5">Nossa História</h2>
-        <div class="gold-divider"></div>
-      </div>
-
-      <!-- Timeline container: border-l is the vertical line -->
-      <div id="timeline" class="relative border-l-2 border-yellow-200 ml-4 md:ml-8 pl-8 md:pl-12 space-y-12"></div>
-
-    </div>
-  </section>
-
-
-  <!-- ═══════════════════════════ COORDENAÇÃO ═══════════════════════════ -->
-  <section id="coordenacao" class="py-28 s-dark">
-    <div class="max-w-7xl mx-auto px-4">
-
-      <div class="text-center mb-20 reveal">
-        <p class="text-xs tracking-[0.35em] uppercase text-yellow-400/70 font-bold mb-3">Liderança</p>
-        <h2 class="text-5xl md:text-6xl font-bold mb-5">Coordenação</h2>
-        <div class="gold-divider"></div>
-      </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8" id="coordenacao-grid"></div>
-    </div>
-  </section>
-
-
-  <!-- ═══════════════════════════ MEMBROS ═══════════════════════════ -->
-  <section id="membros" class="py-28 bg-[#faf8f3]">
-    <div class="max-w-7xl mx-auto px-4">
-
-      <div class="text-center mb-14 reveal">
-        <p class="text-xs tracking-[0.35em] uppercase text-yellow-600 font-bold mb-3">O Coral</p>
-        <h2 class="text-5xl md:text-6xl font-bold text-[#0f172a] mb-5">Nossos Membros</h2>
-        <div class="gold-divider"></div>
-      </div>
-
-      <div class="flex justify-center mb-10 flex-wrap gap-2 reveal" id="naipe-filters"></div>
-      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5" id="members-grid"></div>
-    </div>
-  </section>
-
-
-  <!-- ═══════════════════════════ GALERIA ═══════════════════════════ -->
-  <section id="galeria" class="py-28 s-dark">
-    <div class="max-w-7xl mx-auto px-4">
-
-      <div class="text-center mb-20 reveal">
-        <p class="text-xs tracking-[0.35em] uppercase text-yellow-400/70 font-bold mb-3">Momentos</p>
-        <h2 class="text-5xl md:text-6xl font-bold mb-5">Galeria</h2>
-        <div class="gold-divider"></div>
-      </div>
-
-      <div id="albums-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-    </div>
-
-    <!-- Album modal -->
-    <div id="album-modal" class="hidden fixed inset-0 z-50">
-      <div class="absolute inset-0 bg-black/80" data-close="modal"></div>
-      <div class="relative max-w-6xl mx-auto my-8 bg-white rounded-2xl shadow-2xl overflow-hidden">
-        <div class="flex items-center justify-between px-6 py-4 border-b bg-gray-50">
-          <h3 id="album-modal-title" class="text-xl font-bold text-gray-900">Álbum</h3>
-          <button id="album-modal-close" class="text-gray-400 hover:text-gray-700 transition">
-            <i class="fas fa-times text-2xl"></i>
-          </button>
-        </div>
-        <div id="album-modal-content" class="p-4 overflow-y-auto max-h-[75vh]">
-          <div id="album-items" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Lightbox -->
-    <div id="lightbox" class="hidden fixed inset-0 z-50">
-      <div class="absolute inset-0 bg-black/95" data-close="lightbox"></div>
-      <img id="lightbox-img"
-           class="absolute max-h-[90%] max-w-[90%] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-xl shadow-2xl"
-           src="" alt="">
-    </div>
-  </section>
-
-
-  <!-- ═══════════════════════════ AGENDA ═══════════════════════════ -->
-  <section id="agenda" class="py-28 bg-white">
-    <div class="max-w-4xl mx-auto px-4">
-
-      <div class="text-center mb-14 reveal">
-        <p class="text-xs tracking-[0.35em] uppercase text-yellow-600 font-bold mb-3">Próximos Eventos</p>
-        <h2 class="text-5xl md:text-6xl font-bold text-[#0f172a] mb-5">Agenda</h2>
-        <div class="gold-divider"></div>
-      </div>
-
-      <div class="flex justify-center mb-10 flex-wrap gap-2 reveal">
-        <div class="inline-flex flex-wrap gap-2 justify-center" id="agenda-filtros"></div>
-      </div>
-
-      <div id="agenda-lista" class="space-y-4"></div>
-    </div>
-  </section>
-
-
-  <!-- ═══════════════════════════ DOAÇÕES ═══════════════════════════ -->
-  <section id="doacoes" class="py-28 s-dark">
-    <div class="max-w-4xl mx-auto px-4">
-
-      <div class="text-center mb-16 reveal">
-        <p class="text-xs tracking-[0.35em] uppercase text-yellow-400/70 font-bold mb-3">Apoie o HCP</p>
-        <h2 id="doacoes-titulo" class="text-5xl md:text-6xl font-bold mb-5">Doações</h2>
-        <div class="gold-divider"></div>
-      </div>
-
-      <div class="reveal">
-        <!-- Progress -->
-        <div class="mb-10">
-          <div class="flex justify-between text-sm mb-2">
-            <span class="text-gray-400 font-medium">Meta</span>
-            <span id="meta-total" class="text-yellow-400 font-bold"></span>
-          </div>
-          <div class="flex justify-between text-sm mb-3">
-            <span class="text-gray-400 font-medium">Arrecadado</span>
-            <span id="valor-arrecadado" class="text-yellow-300 font-bold text-2xl leading-none"></span>
-          </div>
-          <div class="pbar-track">
-            <div id="progress" class="pbar-fill"></div>
-          </div>
-        </div>
-
-        <!-- Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div class="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-sm">
-            <h4 class="text-base font-bold mb-4 text-yellow-400 flex items-center gap-2">
-              <i class="fas fa-qrcode"></i> PIX
-            </h4>
-            <p id="pix-chave" class="text-gray-300 text-sm font-mono bg-white/5 px-3 py-2 rounded-lg mb-4 break-all"></p>
-            <img id="pix-qr" class="w-36 h-36 object-contain rounded-xl bg-white p-2 shadow" alt="QR Code PIX" />
-          </div>
-          <div class="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-sm">
-            <h4 class="text-base font-bold mb-4 text-yellow-400 flex items-center gap-2">
-              <i class="fas fa-hand-holding-heart"></i> Outras formas
-            </h4>
-            <ul id="doacao-links" class="space-y-3"></ul>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-
-  <!-- ═══════════════════════════ OBJETIVOS ═══════════════════════════ -->
-  <section id="objetivos" class="py-28 bg-white">
-    <div class="max-w-7xl mx-auto px-4">
-
-      <div class="text-center mb-16 reveal">
-        <p class="text-xs tracking-[0.35em] uppercase text-yellow-600 font-bold mb-3">Visão &amp; Propósito</p>
-        <h2 class="text-5xl md:text-6xl font-bold text-[#0f172a] mb-5">Nossos Objetivos</h2>
-        <div class="gold-divider"></div>
-      </div>
-
-      <div id="objetivos-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20"></div>
-
-      <div class="text-center mb-12 reveal">
-        <h3 class="text-4xl font-bold text-[#0f172a] mb-4">Metas Anuais</h3>
-        <div class="gold-divider"></div>
-      </div>
-
-      <div id="metas-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
-    </div>
-  </section>
-
-
-  <!-- ═══════════════════════════ CONTATO ═══════════════════════════ -->
-  <section id="contato" class="py-28 s-dark">
-    <div class="max-w-5xl mx-auto px-4">
-
-      <div class="text-center mb-16 reveal">
-        <p class="text-xs tracking-[0.35em] uppercase text-yellow-400/70 font-bold mb-3">Fale Conosco</p>
-        <h2 class="text-5xl md:text-6xl font-bold mb-5">Contato</h2>
-        <div class="gold-divider"></div>
-      </div>
-
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-14">
-
-        <div class="reveal-l">
-          <h3 class="text-2xl font-bold text-yellow-400 mb-8">Informações</h3>
-          <div class="space-y-5">
-            <div class="flex items-center gap-4">
-              <div class="w-11 h-11 rounded-full bg-yellow-500/15 border border-yellow-500/20 flex items-center justify-center flex-shrink-0">
-                <i class="fas fa-envelope text-yellow-400"></i>
-              </div>
-              <span id="contato-email" class="text-gray-300"></span>
-            </div>
-            <div class="flex items-center gap-4">
-              <div class="w-11 h-11 rounded-full bg-yellow-500/15 border border-yellow-500/20 flex items-center justify-center flex-shrink-0">
-                <i class="fas fa-phone text-yellow-400"></i>
-              </div>
-              <span id="contato-telefone" class="text-gray-300"></span>
-            </div>
-            <div class="flex items-center gap-4">
-              <div class="w-11 h-11 rounded-full bg-yellow-500/15 border border-yellow-500/20 flex items-center justify-center flex-shrink-0">
-                <i class="fas fa-map-marker-alt text-yellow-400"></i>
-              </div>
-              <span id="contato-endereco" class="text-gray-300"></span>
-            </div>
-          </div>
-        </div>
-
-        <div class="reveal-r">
-          <h3 class="text-2xl font-bold text-yellow-400 mb-8">Envie uma mensagem</h3>
-          <form name="contato" method="POST" data-netlify="true" class="space-y-4">
-            <input type="hidden" name="form-name" value="contato">
-            <input  name="nome"
-                    class="w-full bg-white/8 border border-white/15 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-yellow-400 focus:bg-white/12 transition text-sm"
-                    placeholder="Nome *" required>
-            <input  name="email" type="email"
-                    class="w-full bg-white/8 border border-white/15 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-yellow-400 focus:bg-white/12 transition text-sm"
-                    placeholder="E-mail *" required>
-            <textarea name="mensagem" rows="4"
-                    class="w-full bg-white/8 border border-white/15 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-yellow-400 focus:bg-white/12 transition text-sm resize-none"
-                    placeholder="Mensagem *"></textarea>
-            <button type="submit" class="btn-gold w-full py-3 rounded-xl text-sm tracking-widest uppercase">
-              <i class="fas fa-paper-plane mr-2"></i>Enviar
-            </button>
-          </form>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-
-  <!-- ═══════════════════════════ FOOTER ═══════════════════════════ -->
-  <footer class="bg-[#080e1a] text-white py-14 border-t border-white/5">
-    <div class="max-w-7xl mx-auto px-4">
-      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-8">
-        <img id="footer-logo" src="" alt="Logo HCP" class="h-14 w-auto object-contain" />
-        <p id="footer-text" class="text-gray-500 text-sm text-center max-w-xs leading-relaxed"></p>
-        <div id="footer-links" class="flex gap-5 flex-wrap"></div>
-      </div>
-      <div class="mt-10 pt-8 border-t border-white/5 text-center text-gray-700 text-xs tracking-wide">
+    <div class="border-t border-white/5 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+      <p class="text-gray-700 text-xs tracking-wide">
         © 2025 HCP — Homens Cantores do Planalto &nbsp;·&nbsp; Todos os direitos reservados
+      </p>
+      <div class="flex items-center gap-2 text-gray-700 text-xs">
+        <i class="fas fa-music text-yellow-800/50"></i>
+        <span>Louvai ao Senhor!</span>
       </div>
     </div>
-  </footer>
+  </div>
+</footer>
 
 
-  <script src="js/app.js"></script>
-  <script>
-    // Netlify Identity redirect
-    if (window.location.hash.includes("invite_token")) {
-      window.location.href = "/admin/" + window.location.hash;
-    }
+<!-- ══════════════════════════════════════════════════════════════
+     BACK TO TOP
+══════════════════════════════════════════════════════════════ -->
+<button id="btt" aria-label="Voltar ao topo">
+  <i class="fas fa-arrow-up text-sm"></i>
+</button>
 
-    // ── Scroll reveal ────────────────────────────────────────────
-    const revObs = new IntersectionObserver((entries) => {
-      entries.forEach(e => {
-        if (e.isIntersecting) {
-          e.target.classList.add('vis');
-          revObs.unobserve(e.target);
-        }
-      });
-    }, { threshold: 0.08 });
 
-    // Observe existing elements
-    function observeAll() {
-      document.querySelectorAll('.reveal:not(.obs), .reveal-l:not(.obs), .reveal-r:not(.obs)').forEach(el => {
-        el.classList.add('obs');
-        revObs.observe(el);
-      });
-    }
-    observeAll();
+<script src="js/app.js"></script>
+<script>
+  // Netlify Identity
+  if (window.location.hash.includes("invite_token")) {
+    window.location.href = "/admin/" + window.location.hash;
+  }
 
-    // Also catch dynamically added elements
-    new MutationObserver(observeAll).observe(document.body, { childList: true, subtree: true });
+  // ── Scroll reveal ─────────────────────────────────────────────
+  const revObs = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('vis'); revObs.unobserve(e.target); } });
+  }, { threshold: 0.08 });
 
-    // ── Header scroll effect ─────────────────────────────────────
-    const hdr = document.getElementById('main-header');
-    window.addEventListener('scroll', () => {
-      hdr.classList.toggle('header-scrolled', window.scrollY > 20);
-    }, { passive: true });
-  </script>
+  function observeReveal() {
+    document.querySelectorAll('.reveal:not(.obs), .reveal-l:not(.obs), .reveal-r:not(.obs)').forEach(el => {
+      el.classList.add('obs'); revObs.observe(el);
+    });
+  }
+  observeReveal();
+  new MutationObserver(observeReveal).observe(document.body, { childList: true, subtree: true });
+
+  // ── Header scroll ─────────────────────────────────────────────
+  const hdr = document.getElementById('main-header');
+  window.addEventListener('scroll', () => {
+    hdr.classList.toggle('header-scrolled', window.scrollY > 20);
+  }, { passive: true });
+
+  // ── Back to top ───────────────────────────────────────────────
+  const btt = document.getElementById('btt');
+  window.addEventListener('scroll', () => {
+    btt.classList.toggle('show', window.scrollY > 500);
+  }, { passive: true });
+  btt.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+  // ── 3D Card Tilt ──────────────────────────────────────────────
+  function addTilt(card) {
+    if (card._t) return;
+    card._t = true;
+    card.addEventListener('mousemove', (e) => {
+      const r = card.getBoundingClientRect();
+      const x = ((e.clientX - r.left) / r.width  - .5) * 2;
+      const y = ((e.clientY - r.top)  / r.height - .5) * 2;
+      card.style.transition = 'transform .06s ease, box-shadow .1s ease';
+      card.style.transform  = `perspective(900px) rotateY(${x*9}deg) rotateX(${-y*9}deg) translateY(-6px)`;
+      card.style.boxShadow  = `${-x*18}px ${-y*18}px 45px rgba(0,0,0,.25), 0 24px 60px rgba(0,0,0,.2)`;
+    });
+    card.addEventListener('mouseleave', () => {
+      card.style.transition = 'transform .5s ease, box-shadow .5s ease';
+      card.style.transform  = '';
+      card.style.boxShadow  = '';
+    });
+  }
+
+  new MutationObserver(() => {
+    document.querySelectorAll('.tilt:not([data-t])').forEach(c => { c.setAttribute('data-t','1'); addTilt(c); });
+  }).observe(document.body, { childList: true, subtree: true });
+</script>
 
 </body>
 </html>
